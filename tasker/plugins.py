@@ -1,4 +1,7 @@
 from configuration import Config
+
+import FirstAidKit
+
 import imp
 import os
 import subprocess
@@ -30,7 +33,7 @@ class DummyPlugin(object):
     #investigate internal state and tell us next action to perform in auto-mode
     def nextstep(self):
         """Returns next step needed for automated mode"""
-        return state
+        return self._state
 
     #iterate protocol allows us to use loops
     def __iter__(self):
@@ -40,6 +43,7 @@ class DummyPlugin(object):
         s = self.nextstep()
         if s==None:
             raise StopIteration()
+        return s
 
     #default (mandatory) plugin actions
     def init(self):
@@ -123,14 +127,20 @@ class PluginSystem(object):
         #create list of potential modules in the path
         importlist = set()
         for f in os.listdir(self._path):
-            if os.path.isdir(f) and os.path.isfile(os.path.join(self._path, "__init__.py")):
+            fullpath = os.path.join(self._path, f)
+            print "Processing file: ", f
+            if os.path.isdir(fullpath) and os.path.isfile(os.path.join(self._path, f, "__init__.py")):
                 importlist.add(f)
-            elif os.path.isfile(f) and (f[-3:]==".so" or f[-3:]==".py"):
+                print "Adding python module (directory): ", f
+            elif os.path.isfile(fullpath) and (f[-3:]==".so" or f[-3:]==".py"):
                 importlist.add(f[:-3])
-            elif os.path.isfile(f) and (f[-4:]==".pyc" or f[-4:]==".pyo"):
+                print "Adding python module (file): ", f
+            elif os.path.isfile(fullpath) and (f[-4:]==".pyc" or f[-4:]==".pyo"):
                 importlist.add(f[:-4])
-            elif os.path.isfile(f) and f[-7:]==".plugin":
-                self._plugins[f[:-4]] = BinPlugin(os.path.join(self._path, f))
+                print "Adding python module (compiled): ", f
+            elif os.path.isfile(fullpath) and f[-7:]==".plugin":
+                self._plugins[f[:-4]] = BinPlugin(fullpath)
+                print "Importing special module: ", f
 
         #try to import the modules as FirstAidKit.plugins.modulename
         for m in importlist:
@@ -139,8 +149,10 @@ class PluginSystem(object):
 
             imp.acquire_lock()
             try:
-                moduleinfo = imp.find_module(m, self._path)
-                module = imp.load_module(".".join(["FirstAidKit", "plugins", m]), *moduleinfo)
+                print "Importing module %s from %s" % (m, self._path)
+                moduleinfo = imp.find_module(m, [self._path])
+                module = imp.load_module(".".join([FirstAidKit.__name__, m]), *moduleinfo)
+                print "OK"
             finally:
                 imp.release_lock()
 
@@ -154,7 +166,7 @@ class PluginSystem(object):
         """Perform automated run of plugin"""
         p = self._plugins[plugin].get_plugin() #get instance of plugin
         for step in p: #autorun all the needed steps
-            print "Running step %s in plugin %s ..." % (plugin, step,)
+            print "Running step %s in plugin %s ..." % (step, plugin,)
             res = getattr(p, step)()
             print "Result is:", res
 
