@@ -140,7 +140,7 @@ class PluginSystem(object):
             imp.acquire_lock()
             try:
                 moduleinfo = imp.find_module(m, self._path)
-                module = imp.load_module("."join(["FirstAidKit", "plugins", m]), *moduleinfo)
+                module = imp.load_module(".".join(["FirstAidKit", "plugins", m]), *moduleinfo)
             finally:
                 imp.release_lock()
 

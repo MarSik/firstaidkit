@@ -1,5 +1,6 @@
 import ConfigParser
 import os
+from StringIO import StringIO
 
 if os.environ.has_key("FIRST_AID_KIT_CONF"):
     cfgfile = os.environ["FIRST_AID_KIT_CONF"].split(":")
@@ -44,7 +45,7 @@ class FAKConfig(ConfigParser.SafeConfigParser, FAKConfigMixIn):
     pass
 
 Config = FAKConfig()
-Config.readfp(defaultconfig, "<default>")
+Config.readfp(StringIO(defaultconfig), "<default>")
 Config.read(cfgfile)
 
 
