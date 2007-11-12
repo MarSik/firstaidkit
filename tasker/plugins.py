@@ -139,7 +139,7 @@ class PluginSystem(object):
                 importlist.add(f[:-4])
                 print "Adding python module (compiled): ", f
             elif os.path.isfile(fullpath) and f[-7:]==".plugin":
-                self._plugins[f[:-4]] = BinPlugin(fullpath)
+                self._plugins[f[:-7]] = BinPlugin(fullpath)
                 print "Importing special module: ", f
 
         #try to import the modules as FirstAidKit.plugins.modulename
