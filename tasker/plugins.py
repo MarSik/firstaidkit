@@ -1,6 +1,7 @@
 from configuration import Config
 
 import FirstAidKit
+from log import Logger
 
 import imp
 import os
@@ -138,19 +139,19 @@ class PluginSystem(object):
         importlist = set()
         for f in os.listdir(self._path):
             fullpath = os.path.join(self._path, f)
-            print "Processing file: ", f
+            Logger.debug("Processing file: %s", f)
             if os.path.isdir(fullpath) and os.path.isfile(os.path.join(self._path, f, "__init__.py")):
                 importlist.add(f)
-                print "Adding python module (directory): ", f
+                Logger.debug("Adding python module (directory): %s", f)
             elif os.path.isfile(fullpath) and (f[-3:]==".so" or f[-3:]==".py"):
                 importlist.add(f[:-3])
-                print "Adding python module (file): ", f
+                Logger.debug("Adding python module (file): %s", f)
             elif os.path.isfile(fullpath) and (f[-4:]==".pyc" or f[-4:]==".pyo"):
                 importlist.add(f[:-4])
-                print "Adding python module (compiled): ", f
+                Logger.debug("Adding python module (compiled): %s", f)
             elif os.path.isfile(fullpath) and f[-7:]==".plugin":
                 self._plugins[f[:-7]] = BinPlugin(fullpath)
-                print "Importing special module: ", f
+                Logger.debug("Importing special module: %s", f)
 
         #try to import the modules as FirstAidKit.plugins.modulename
         for m in importlist:
@@ -159,10 +160,10 @@ class PluginSystem(object):
 
             imp.acquire_lock()
             try:
-                print "Importing module %s from %s" % (m, self._path)
+                Logger.debug("Importing module %s from %s", m, self._path)
                 moduleinfo = imp.find_module(m, [self._path])
                 module = imp.load_module(".".join([FirstAidKit.__name__, m]), *moduleinfo)
-                print "OK"
+                Logger.debug("... OK")
             finally:
                 imp.release_lock()
 
@@ -176,9 +177,9 @@ class PluginSystem(object):
         """Perform automated run of plugin"""
         p = self._plugins[plugin].get_plugin() #get instance of plugin
         for step in p: #autorun all the needed steps
-            print "Running step %s in plugin %s ..." % (step, plugin,)
+            Logger.info("Running step %s in plugin %s ...", step, plugin)
             res = getattr(p, step)()
-            print "Result is:", res
+            Logger.info("Result is: "+str(res))
 
     def getplugin(self, plugin):
         """Get instance of plugin, so we can call the steps manually"""
