@@ -5,6 +5,7 @@ import FirstAidKit
 import imp
 import os
 import subprocess
+from cStringIO import StringIO
 
 class DummyPlugin(object):
     def __init__(self):
@@ -83,39 +84,48 @@ class BinPlugin(DummyPlugin):
     def __init__(self, bin):
         DummyPlugin.__init__(self)
         self._binpath = bin
+        self._output = {}
     
+    def common(self, step, okstep, failstep):
+        ind = ""
+        proc = subprocess.Popen([self._binpath, step], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        (out, _) = proc.communicate(ind)
+        err = proc.returncode
+        self._output[step] = out
+        if err==0:
+            self._state = okstep
+            return True
+        else:
+            self._state = failstep
+            return False
+
     def init(self):
-        self._state = "backup"
-        return True
+        return self.common("init", "backup", "destroy")
 
     def destroy(self):
-        self._state = None
-        return True
+        return self.common("destroy", None, None)
 
     def backup(self):
-        self._state = "diagnose"
-        return True
+        return self.common("backup", "diagnose", "destroy")
 
     def restore(self):
-        self._state = "destroy"
-        return True
+        return self.common("restore", "destroy", "destroy")
 
     def diagnose(self):
-        self._diagnosed = True
-        self._state = "describe"
-        return self._diagnosed
+        r = self.common("diagnose", "describe", "destroy")
+        if r:
+            self._diagnosed = True
+        return r
 
     def fix(self):
         if not self._diagnosed:
             self._state = "diagnose"
             return False
-
-        self._state = "destroy"
-        return True
+        return self.common("fix", "destroy", "restore")
 
     def describe(self):
-        self._state = "fix"
-        return ""
+        r = self.common("describe", "fix", "fix")
+        return self._output["describe"]
 
 class PluginSystem(object):
     """Encapsulate all plugin detection and import stuff"""
