@@ -1,0 +1,58 @@
+Description of plugin system
+----------------------------
+
+All plugins belong to configured plugin directory. Recognized suffixes are:
+
+- .py, .pyc, .pyo -- python modules
+- .so -- python compatible binary module
+- .plugin -- arbitrary executable
+
+Common stuff for plugins
+------------------------
+
+Each plugin exports some steps. The mandatory ones are
+
+- init -- initialize plugin, get environment, ..
+- backup -- backup everything we could touch in this plugin
+- diagnose -- get info about the investigated system and determine where
+	      the problems are
+- describe -- describe the findings from diagnose step
+- fix -- autofix the errors from diagnose step
+- restore -- restore system from backup
+- destroy -- destroy the plugin, cleanup
+
+The plugin should ensure that the calling order is correct
+and the system cannot end in some undeterministic state.
+
+Python modules (both py and binary)
+------------------------------------
+
+Python modules MUST export function get_plugin(), which returns
+a new instance of the plugin.
+
+It is strongly advised to base (derive from) the plugin on existing
+class tasker.DummyPlugin. This class defines all the necessary stuff
+to do nothing in the correct way.
+
+The most important stuff you have to support in plugin are:
+
+nextstep() -- returns name of the next step during automated processing
+	      or None when finished
+__iter__() and next() -- iterator protocol, works in the same way as
+			 nextstep() but end with StopIteration exception
+
+actions() -- returns list of available step names
+call(step) -- calls one specific step identified by name
+info() -- returns tuple of strings defined as (name of plugin, version, author)
+
+And of course the steps itself. They are defined as methods with the same names
+as used in actions().
+
+Arbitrary executable modules
+----------------------------
+
+Still work in progress, but basically the binary is called with step name
+as the first parameter. Right now this kind of plugin has to process the
+mandatory steps only and ensure it's data integrity by itself.
+
+
