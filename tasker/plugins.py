@@ -28,7 +28,17 @@ from cStringIO import StringIO
 class DummyPlugin(object):
     def __init__(self):
         self._diagnosed = False #diagnoistics has not been run yet
-        self._state = "init" #we have no internal state yet
+        self._state = "pre" #state we are in
+        self._result = True  #edge from the state we are in
+        self._flow = {       #define transition rules for state changes
+                "pre" : {True: "init"},
+                "init": {True: "diagnose", False: None, None: None},
+                "diagnose": {True: "destroy", False: "backup", None: "destroy"},
+                "backup": {True: "fix", False: "destrooy", None: "destroy"},
+                "fix": {True: "destroy", False: "restore", None: "restore"},
+                "restore": {True: "destroy", "False": "destroy", None: "destroy"},
+                "destroy": {True: None, False: None, None: None}
+                }
         pass
 
     #workaround, so we can use special plugins not composed of python objects
@@ -38,6 +48,8 @@ class DummyPlugin(object):
 
     def call(self, step):
         """call one step from plugin"""
+        self._result = None #mark new unfinished step
+        self._state = step
         return getattr(self, step)()
 
     def info(self):
@@ -50,12 +62,19 @@ class DummyPlugin(object):
         return set(["init", "backup", "diagnose", "describe", "fix", "restore", "destroy"])
 
     #investigate internal state and tell us next action to perform in auto-mode
-    def nextstep(self):
+    def nextstep(self, step = None, result = None):
         """Returns next step needed for automated mode"""
+        if step is None:
+            step=self._state
+        if result is None:
+            result=self._result
+        self._state = self._flow[step][result]
         return self._state
 
     #iterate protocol allows us to use loops
     def __iter__(self):
+        self._state = "pre"
+        self._result = True
         return self
 
     def next(self):
@@ -66,36 +85,36 @@ class DummyPlugin(object):
 
     #default (mandatory) plugin actions
     def init(self):
-        self._state = "backup"
+        self._result = True
         return True
 
     def destroy(self):
-        self._state = None
+        self._result = True
         return True
 
     def backup(self):
-        self._state = "diagnose"
+        self._result = True
         return True
 
     def restore(self):
-        self._state = "destroy"
+        self._result = True
         return True
 
     def diagnose(self):
         self._diagnosed = True
-        self._state = "describe"
-        return self._diagnosed
+        self._result = True #the system is OK
+        return self._result
 
     def fix(self):
         if not self._diagnosed:
-            self._state = "diagnose"
+            self._result = False
             return False
 
-        self._state = "destroy"
+        self._result = True
         return True
 
     def describe(self):
-        self._state = "fix"
+        self._result = True
         return ""
 
 class BinPlugin(DummyPlugin):
@@ -104,45 +123,45 @@ class BinPlugin(DummyPlugin):
         self._binpath = bin
         self._output = {}
     
-    def common(self, step, okstep, failstep):
+    def common(self, step, okresult = True, failresult = False):
         ind = ""
         proc = subprocess.Popen([self._binpath, step], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
         (out, _) = proc.communicate(ind)
         err = proc.returncode
         self._output[step] = out
         if err==0:
-            self._state = okstep
+            self._result = okresult
             return True
         else:
-            self._state = failstep
+            self._result = failresult
             return False
 
     def init(self):
-        return self.common("init", "backup", "destroy")
+        return self.common("init")
 
     def destroy(self):
-        return self.common("destroy", None, None)
+        return self.common("destroy")
 
     def backup(self):
-        return self.common("backup", "diagnose", "destroy")
+        return self.common("backup")
 
     def restore(self):
-        return self.common("restore", "destroy", "destroy")
+        return self.common("restore")
 
     def diagnose(self):
-        r = self.common("diagnose", "describe", "destroy")
+        r = self.common("diagnose")
         if r:
             self._diagnosed = True
         return r
 
     def fix(self):
         if not self._diagnosed:
-            self._state = "diagnose"
+            self._result = False
             return False
-        return self.common("fix", "destroy", "restore")
+        return self.common("fix")
 
     def describe(self):
-        r = self.common("describe", "fix", "fix")
+        r = self.common("describe")
         return self._output["describe"]
 
 class PluginSystem(object):
@@ -195,8 +214,11 @@ class PluginSystem(object):
         p = self._plugins[plugin].get_plugin() #get instance of plugin
         for step in p: #autorun all the needed steps
             Logger.info("Running step %s in plugin %s ...", step, plugin)
-            res = getattr(p, step)()
-            Logger.info("Result is: "+str(res))
+            try:
+                res = p.call(step)
+                Logger.info("Result is: "+str(res))
+            except Exception, e:
+                Logger.error("Step %s caused an unhandled exception %s", step, str(e))
 
     def getplugin(self, plugin):
         """Get instance of plugin, so we can call the steps manually"""
