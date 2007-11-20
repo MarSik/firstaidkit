@@ -49,15 +49,14 @@ class Plugin(object):
         # Dictionary that holds all the flows.  The keys for each flow is its
         # name.  The flow will be addressed by this name.
         #
-        self.flows = {}
+        self._flows = {}
 
         #
         # This is the default flow that all classes deriving from plugin must
         # implement.
         #
         self._defflow = {
-                self.initial : {True: "pre"},
-                "pre"        : {True: "init"},
+                self.initial : {True: "init"},
                 "init"       : {True: "diagnose"},
                 "diagnose"   : {True: "destroy", False: "backup"},
                 "backup"     : {True: "fix", False: "destroy"},
@@ -65,12 +64,12 @@ class Plugin(object):
                 "restore"    : {True: "destroy", False: "destroy"},
                 "destroy"    : {True: self.final}
                 }
-        self.flows["default"] = self._defflow
+        self._flows["default"] = self._defflow
 
         #
         # The flow being used at the moment.
         #
-        self.cflow = self.defflow
+        self.cflow = self._defflow
 
     #workaround, so we can use special plugins not composed of python objects
     #like shell scripts or arbitrary binaries
@@ -105,13 +104,13 @@ class Plugin(object):
         # If any of the vals are missing, we default to the current ones.
         if state is None or result is None:
             state=self._state
-            resutl=self._result
+            result=self._result
         # The self.initial state does not have any return code.
         # It will only work with True.
         if state == self.initial:
             self._state = self.cflow[self.initial][True]
-        else
-            self._state = self._flow[state][result]
+        else:
+            self._state = self.cflow[state][result]
         return self._state
 
     #iterate protocol allows us to use loops
@@ -125,7 +124,7 @@ class Plugin(object):
 
         Will return (self._state, self._result).  The function that was executed and the return value.
         """
-        func = self.nextstep()
+        func = self.nextstate()
         if func == self.final:
             raise StopIteration()
         else:
@@ -268,13 +267,16 @@ class PluginSystem(object):
     def autorun(self, plugin):
         """Perform automated run of plugin"""
         p = self._plugins[plugin].get_plugin() #get instance of plugin
-        for step in p: #autorun all the needed steps
+        for (step, rv) in p: #autorun all the needed steps
             Logger.info("Running step %s in plugin %s ...", step, plugin)
-            try:
-                res = p.call(step)
-                Logger.info("Result is: "+str(res))
-            except Exception, e:
-                Logger.error("Step %s caused an unhandled exception %s", step, str(e))
+            Logger.info("%s is current step and % is result of that step." % (step, rv))
+
+
+            #try:
+                #res = p.call(step)
+                #Logger.info("Result is: "+str(res))
+            #except Exception, e:
+                #Logger.error("Step %s caused an unhandled exception %s", step, str(e))
 
     def getplugin(self, plugin):
         """Get instance of plugin, so we can call the steps manually"""

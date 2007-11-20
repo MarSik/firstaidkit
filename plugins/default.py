@@ -17,7 +17,8 @@
 
 from tasker.plugins import Plugin
 
-class DummyPlugin(Plugin):
+class Sample1Plugin(Plugin):
+    """This plugin uses the predefined flow in the Plugin abstract class."""
     def __init__(self):
         Plugin.__init__(self)
     def init(self):
@@ -47,5 +48,5 @@ class DummyPlugin(Plugin):
 
 
 def get_plugin():
-    return DummyPlugin()
+    return Sample1Plugin()
 
