@@ -31,18 +31,23 @@ and the system cannot end in some undeterministic state.
 
 Python modules (both py and binary)
 ------------------------------------
+A plugin for the FirstAidKit must inherite from the tasker.Plugin class.
+It must also implement the mandatory plugin steps.  The tasker.Plugin
+parent will provide a default flow that will use the functions defined
+by the plugin developer.  Moreover, for the mandatory steps, the plugin
+developer must garantee that the function will return a valid return 
+class (more on return class further on).  In other words, the function
+must return one of the possible return classes included in the default
+flow.
 
-Python modules MUST export function get_plugin(), which returns
-a new instance of the plugin.
+tasker.Plugin defines:
+nextstep() -- This is used to return the next function that should be 
+              executed.  __iter__() is not used because there is no 
+              control over __iter__() in an iteration.  nextstep()
+              allows us execution of the flow without the need for an
+              iteration.  However the iteratior is present in the 
+              class and can be used accordinly.
 
-It is strongly advised to base (derive from) the plugin on existing
-class tasker.DummyPlugin. This class defines all the necessary stuff
-to do nothing in the correct way.
-
-The most important stuff you have to support in plugin are:
-
-nextstep() -- returns name of the next step during automated processing
-              or None when finished
 __iter__() and next() -- iterator protocol, works in the same way as
                          nextstep() but end with StopIteration exception
 
@@ -52,6 +57,9 @@ info() -- returns tuple of strings defined as (name of plugin, version, author)
 
 And of course the steps itself. They are defined as methods with the same names
 as used in actions().
+
+Return Class
+------------
 
 Arbitrary executable modules
 ----------------------------
