@@ -34,7 +34,7 @@ class DummyPlugin(object):
                 "pre" : {True: "init"},
                 "init": {True: "diagnose", False: None, None: None},
                 "diagnose": {True: "destroy", False: "backup", None: "destroy"},
-                "backup": {True: "fix", False: "destrooy", None: "destroy"},
+                "backup": {True: "fix", False: "destroy", None: "destroy"},
                 "fix": {True: "destroy", False: "restore", None: "restore"},
                 "restore": {True: "destroy", "False": "destroy", None: "destroy"},
                 "destroy": {True: None, False: None, None: None}
