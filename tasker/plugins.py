@@ -58,11 +58,11 @@ class Plugin(object):
         self._defflow = {
                 self.initial : {True: "init"},
                 "init"       : {True: "diagnose"},
-                "diagnose"   : {True: "destroy", False: "backup"},
-                "backup"     : {True: "fix", False: "destroy"},
-                "fix"        : {True: "destroy", False: "restore"},
-                "restore"    : {True: "destroy", False: "destroy"},
-                "destroy"    : {True: self.final}
+                "diagnose"   : {True: "purge", False: "backup"},
+                "backup"     : {True: "fix", False: "purge"},
+                "fix"        : {True: "purge", False: "restore"},
+                "restore"    : {True: "purge", False: "purge"},
+                "purge"    : {True: self.final}
                 }
         self._flows["default"] = self._defflow
 
@@ -89,7 +89,7 @@ class Plugin(object):
     #list of all actions provided
     def actions(self):
         """Returns list of available actions"""
-        return set(["init", "backup", "diagnose", "describe", "fix", "restore", "destroy"])
+        return set(["init", "backup", "diagnose", "describe", "fix", "restore", "purge"])
 
     def nextstate(self, state=None, result=None):
         """Returns next state when analizing self._state, self._result and the self.cflow in automode.
@@ -143,7 +143,7 @@ class Plugin(object):
         if self.__class__ is Plugin:
             raise TypeError, "Plugin is an abstract class."
 
-    def destroy(self):
+    def purge(self):
         """Final actions.
 
         All the actions that must be done after the exection of all plugin functions.
@@ -200,8 +200,8 @@ class BinPlugin(Plugin):
     def init(self):
         return self.common("init")
 
-    def destroy(self):
-        return self.common("destroy")
+    def purge(self):
+        return self.common("purge")
 
     def backup(self):
         return self.common("backup")
