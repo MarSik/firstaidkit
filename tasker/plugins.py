@@ -27,18 +27,50 @@ from cStringIO import StringIO
 
 class Plugin(object):
     def __init__(self):
-        self._state = "pre" #state we are in
-        self._result = True  #edge from the state we are in
-        self._flow = {       #define transition rules for state changes
-                "pre" : {True: "init"},
-                "init": {True: "diagnose", False: None, None: None},
-                "diagnose": {True: "destroy", False: "backup", None: "destroy"},
-                "backup": {True: "fix", False: "destroy", None: "destroy"},
-                "fix": {True: "destroy", False: "restore", None: "restore"},
-                "restore": {True: "destroy", "False": "destroy", None: "destroy"},
-                "destroy": {True: None, False: None, None: None}
+        #
+        # The initial and final states are here to give more flexibilty to the
+        # Development process.  All flows will start and end with these two
+        # Variables.
+        #
+        self.initial = 0
+        self.final = 1
+
+        #
+        # state we are in.
+        #
+        self._state = self.initial
+
+        #
+        # Used to hold the return value of the functions in the class.
+        #
+        self._result = None  #edge from the state we are in
+
+        #
+        # Dictionary that holds all the flows.  The keys for each flow is its
+        # name.  The flow will be addressed by this name.
+        #
+        self.flows = {}
+
+        #
+        # This is the default flow that all classes deriving from plugin must
+        # implement.
+        #
+        self._defflow = {
+                self.initial : {True: "pre"},
+                "pre"        : {True: "init"},
+                "init"       : {True: "diagnose"},
+                "diagnose"   : {True: "destroy", False: "backup"},
+                "backup"     : {True: "fix", False: "destroy"},
+                "fix"        : {True: "destroy", False: "restore"},
+                "restore"    : {True: "destroy", False: "destroy"},
+                "destroy"    : {True: self.final}
                 }
-        pass
+        self.flows["default"] = self._defflow
+
+        #
+        # The flow being used at the moment.
+        #
+        self.cflow = self.defflow
 
     #workaround, so we can use special plugins not composed of python objects
     #like shell scripts or arbitrary binaries
@@ -60,27 +92,46 @@ class Plugin(object):
         """Returns list of available actions"""
         return set(["init", "backup", "diagnose", "describe", "fix", "restore", "destroy"])
 
-    #investigate internal state and tell us next action to perform in auto-mode
-    def nextstep(self, step = None, result = None):
-        """Returns next step needed for automated mode"""
-        if step is None:
-            step=self._state
-        if result is None:
-            result=self._result
-        self._state = self._flow[step][result]
+    def nextstate(self, state=None, result=None):
+        """Returns next state when analizing self._state, self._result and the self.cflow in automode.
+
+        state -- Name of hte function.
+        result -- The return value of the previous function
+        We do not check for validity of the key in the self.cflow.  If key is invalid, function will
+        Traceback.  When self._state = self.final the function will traceback.  This situation must
+        be handled outside this function.  If an automatica iteration is needed that avoids the 
+        necesity to address the self.final state, use __iter__ and next.
+        """
+        # If any of the vals are missing, we default to the current ones.
+        if state is None or result is None:
+            state=self._state
+            resutl=self._result
+        # The self.initial state does not have any return code.
+        # It will only work with True.
+        if state == self.initial:
+            self._state = self.cflow[self.initial][True]
+        else
+            self._state = self._flow[state][result]
         return self._state
 
     #iterate protocol allows us to use loops
     def __iter__(self):
-        self._state = "pre"
-        self._result = True
+        self._state = self.initial
+        self._result = None
         return self
 
     def next(self):
-        s = self.nextstep()
-        if s==None:
+        """Iteration function.
+
+        Will return (self._state, self._result).  The function that was executed and the return value.
+        """
+        func = self.nextstep()
+        if func == self.final:
             raise StopIteration()
-        return s
+        else:
+            # Execute the function.
+            self._result = getattr(self, func)()
+        return (self._state, self._result)
 
     #default (mandatory) plugin actions
     def init(self):
