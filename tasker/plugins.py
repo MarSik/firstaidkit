@@ -27,7 +27,6 @@ from cStringIO import StringIO
 
 class Plugin(object):
     def __init__(self):
-        self._diagnosed = False #diagnoistics has not been run yet
         self._state = "pre" #state we are in
         self._result = True  #edge from the state we are in
         self._flow = {       #define transition rules for state changes
@@ -101,17 +100,12 @@ class Plugin(object):
         return True
 
     def diagnose(self):
-        self._diagnosed = True
         self._result = True #the system is OK
         return self._result
 
     def fix(self):
-        if not self._diagnosed:
-            self._result = False
-            return False
-
-        self._result = True
-        return True
+        self._result = False
+        return False
 
     def describe(self):
         self._result = True
@@ -149,15 +143,9 @@ class BinPlugin(Plugin):
         return self.common("restore")
 
     def diagnose(self):
-        r = self.common("diagnose")
-        if r:
-            self._diagnosed = True
-        return r
+        return self.common("diagnose")
 
     def fix(self):
-        if not self._diagnosed:
-            self._result = False
-            return False
         return self.common("fix")
 
     def describe(self):
