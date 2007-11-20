@@ -25,7 +25,7 @@ import os
 import subprocess
 from cStringIO import StringIO
 
-class DummyPlugin(object):
+class Plugin(object):
     def __init__(self):
         self._diagnosed = False #diagnoistics has not been run yet
         self._state = "pre" #state we are in
@@ -117,9 +117,9 @@ class DummyPlugin(object):
         self._result = True
         return ""
 
-class BinPlugin(DummyPlugin):
+class BinPlugin(Plugin):
     def __init__(self, bin):
-        DummyPlugin.__init__(self)
+        Plugin.__init__(self)
         self._binpath = bin
         self._output = {}
     
