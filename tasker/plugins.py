@@ -84,32 +84,43 @@ class Plugin(object):
 
     #default (mandatory) plugin actions
     def init(self):
+        """Initial actions.
+
+        All the actions that must be done before the execution of any plugin function.
+        This function generaly addresses things that are global to the plugin.
+        """
         self._result = True
         return True
 
     def destroy(self):
+        """Final actions.
+
+        All the actions that must be done after the exection of all plugin functions.
+        This function generaly addresses things that are global and need to be closed
+        off, like file descriptos, or mounted partitions....
+        """
         self._result = True
         return True
 
     def backup(self):
+        """Gather important information needed for restore."""
         self._result = True
         return True
 
     def restore(self):
+        """Try to restore the previous state described in backup."""
         self._result = True
         return True
 
     def diagnose(self):
+        """Diagnose the situation."""
         self._result = True #the system is OK
         return self._result
 
     def fix(self):
+        """Try to fix whatever is wrong in the system."""
         self._result = False
         return False
-
-    def describe(self):
-        self._result = True
-        return ""
 
 class BinPlugin(Plugin):
     def __init__(self, bin):
