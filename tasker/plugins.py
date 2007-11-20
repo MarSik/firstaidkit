@@ -89,8 +89,9 @@ class Plugin(object):
         All the actions that must be done before the execution of any plugin function.
         This function generaly addresses things that are global to the plugin.
         """
-        self._result = True
-        return True
+        #We want these functions to be overridden by the plugin developer.
+        if self.__class__ is Plugin:
+            raise TypeError, "Plugin is an abstract class."
 
     def destroy(self):
         """Final actions.
@@ -99,28 +100,33 @@ class Plugin(object):
         This function generaly addresses things that are global and need to be closed
         off, like file descriptos, or mounted partitions....
         """
-        self._result = True
-        return True
+        #We want these functions to be overridden by the plugin developer.
+        if self.__class__ is Plugin:
+            raise TypeError, "Plugin is an abstract class."
 
     def backup(self):
         """Gather important information needed for restore."""
-        self._result = True
-        return True
+        #We want these functions to be overridden by the plugin developer.
+        if self.__class__ is Plugin:
+            raise TypeError, "Plugin is an abstract class."
 
     def restore(self):
         """Try to restore the previous state described in backup."""
-        self._result = True
-        return True
+        #We want these functions to be overridden by the plugin developer.
+        if self.__class__ is Plugin:
+            raise TypeError, "Plugin is an abstract class."
 
     def diagnose(self):
         """Diagnose the situation."""
-        self._result = True #the system is OK
-        return self._result
+        #We want these functions to be overridden by the plugin developer.
+        if self.__class__ is Plugin:
+            raise TypeError, "Plugin is an abstract class."
 
     def fix(self):
         """Try to fix whatever is wrong in the system."""
-        self._result = False
-        return False
+         #We want these functions to be overridden by the plugin developer.
+        if self.__class__ is Plugin:
+            raise TypeError, "Plugin is an abstract class."
 
 class BinPlugin(Plugin):
     def __init__(self, bin):

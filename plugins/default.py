@@ -15,8 +15,37 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import tasker.plugins
+from tasker.plugins import Plugin
+
+class DummyPlugin(Plugin):
+    def __init__(self):
+        Plugin.__init__(self)
+    def init(self):
+        self._result=True
+        return self._result
+
+    def destroy(self):
+        self._result=True
+        return self._result
+
+    def backup(self):
+        self._result=True
+        return self._result
+
+    def restore(self):
+        self._result=True
+        return self._result
+
+    def diagnose(self):
+        self._result=True
+        return self._result
+
+    def fix(self):
+        self._result=False
+        return self._result
+
+
 
 def get_plugin():
-    return tasker.plugins.Plugin()
+    return DummyPlugin()
 
