@@ -17,6 +17,7 @@
 
 from configuration import Config
 from returns import *
+from errors import *
 
 import FirstAidKit
 from log import Logger
@@ -139,6 +140,8 @@ class Plugin(object):
                 self._state = self.cflow[state][result]
             return self._state
         except KeyError:
+            import pdb
+            pdb.set_trace()
             raise InvalidFlowStateException(self.cflow)
 
     #
@@ -261,13 +264,6 @@ class PluginSystem(object):
         for (step, rv) in p: #autorun all the needed steps
             Logger.info("Running step %s in plugin %s ...", step, plugin)
             Logger.info("%s is current step and %s is result of that step." % (step, rv))
-
-
-            #try:
-                #res = p.call(step)
-                #Logger.info("Result is: "+str(res))
-            #except Exception, e:
-                #Logger.error("Step %s caused an unhandled exception %s", step, str(e))
 
     def getplugin(self, plugin):
         """Get instance of plugin, so we can call the steps manually"""
