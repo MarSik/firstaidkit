@@ -89,19 +89,27 @@ class Plugin(object):
 
     def info(self):
         """Returns tuple (Plugin name, Plugin version, Plugin author)"""
-        return ("Dummy plugin", "0.0.1", "Martin Sivak <msivak@redhat.com>")
+        return ("Plugin", "", "")
 
+    #
+    # The flow functions.
+    #
     def changeFlow(self, name):
         """Changes the current flow to name.
 
         name -- name of flow
-        returns true upon completion, raises a InvalidFlowNameError.
+        returns true upon completion, raises a InvalidFlowNameError.  This will not check for
+        running flows.  If it is necesary we will do that in the future.
         """
         try:
             self.cflow = self._flows[name]
         except KeyError:
             raise InvalidFlowNameError(name, self._flow)
         return True
+
+    def getFlows(self):
+        """Return the names of all possible flows."""
+        return self._flows.keys()
 
     #list of all actions provided
     def actions(self):
@@ -201,43 +209,6 @@ class Plugin(object):
          #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
             raise TypeError, "Plugin is an abstract class."
-
-class BinPlugin(Plugin):
-    def __init__(self, bin):
-        Plugin.__init__(self)
-        self._binpath = bin
-        self._output = {}
-
-    def common(self, step, okresult = True, failresult = False):
-        ind = ""
-        proc = subprocess.Popen([self._binpath, step], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-        (out, _) = proc.communicate(ind)
-        err = proc.returncode
-        self._output[step] = out
-        if err==0:
-            self._result = okresult
-            return True
-        else:
-            self._result = failresult
-            return False
-
-    def init(self):
-        return self.common("init")
-
-    def purge(self):
-        return self.common("purge")
-
-    def backup(self):
-        return self.common("backup")
-
-    def restore(self):
-        return self.common("restore")
-
-    def diagnose(self):
-        return self.common("diagnose")
-
-    def fix(self):
-        return self.common("fix")
 
 class PluginSystem(object):
     """Encapsulate all plugin detection and import stuff"""
