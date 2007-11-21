@@ -16,6 +16,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 from configuration import Config
+from returns import *
 
 import FirstAidKit
 from log import Logger
@@ -47,22 +48,26 @@ class Plugin(object):
 
         #
         # Dictionary that holds all the flows.  The keys for each flow is its
-        # name.  The flow will be addressed by this name.
+        # name.  The flow will be addressed by this name.  The plugin developer
+        # Can add as many flows as he wants. The developer must use the instance.
+        # obj._flows["name"] = SomeFlow.  Be aware that you can overwirhte 
+        # previously added flows.
         #
         self._flows = {}
 
         #
         # This is the default flow that all classes deriving from plugin must
-        # implement.
+        # implement.  As the initial state has no return value it will be indexed
+        # with the parent of all ReturnValue classes.
         #
         self._defflow = {
-                self.initial : {True: "init"},
-                "init"       : {True: "diagnose"},
-                "diagnose"   : {True: "purge", False: "backup"},
-                "backup"     : {True: "fix", False: "purge"},
-                "fix"        : {True: "purge", False: "restore"},
-                "restore"    : {True: "purge", False: "purge"},
-                "purge"    : {True: self.final}
+                self.initial : {ReturnValue: "init"},
+                "init"       : {ReturnValueTrue: "diagnose"},
+                "diagnose"   : {ReturnValueTrue: "purge", ReturnValueFalse: "backup"},
+                "backup"     : {ReturnValueTrue: "fix", ReturnValueFalse: "purge"},
+                "fix"        : {ReturnValueTrue: "purge", ReturnValueFalse: "restore"},
+                "restore"    : {ReturnValueTrue: "purge", ReturnValueFalse: "purge"},
+                "purge"      : {ReturnValueTrue: self.final}
                 }
         self._flows["default"] = self._defflow
 
@@ -86,6 +91,18 @@ class Plugin(object):
         """Returns tuple (Plugin name, Plugin version, Plugin author)"""
         return ("Dummy plugin", "0.0.1", "Martin Sivak <msivak@redhat.com>")
 
+    def changeFlow(self, name):
+        """Changes the current flow to name.
+
+        name -- name of flow
+        returns true upon completion, raises a InvalidFlowNameError.
+        """
+        try:
+            self.cflow = self._flows[name]
+        except KeyError:
+            raise InvalidFlowNameError(name, self._flow)
+        return True
+
     #list of all actions provided
     def actions(self):
         """Returns list of available actions"""
@@ -106,14 +123,19 @@ class Plugin(object):
             state=self._state
             result=self._result
         # The self.initial state does not have any return code.
-        # It will only work with True.
-        if state == self.initial:
-            self._state = self.cflow[self.initial][True]
-        else:
-            self._state = self.cflow[state][result]
-        return self._state
+        # It will only work with the ReturnValue.
+        try:
+            if state == self.initial:
+                self._state = self.cflow[self.initial][ReturnValue]
+            else:
+                self._state = self.cflow[state][result]
+            return self._state
+        except KeyError:
+            raise InvalidFlowStateException(self.cflow)
 
+    #
     #iterate protocol allows us to use loops
+    #
     def __iter__(self):
         self._state = self.initial
         self._result = None
@@ -132,7 +154,9 @@ class Plugin(object):
             self._result = getattr(self, func)()
         return (self._state, self._result)
 
+    #
     #default (mandatory) plugin actions
+    #
     def init(self):
         """Initial actions.
 
@@ -269,7 +293,7 @@ class PluginSystem(object):
         p = self._plugins[plugin].get_plugin() #get instance of plugin
         for (step, rv) in p: #autorun all the needed steps
             Logger.info("Running step %s in plugin %s ...", step, plugin)
-            Logger.info("%s is current step and % is result of that step." % (step, rv))
+            Logger.info("%s is current step and %s is result of that step." % (step, rv))
 
 
             #try:
