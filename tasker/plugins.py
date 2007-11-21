@@ -207,7 +207,7 @@ class BinPlugin(Plugin):
         Plugin.__init__(self)
         self._binpath = bin
         self._output = {}
-    
+
     def common(self, step, okresult = True, failresult = False):
         ind = ""
         proc = subprocess.Popen([self._binpath, step], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
@@ -238,10 +238,6 @@ class BinPlugin(Plugin):
 
     def fix(self):
         return self.common("fix")
-
-    def describe(self):
-        r = self.common("describe")
-        return self._output["describe"]
 
 class PluginSystem(object):
     """Encapsulate all plugin detection and import stuff"""
