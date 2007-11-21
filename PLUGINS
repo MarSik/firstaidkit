@@ -9,11 +9,47 @@ All plugins belong to configured plugin directory. Recognized suffixes are:
 
 Plugin Model
 ------------
-Describe plugin model TODO.
+
+The FirstAidKit plugin is modeled using graph theory.
 
 
 Common stuff for plugins
 ------------------------
+The building blocks of the plugins are functions and flows.  A function
+is a certain action that is taken inside the plugin.  This action is more
+or less independant from the rest of the plugin actions.  Things like fix,
+backup, restore... qualify as actions/functions.  This does not mean that
+functions do not relate to each other.  This is where the flow comes into
+play.
+
+A flow is the organization of functions in a directional graph that defines
+the "flow" of functions.  Understand flow here as the order in which each
+function is executed.  This order/flow is specified using the function 
+names and their return codes.  All this is contained within a dictionary.
+Lets ilustrate with an example:
+
+1. Consider the following flow:
+    start->fix->end
+2. The dictionary that expresses this flow:
+    dict = { start:fix, fix:end}
+
+Lets ilustrate a more complex example:
+1. Consider the following flow:
+    start->diagnose->end
+                   `>fix->end
+   This flow has a conditional after the diagnose function.  If diagnose
+   results in a corrupt state of the system, then the plugin proceeds 
+   with fix.  If all is good in the system, then the flow end.
+2. The dictionary that expresses this flow:
+    dict = {start:diagnose, diagnose:{"goodSys":end, "badSys":fix}, fix:end}
+    note that the next step in the diagnose case is defined buy whatever
+    diagnose returned.
+
+The idea is to define individual set of activities in the functions.  And
+to put these activities together with the flows.  As mentioned before
+the activities are just functions.  The flow on the other hand is a dict
+that defines the next function to execute given the return value of the
+current function.
 
 Each plugin exports some steps. The mandatory ones are
 
@@ -21,7 +57,6 @@ Each plugin exports some steps. The mandatory ones are
 - backup -- backup everything we could touch in this plugin
 - diagnose -- get info about the investigated system and determine where
               the problems are
-- describe -- describe the findings from diagnose step
 - fix -- autofix the errors from diagnose step
 - restore -- restore system from backup
 - destroy -- destroy the plugin, cleanup
@@ -54,12 +89,21 @@ __iter__() and next() -- iterator protocol, works in the same way as
 actions() -- returns list of available step names
 call(step) -- calls one specific step identified by name
 info() -- returns tuple of strings defined as (name of plugin, version, author)
+changeFlow() -- allows the caller to change to some other flow defined in the
+                plugin.
+getFlows() -- Returns all the possible flows that the plugin suports.
+
 
 And of course the steps itself. They are defined as methods with the same names
 as used in actions().
 
 Return Class
 ------------
+To make the model work when a function returns it has to return the same type of
+object.  At the same time this object must have the possibility to change and
+specify the return code.  Moreover, when the developer creates new return classes
+he/she can put important return stuff into the class.  If the function is to 
+return a tuple, dictionary... it can always be housed inside the class.
 
 Arbitrary executable modules
 ----------------------------

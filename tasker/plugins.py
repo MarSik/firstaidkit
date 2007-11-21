@@ -30,6 +30,12 @@ from cStringIO import StringIO
 class Plugin(object):
     def __init__(self):
         #
+        # Some information vars.
+        #
+        self.name = "Plugin"
+        self.version = "0.0.0"
+        self.author = "nobody"
+        #
         # The initial and final states are here to give more flexibilty to the
         # Development process.  All flows will start and end with these two
         # Variables.
@@ -90,7 +96,7 @@ class Plugin(object):
 
     def info(self):
         """Returns tuple (Plugin name, Plugin version, Plugin author)"""
-        return ("Plugin", "", "")
+        return (self.name, self.version, self.author)
 
     #
     # The flow functions.
