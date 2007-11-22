@@ -23,25 +23,25 @@ class Sample2Plugin(Plugin):
         Plugin.__init__(self)
 
         #
-        # Additional flow definition.
+        # Additional flow defprepareion.
         #
         self.customFlow = {
-                self.initial : {ReturnValue: "init"},
-                "init"       : {ReturnValueTrue: "diagnose"},
-                "diagnose"   : {ReturnValueTrue: "purge", ReturnValueFalse: "backup"},
-                "backup"     : {ReturnValueTrue: "fix", ReturnValueFalse: "purge"},
-                "restore"    : {ReturnValueTrue: "purge", ReturnValueFalse: "purge"},
+                self.initial : {ReturnValue: "prepare"},
+                "prepare"       : {ReturnValueTrue: "diagnose"},
+                "diagnose"   : {ReturnValueTrue: "clean", ReturnValueFalse: "backup"},
+                "backup"     : {ReturnValueTrue: "fix", ReturnValueFalse: "clean"},
+                "restore"    : {ReturnValueTrue: "clean", ReturnValueFalse: "clean"},
                 "fix"        : {ReturnValueTrue: "extraStep", ReturnValueFalse: "restore"},
-                "extraStep"  : {ReturnValueTrue: "purge", ReturnValueFalse: "purge"},
-                "purge"      : {ReturnValueTrue: self.final}
+                "extraStep"  : {ReturnValueTrue: "clean", ReturnValueFalse: "clean"},
+                "clean"      : {ReturnValueTrue: self.final}
                 }
         self._flows["default"] = self._defflow
 
-    def init(self):
+    def prepare(self):
         self._result=ReturnValueTrue
         return self._result
 
-    def purge(self):
+    def clean(self):
         self._result=ReturnValueTrue
         return self._result
 

@@ -68,13 +68,13 @@ class Plugin(object):
         # with the parent of all ReturnValue classes.
         #
         self._defflow = {
-                self.initial : {ReturnValue: "init"},
-                "init"       : {ReturnValueTrue: "diagnose"},
-                "diagnose"   : {ReturnValueTrue: "purge", ReturnValueFalse: "backup"},
-                "backup"     : {ReturnValueTrue: "fix", ReturnValueFalse: "purge"},
-                "fix"        : {ReturnValueTrue: "purge", ReturnValueFalse: "restore"},
-                "restore"    : {ReturnValueTrue: "purge", ReturnValueFalse: "purge"},
-                "purge"      : {ReturnValueTrue: self.final}
+                self.initial : {ReturnValue: "prepare"},
+                "prepare"       : {ReturnValueTrue: "diagnose"},
+                "diagnose"   : {ReturnValueTrue: "clean", ReturnValueFalse: "backup"},
+                "backup"     : {ReturnValueTrue: "fix", ReturnValueFalse: "clean"},
+                "fix"        : {ReturnValueTrue: "clean", ReturnValueFalse: "restore"},
+                "restore"    : {ReturnValueTrue: "clean", ReturnValueFalse: "clean"},
+                "clean"      : {ReturnValueTrue: self.final}
                 }
         self._flows["default"] = self._defflow
 
@@ -121,7 +121,7 @@ class Plugin(object):
     #list of all actions provided
     def actions(self):
         """Returns list of available actions"""
-        return set(["init", "backup", "diagnose", "describe", "fix", "restore", "purge"])
+        return set(["prepare", "backup", "diagnose", "describe", "fix", "restore", "clean"])
 
     def nextstate(self, state=None, result=None):
         """Returns next state when analizing self._state, self._result and the self.cflow in automode.
@@ -174,7 +174,7 @@ class Plugin(object):
     #
     #default (mandatory) plugin actions
     #
-    def init(self):
+    def prepare(self):
         """Initial actions.
 
         All the actions that must be done before the execution of any plugin function.
@@ -182,9 +182,9 @@ class Plugin(object):
         """
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            raise TypeError, "Plugin is an abstract class."
+            Logger.warrning("Clean is an abstract method, it should be used as such.")
 
-    def purge(self):
+    def clean(self):
         """Final actions.
 
         All the actions that must be done after the exection of all plugin functions.
@@ -193,31 +193,31 @@ class Plugin(object):
         """
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            raise TypeError, "Plugin is an abstract class."
+            Logger.warrning("Clean is an abstract method, it should be used as such.")
 
     def backup(self):
         """Gather important information needed for restore."""
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            raise TypeError, "Plugin is an abstract class."
+            Logger.warrning("Clean is an abstract method, it should be used as such.")
 
     def restore(self):
         """Try to restore the previous state described in backup."""
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            raise TypeError, "Plugin is an abstract class."
+            Logger.warrning("Clean is an abstract method, it should be used as such.")
 
     def diagnose(self):
         """Diagnose the situation."""
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            raise TypeError, "Plugin is an abstract class."
+            Logger.warrning("Clean is an abstract method, it should be used as such.")
 
     def fix(self):
         """Try to fix whatever is wrong in the system."""
          #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            raise TypeError, "Plugin is an abstract class."
+            Logger.warrning("Clean is an abstract method, it should be used as such.")
 
 class PluginSystem(object):
     """Encapsulate all plugin detection and import stuff"""

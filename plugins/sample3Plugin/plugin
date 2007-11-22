@@ -21,14 +21,14 @@ else
 fi
 
 
-if [ $TASK = "init" ]; then
-    echo init true
+if [ $TASK = "prepare" ]; then
+    echo prepare true
 fi
 if [ $TASK = "diagnose" ]; then
     echo diagnose false
 fi
-if [ $TASK = "purge" ]; then
-    echo purge true
+if [ $TASK = "clean" ]; then
+    echo clean true
 fi
 if [ $TASK = "fix" ]; then
     echo fix true

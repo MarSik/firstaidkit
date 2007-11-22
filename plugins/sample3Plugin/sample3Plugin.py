@@ -24,10 +24,10 @@ class Sample3Plugin(Plugin):
     def __init__(self):
         Plugin.__init__(self)
 
-    def init(self):
+    def prepare(self):
         # Prepare command line.
-        init = ["/usr/lib/FirstAidKit/plugins/sample3Plugin/plugin", "--task", "init"]
-        proc = subprocess.Popen(init, stdout=subprocess.PIPE)
+        prepare = ["/usr/lib/FirstAidKit/plugins/sample3Plugin/plugin", "--task", "prepare"]
+        proc = subprocess.Popen(prepare, stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
         out = out.strip()
         if out[-5:] == "false":
@@ -36,9 +36,9 @@ class Sample3Plugin(Plugin):
             self._result=ReturnValueTrue
         return self._result
 
-    def purge(self):
-        purge = ["/usr/lib/FirstAidKit/plugins/sample3Plugin/plugin", "--task", "purge"]
-        proc = subprocess.Popen(purge, stdout=subprocess.PIPE)
+    def clean(self):
+        clean = ["/usr/lib/FirstAidKit/plugins/sample3Plugin/plugin", "--task", "clean"]
+        proc = subprocess.Popen(clean, stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
         out = out.strip()
         if out[-5:] == "false":

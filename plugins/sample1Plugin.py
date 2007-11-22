@@ -22,7 +22,7 @@ class Sample1Plugin(Plugin):
     """This plugin uses the predefined flow in the Plugin abstract class."""
     def __init__(self):
         Plugin.__init__(self)
-    def init(self):
+    def prepare(self):
         self._result=ReturnValueTrue
         return self._result
 

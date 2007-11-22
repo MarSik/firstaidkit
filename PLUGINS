@@ -53,7 +53,7 @@ current function.
 
 Each plugin exports some steps. The mandatory ones are
 
-- init -- initialize plugin, get environment, ..
+- prepare -- initialize plugin, get environment, ..
 - backup -- backup everything we could touch in this plugin
 - diagnose -- get info about the investigated system and determine where
               the problems are
