@@ -24,29 +24,21 @@ class Sample1Plugin(Plugin):
         Plugin.__init__(self)
     def prepare(self):
         self._result=ReturnValueTrue
-        return self._result
 
     def destroy(self):
         self._result=ReturnValueTrue
-        return self._result
 
     def backup(self):
         self._result=ReturnValueTrue
-        return self._result
 
     def restore(self):
         self._result=ReturnValueTrue
-        return self._result
 
     def diagnose(self):
         self._result=ReturnValueTrue
-        return self._result
 
     def fix(self):
         self._result=ReturnValueFalse
-        return self._result
-
-
 
 def get_plugin():
     return Sample1Plugin()

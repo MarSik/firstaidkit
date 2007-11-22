@@ -39,31 +39,24 @@ class Sample2Plugin(Plugin):
 
     def prepare(self):
         self._result=ReturnValueTrue
-        return self._result
 
     def clean(self):
         self._result=ReturnValueTrue
-        return self._result
 
     def backup(self):
         self._result=ReturnValueTrue
-        return self._result
 
     def restore(self):
         self._result=ReturnValueTrue
-        return self._result
 
     def diagnose(self):
         self._result=ReturnValueTrue
-        return self._result
 
     def fix(self):
         self._result=ReturnValueFalse
-        return self._result
 
     def extraStep(self):
         self._result=ReturnValueTrue
-        return self._result
 
 def get_plugin():
     return Sample2Plugin()

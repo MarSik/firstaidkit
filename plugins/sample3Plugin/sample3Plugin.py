@@ -34,7 +34,6 @@ class Sample3Plugin(Plugin):
             self._result=ReturnValueFalse
         elif out[-4:] == "true":
             self._result=ReturnValueTrue
-        return self._result
 
     def clean(self):
         clean = ["/usr/lib/FirstAidKit/plugins/sample3Plugin/plugin", "--task", "clean"]
@@ -45,7 +44,6 @@ class Sample3Plugin(Plugin):
             self._result=ReturnValueFalse
         elif out[-4:] == "true":
             self._result=ReturnValueTrue
-        return self._result
 
     def backup(self):
         backup = ["/usr/lib/FirstAidKit/plugins/sample3Plugin/plugin", "--task", "backup"]
@@ -56,7 +54,6 @@ class Sample3Plugin(Plugin):
             self._result=ReturnValueFalse
         elif out[-4:] == "true":
             self._result=ReturnValueTrue
-        return self._result
 
     def restore(self):
         restore = ["/usr/lib/FirstAidKit/plugins/sample3Plugin/plugin", "--task", "restore"]
@@ -67,7 +64,6 @@ class Sample3Plugin(Plugin):
             self._result=ReturnValueFalse
         elif out[-4:] == "true":
             self._result=ReturnValueTrue
-        return self._result
 
     def diagnose(self):
         diagnose = ["/usr/lib/FirstAidKit/plugins/sample3Plugin/plugin", "--task", "diagnose"]
@@ -78,7 +74,6 @@ class Sample3Plugin(Plugin):
             self._result=ReturnValueFalse
         elif out[-4:] == "true":
             self._result=ReturnValueTrue
-        return self._result
 
     def fix(self):
         fix = ["/usr/lib/FirstAidKit/plugins/sample3Plugin/plugin", "--task", "fix"]
@@ -89,7 +84,6 @@ class Sample3Plugin(Plugin):
             self._result=ReturnValueFalse
         elif out[-4:] == "true":
             self._result=ReturnValueTrue
-        return self._result
 
 def get_plugin():
     return Sample3Plugin()

@@ -146,8 +146,6 @@ class Plugin(object):
                 self._state = self.cflow[state][result]
             return self._state
         except KeyError:
-            import pdb
-            pdb.set_trace()
             raise InvalidFlowStateException(self.cflow)
 
     #
@@ -168,7 +166,7 @@ class Plugin(object):
             raise StopIteration()
         else:
             # Execute the function.
-            self._result = getattr(self, func)()
+            getattr(self, func)()
         return (self._state, self._result)
 
     #
