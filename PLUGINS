@@ -9,24 +9,18 @@ All plugins belong to configured plugin directory. Recognized suffixes are:
 
 Plugin Model
 ------------
-
-The FirstAidKit plugin is modeled using graph theory.
-
-
-Common stuff for plugins
-------------------------
 The building blocks of the plugins are functions and flows.  A function
 is a certain action that is taken inside the plugin.  This action is more
 or less independant from the rest of the plugin actions.  Things like fix,
 backup, restore... qualify as actions/functions.  This does not mean that
-functions do not relate to each other.  This is where the flow comes into
-play.
+functions do not relate to each other.  They are related by using the flow
+structure.
 
 A flow is the organization of functions in a directional graph that defines
 the "flow" of functions.  Understand flow here as the order in which each
 function is executed.  This order/flow is specified using the function 
-names and their return codes.  All this is contained within a dictionary.
-Lets ilustrate with an example:
+names, their return codes and the flow structure.  All this is contained 
+within a dictionary. Lets ilustrate with an example:
 
 1. Consider the following flow:
     start->fix->end
@@ -35,15 +29,16 @@ Lets ilustrate with an example:
 
 Lets ilustrate a more complex example:
 1. Consider the following flow:
-    start->diagnose->end
+                   ,>end
+    start->diagnose
                    `>fix->end
    This flow has a conditional after the diagnose function.  If diagnose
    results in a corrupt state of the system, then the plugin proceeds 
    with fix.  If all is good in the system, then the flow end.
 2. The dictionary that expresses this flow:
-    dict = {start:diagnose, diagnose:{"goodSys":end, "badSys":fix}, fix:end}
-    note that the next step in the diagnose case is defined buy whatever
-    diagnose returned.
+   dict = {start:diagnose, diagnose:{"goodSys":end, "badSys":fix}, fix:end}
+   note that the next step in the diagnose case is defined buy whatever
+   diagnose returned.
 
 The idea is to define individual set of activities in the functions.  And
 to put these activities together with the flows.  As mentioned before
@@ -51,6 +46,65 @@ the activities are just functions.  The flow on the other hand is a dict
 that defines the next function to execute given the return value of the
 current function.
 
+Please take into account as you code your plugin to set the _result and
+the _state values in your main plugin class.  These values are necesary
+to correclty execute the flow given by the flow dictionary.
+
+
+When coding the plugin
+----------------------
+These are some important things to consider once you are coding a plugin.
+
+1. Class methods and class attributes:
+    The main plugin class has some class methods and some class attributes.
+    These elements are used to describe the plugin and are used without 
+    actually using a instance of the plugin.  This is important because we
+    do not want to execute the __init__ fucntion and cause lots of unnecesary
+    stuff to go into memory when we are querying for plugin basic information.
+
+    The class attributes are:
+
+    name : The name of the plugin
+    version : The version of the plugin.
+    author : The authors full name.
+
+    initial : is the initial state for all flows.
+    final : is the final state for all flows.
+
+    _defflows : The default flows defined by the Plugin abstract class.
+
+   The class methods are:
+   info() : returns the name, version and author in a tuple.
+   getFlows() : returns a list of possible flow names that the plugin
+                can execute.
+
+2. Default functions.
+    See section "Common stuff for plugins"
+
+3. self._result and self._state
+    These are the two variables that define the location of the plugin
+    inside the flow dictionary.  In each function, after it has done
+    its intended action, the self._resutl variable must be changed to
+    a correct value.  This value will define the next self._state value
+    inside the plugin.  The self._state value is change using the flow
+    dictionary and the self._resutl value.
+
+4. get_plugin()
+    Each plugin must define a get_plugin function.  This function must
+    return the main class of the plugin.  This is used to take out info
+    from the plugin, and to instantiate it.  If in doubt, take a look
+    at the sample plugins that come with the man FirstAidKit code base.
+    They can give you a prety good idea of what to do when using a 
+    moduel, file ...
+
+5. return values:
+    For each function you code in a plugin you must use predefined return
+    classes.  It is necesarry to have the extra wrapper because the python
+    native types can get messy (1==True).  Just use the ones provided by 
+    the plugin system, or create your own.
+
+Common stuff for plugins
+------------------------
 Each plugin exports some steps. The mandatory ones are
 
 - prepare -- initialize plugin, get environment, ..
@@ -96,14 +150,6 @@ getFlows() -- Returns all the possible flows that the plugin suports.
 
 And of course the steps itself. They are defined as methods with the same names
 as used in actions().
-
-Return Class
-------------
-To make the model work when a function returns it has to return the same type of
-object.  At the same time this object must have the possibility to change and
-specify the return code.  Moreover, when the developer creates new return classes
-he/she can put important return stuff into the class.  If the function is to 
-return a tuple, dictionary... it can always be housed inside the class.
 
 Arbitrary executable modules
 ----------------------------
