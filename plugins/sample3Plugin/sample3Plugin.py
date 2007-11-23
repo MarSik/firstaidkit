@@ -21,8 +21,11 @@ import subprocess
 
 class Sample3Plugin(Plugin):
     """This plugin will use a shell script as backend."""
-    def __init__(self):
-        Plugin.__init__(self)
+    name = "Sample3Plugin"
+    version = "0.0.1"
+    author = "Joel Andres Granados"
+    def __init__(self, flow):
+        Plugin.__init__(self, flow)
 
     def prepare(self):
         # Prepare command line.
@@ -84,7 +87,3 @@ class Sample3Plugin(Plugin):
             self._result=ReturnValueFalse
         elif out[-4:] == "true":
             self._result=ReturnValueTrue
-
-def get_plugin():
-    return Sample3Plugin()
-

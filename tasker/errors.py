@@ -24,6 +24,6 @@ class InvalidFlowStateException(Exception):
 
 class InvalidFlowNameException(Exception):
     def __init__(self, name, flow):
-        self.message="%s does not exist in % flow" % (name, flow)
+        self.message="There are no flows by the name of %s" % name
     def __str__(self):
         return self.message

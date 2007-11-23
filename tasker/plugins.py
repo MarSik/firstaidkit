@@ -28,25 +28,58 @@ import subprocess
 from cStringIO import StringIO
 
 class Plugin(object):
-    def __init__(self):
-        #
-        # Some information vars.
-        #
-        self.name = "Plugin"
-        self.version = "0.0.0"
-        self.author = "nobody"
-        #
-        # The initial and final states are here to give more flexibilty to the
-        # Development process.  All flows will start and end with these two
-        # Variables.
-        #
-        self.initial = 0
-        self.final = 1
+    #
+    # Some information vars.
+    #
+    name = "Plugin"
+    version = "0.0.0"
+    author = "nobody"
+    #
+    # Dictionary that holds all the flows.  The keys for each flow is its
+    # name.  The flow will be addressed by this name.  The plugin developer
+    # Can add as many flows as he wants. The developer must use the instance.
+    # obj._flows["name"] = SomeFlow.  Be aware that you can overwirhte 
+    # previously added flows.  This class attribute will be overriden by 
+    # each plugin.
+    #
+    flows = {}
 
+    #
+    # The initial and final states are here to give more flexibilty to the
+    # Development process.  All flows will start and end with these two
+    # Variables.
+    #
+    initial = 0
+    final = 1
+
+
+    #
+    # This is the default flow that all classes deriving from plugin must
+    # have.  As the initial state has no return value it will be indexed
+    # with the parent of all ReturnValue classes.
+    #
+    _defflows = {}
+    _defflows["defflow"] = {
+            initial : {ReturnValue: "prepare"},
+            "prepare"    : {ReturnValueTrue: "diagnose"},
+            "diagnose"   : {ReturnValueTrue: "clean", ReturnValueFalse: "backup"},
+            "backup"     : {ReturnValueTrue: "fix", ReturnValueFalse: "clean"},
+            "fix"        : {ReturnValueTrue: "clean", ReturnValueFalse: "restore"},
+            "restore"    : {ReturnValueTrue: "clean", ReturnValueFalse: "clean"},
+            "clean"      : {ReturnValueTrue: final}
+            }
+
+    def __init__(self, flow):
+        """ Initialize the instance.
+
+        flow -- Name of the flow to be used with this instance.
+
+        The flow is defined in the __init__ so we don't have to worry about changing it.
+        """
         #
         # state we are in.
         #
-        self._state = self.initial
+        self._state = Plugin.initial
 
         #
         # Used to hold the return value of the functions in the class.
@@ -54,34 +87,11 @@ class Plugin(object):
         self._result = None  #edge from the state we are in
 
         #
-        # Dictionary that holds all the flows.  The keys for each flow is its
-        # name.  The flow will be addressed by this name.  The plugin developer
-        # Can add as many flows as he wants. The developer must use the instance.
-        # obj._flows["name"] = SomeFlow.  Be aware that you can overwirhte 
-        # previously added flows.
+        # Choose the flow for the instance.
         #
-        self._flows = {}
+        self.defineFlow(flow)
 
-        #
-        # This is the default flow that all classes deriving from plugin must
-        # implement.  As the initial state has no return value it will be indexed
-        # with the parent of all ReturnValue classes.
-        #
-        self._defflow = {
-                self.initial : {ReturnValue: "prepare"},
-                "prepare"       : {ReturnValueTrue: "diagnose"},
-                "diagnose"   : {ReturnValueTrue: "clean", ReturnValueFalse: "backup"},
-                "backup"     : {ReturnValueTrue: "fix", ReturnValueFalse: "clean"},
-                "fix"        : {ReturnValueTrue: "clean", ReturnValueFalse: "restore"},
-                "restore"    : {ReturnValueTrue: "clean", ReturnValueFalse: "clean"},
-                "clean"      : {ReturnValueTrue: self.final}
-                }
-        self._flows["default"] = self._defflow
 
-        #
-        # The flow being used at the moment.
-        #
-        self.cflow = self._defflow
 
     #workaround, so we can use special plugins not composed of python objects
     #like shell scripts or arbitrary binaries
@@ -94,29 +104,38 @@ class Plugin(object):
         self._state = step
         return getattr(self, step)()
 
-    def info(self):
+    @classmethod
+    def info(cls):
         """Returns tuple (Plugin name, Plugin version, Plugin author)"""
-        return (self.name, self.version, self.author)
+        return (cls.name, cls.version, cls.author)
 
     #
     # The flow functions.
     #
-    def changeFlow(self, name):
-        """Changes the current flow to name.
+    def defineFlow(self, flow):
+        """Defines the current flow to name.
 
-        name -- name of flow
-        returns true upon completion, raises a InvalidFlowNameError.  This will not check for
-        running flows.  If it is necesary we will do that in the future.
+        flow -- Name of the flow
+        This function is to be called from the __init__ only. There will be the flows defined by the
+        Plugin class and the flows defined by the actual plugin.  We will first search the Plugin
+        class and then the plugin itself for the name.
         """
-        try:
-            self.cflow = self._flows[name]
-        except KeyError:
-            raise InvalidFlowNameError(name, self._flow)
-        return True
+        #
+        # The flow thet will be used for the instance.
+        #
+        if flow in Plugin._defflows.keys():
+            self.cflow = Plugin._defflows[flow]
+        elif flow in self.__class__.flows.keys():
+            self.cflow = self.__class__.flows[flow]
+        else:
+            raise InvalidFlowNameException(flow)
 
-    def getFlows(self):
-        """Return the names of all possible flows."""
-        return self._flows.keys()
+    @classmethod
+    def getFlows(cls):
+        """Return a set with the names of all possible flows."""
+        fatherf = Plugin._defflows.keys()
+        pluginf = cls.flows.keys()
+        return set(fatherf+pluginf)
 
     #list of all actions provided
     def actions(self):
@@ -264,7 +283,14 @@ class PluginSystem(object):
 
     def autorun(self, plugin):
         """Perform automated run of plugin"""
-        p = self._plugins[plugin].get_plugin() #get instance of plugin
+        pklass = self._plugins[plugin].get_plugin() #get instance of plugin
+        Logger.info("Plugin information...")
+        Logger.info("name:%s , version:%s , author:%s " % pklass.info())
+        flows = pklass.getFlows()
+        Logger.info("Provided flows : %s " % flows)
+        flowName = flows.pop()
+        Logger.info("Using %s flow" % flowName)
+        p = pklass(flowName)
         for (step, rv) in p: #autorun all the needed steps
             Logger.info("Running step %s in plugin %s ...", step, plugin)
             Logger.info("%s is current step and %s is result of that step." % (step, rv))

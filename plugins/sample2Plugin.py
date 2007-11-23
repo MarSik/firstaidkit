@@ -16,26 +16,31 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 from tasker.plugins import Plugin
+from tasker.returns import *
 
 class Sample2Plugin(Plugin):
     """This plugin will defin one more function and use it in a newly defined flow."""
-    def __init__(self):
-        Plugin.__init__(self)
+    #
+    # Additional flow defprepareion.
+    #
+    flows = {}
+    flows["extra"] = {
+                    Plugin.initial: {ReturnValue: "prepare"},
+                    "prepare"     : {ReturnValueTrue: "diagnose"},
+                    "diagnose"    : {ReturnValueTrue: "clean", ReturnValueFalse: "backup"},
+                    "backup"      : {ReturnValueTrue: "fix", ReturnValueFalse: "clean"},
+                    "restore"     : {ReturnValueTrue: "clean", ReturnValueFalse: "clean"},
+                    "fix"         : {ReturnValueTrue: "extraStep", ReturnValueFalse: "restore"},
+                    "extraStep"   : {ReturnValueTrue: "clean", ReturnValueFalse: "clean"},
+                    "clean"       : {ReturnValueTrue: Plugin.final}
+                    }
 
-        #
-        # Additional flow defprepareion.
-        #
-        self.customFlow = {
-                self.initial : {ReturnValue: "prepare"},
-                "prepare"       : {ReturnValueTrue: "diagnose"},
-                "diagnose"   : {ReturnValueTrue: "clean", ReturnValueFalse: "backup"},
-                "backup"     : {ReturnValueTrue: "fix", ReturnValueFalse: "clean"},
-                "restore"    : {ReturnValueTrue: "clean", ReturnValueFalse: "clean"},
-                "fix"        : {ReturnValueTrue: "extraStep", ReturnValueFalse: "restore"},
-                "extraStep"  : {ReturnValueTrue: "clean", ReturnValueFalse: "clean"},
-                "clean"      : {ReturnValueTrue: self.final}
-                }
-        self._flows["default"] = self._defflow
+    name = "Sample2Plugin"
+    version = "0.0.1"
+    author = "Joel Andres Granados"
+        
+    def __init__(self, flow):
+        Plugin.__init__(self, flow)
 
     def prepare(self):
         self._result=ReturnValueTrue
@@ -50,14 +55,14 @@ class Sample2Plugin(Plugin):
         self._result=ReturnValueTrue
 
     def diagnose(self):
-        self._result=ReturnValueTrue
+        self._result=ReturnValueFalse
 
     def fix(self):
-        self._result=ReturnValueFalse
+        self._result=ReturnValueTrue
 
     def extraStep(self):
         self._result=ReturnValueTrue
 
 def get_plugin():
-    return Sample2Plugin()
+    return Sample2Plugin
 

@@ -20,8 +20,11 @@ from tasker.returns import *
 
 class Sample1Plugin(Plugin):
     """This plugin uses the predefined flow in the Plugin abstract class."""
-    def __init__(self):
-        Plugin.__init__(self)
+    name = "Sample1Plugin"
+    version = "0.0.1"
+    author = "Joel Andres Granados"
+    def __init__(self, flow):
+        Plugin.__init__(self, flow)
     def prepare(self):
         self._result=ReturnValueTrue
 
@@ -41,5 +44,5 @@ class Sample1Plugin(Plugin):
         self._result=ReturnValueFalse
 
 def get_plugin():
-    return Sample1Plugin()
+    return Sample1Plugin
 
