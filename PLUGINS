@@ -5,7 +5,6 @@ All plugins belong to configured plugin directory. Recognized suffixes are:
 
 - .py, .pyc, .pyo -- python modules
 - .so -- python compatible binary module
-- .plugin -- arbitrary executable
 
 Plugin Model
 ------------
@@ -72,6 +71,7 @@ These are some important things to consider once you are coding a plugin.
     final : is the final state for all flows.
 
     _defflows : The default flows defined by the Plugin abstract class.
+    default_flow: is the name of flow used when in automatic repair mode
 
    The class methods are:
    info() : returns the name, version and author in a tuple.
@@ -95,7 +95,7 @@ These are some important things to consider once you are coding a plugin.
     from the plugin, and to instantiate it.  If in doubt, take a look
     at the sample plugins that come with the man FirstAidKit code base.
     They can give you a prety good idea of what to do when using a 
-    moduel, file ...
+    module, file ...
 
 5. return values:
     For each function you code in a plugin you must use predefined return
@@ -105,7 +105,7 @@ These are some important things to consider once you are coding a plugin.
 
 Common stuff for plugins
 ------------------------
-Each plugin exports some steps. The mandatory ones are
+Each plugin exports some steps. The mandatory ones are:
 
 - prepare -- initialize plugin, get environment, ..
 - backup -- backup everything we could touch in this plugin
@@ -113,13 +113,13 @@ Each plugin exports some steps. The mandatory ones are
               the problems are
 - fix -- autofix the errors from diagnose step
 - restore -- restore system from backup
-- destroy -- destroy the plugin, cleanup
+- clean -- destroy the plugin, cleanup
 
 The plugin should ensure that the calling order is correct
 and the system cannot end in some undeterministic state.
 
-Python modules (both py and binary)
-------------------------------------
+Python modules
+--------------
 A plugin for the FirstAidKit must inherite from the tasker.Plugin class.
 It must also implement the mandatory plugin steps.  The tasker.Plugin
 parent will provide a default flow that will use the functions defined
@@ -154,8 +154,6 @@ as used in actions().
 Arbitrary executable modules
 ----------------------------
 
-Still work in progress, but basically the binary is called with step name
-as the first parameter. Right now this kind of plugin has to process the
-mandatory steps only and ensure it's data integrity by itself.
-
+The current approach is to create a wrapper python plugin, which holds the metadata
+and calls the binaries as neccessary (see the examples).
 

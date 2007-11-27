@@ -39,7 +39,7 @@ class Plugin(object):
     # name.  The flow will be addressed by this name.  The plugin developer
     # Can add as many flows as he wants. The developer must use the instance.
     # obj._flows["name"] = SomeFlow.  Be aware that you can overwirhte 
-    # previously added flows.  This class attribute will be overriden by 
+    # previously added flows.  This class attribute has to be overriden by 
     # each plugin.
     #
     flows = {}
@@ -52,6 +52,11 @@ class Plugin(object):
     initial = 0
     final = 1
 
+    #
+    # The flow to use with the automated repair mode
+    #
+
+    default_flow = "defflow"
 
     #
     # This is the default flow that all classes deriving from plugin must
@@ -91,13 +96,6 @@ class Plugin(object):
         #
         self.defineFlow(flow)
 
-
-
-    #workaround, so we can use special plugins not composed of python objects
-    #like shell scripts or arbitrary binaries
-    def get_plugin(self):
-        return self
-
     def call(self, step):
         """call one step from plugin"""
         self._result = None #mark new unfinished step
@@ -121,7 +119,7 @@ class Plugin(object):
         class and then the plugin itself for the name.
         """
         #
-        # The flow thet will be used for the instance.
+        # The flow that will be used for the instance.
         #
         if flow in Plugin._defflows.keys():
             self.cflow = Plugin._defflows[flow]
@@ -199,7 +197,7 @@ class Plugin(object):
         """
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warrning("Clean is an abstract method, it should be used as such.")
+            Logger.warning("Clean is an abstract method, it should be used as such.")
 
     def clean(self):
         """Final actions.
@@ -210,31 +208,31 @@ class Plugin(object):
         """
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warrning("Clean is an abstract method, it should be used as such.")
+            Logger.warning("Clean is an abstract method, it should be used as such.")
 
     def backup(self):
         """Gather important information needed for restore."""
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warrning("Clean is an abstract method, it should be used as such.")
+            Logger.warning("Clean is an abstract method, it should be used as such.")
 
     def restore(self):
         """Try to restore the previous state described in backup."""
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warrning("Clean is an abstract method, it should be used as such.")
+            Logger.warning("Clean is an abstract method, it should be used as such.")
 
     def diagnose(self):
         """Diagnose the situation."""
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warrning("Clean is an abstract method, it should be used as such.")
+            Logger.warning("Clean is an abstract method, it should be used as such.")
 
     def fix(self):
         """Try to fix whatever is wrong in the system."""
          #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warrning("Clean is an abstract method, it should be used as such.")
+            Logger.warning("Clean is an abstract method, it should be used as such.")
 
 class PluginSystem(object):
     """Encapsulate all plugin detection and import stuff"""
@@ -257,9 +255,6 @@ class PluginSystem(object):
             elif os.path.isfile(fullpath) and (f[-4:]==".pyc" or f[-4:]==".pyo"):
                 importlist.add(f[:-4])
                 Logger.debug("Adding python module (compiled): %s", f)
-            elif os.path.isfile(fullpath) and f[-7:]==".plugin":
-                self._plugins[f[:-7]] = BinPlugin(fullpath)
-                Logger.debug("Importing special module: %s", f)
 
         #try to import the modules as FirstAidKit.plugins.modulename
         for m in importlist:
@@ -283,12 +278,12 @@ class PluginSystem(object):
 
     def autorun(self, plugin):
         """Perform automated run of plugin"""
-        pklass = self._plugins[plugin].get_plugin() #get instance of plugin
+        pklass = self._plugins[plugin].get_plugin() #get top level class of plugin
         Logger.info("Plugin information...")
         Logger.info("name:%s , version:%s , author:%s " % pklass.info())
         flows = pklass.getFlows()
         Logger.info("Provided flows : %s " % flows)
-        flowName = flows.pop()
+        flowName = pklass.default_flow
         Logger.info("Using %s flow" % flowName)
         p = pklass(flowName)
         for (step, rv) in p: #autorun all the needed steps

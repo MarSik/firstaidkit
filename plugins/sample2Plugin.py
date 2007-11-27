@@ -34,6 +34,7 @@ class Sample2Plugin(Plugin):
                     "extraStep"   : {ReturnValueTrue: "clean", ReturnValueFalse: "clean"},
                     "clean"       : {ReturnValueTrue: Plugin.final}
                     }
+    default_flow = "extra"
 
     name = "Sample2Plugin"
     version = "0.0.1"
