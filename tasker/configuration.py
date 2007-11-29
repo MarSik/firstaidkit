@@ -32,6 +32,7 @@ disabled =
 [operation]
 mode = auto
 verbose = False
+gui = console
 
 [log]
 method = stdout
@@ -59,7 +60,7 @@ class FAKConfigSection(object):
         self.__dict__["configuration"].set(self.__dict__["section_name"], key, value)
 
 
-class FAKConfigMixIn(ConfigParser.SafeConfigParser):
+class FAKConfigMixIn(object):
     """Enhance ConfigParser so we can use it in the python way (config.section.value)"""
 
     def __getattr__(self, section):

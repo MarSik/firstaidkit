@@ -20,20 +20,26 @@ import getopt
 import tasker.plugins
 from tasker.configuration import Config
 
+class Flags:
+    print_config = False
+
 def usage(name):
     print """Usage:
  %s [params] [plugin [flow]]
  %s [params] -t plugin task
  params is none or more items from:
   -c <config file> - select different config file
+  -P <path>        - set different plugin path
   -v               - verbose mode
   -l <method>      - select different log method
   -x <plugin>      - exclude plugin from run
+  -g <gui>         - frontend to show results
   -h               - this help
+  --print-config   - print resulting config file
 """ % (name, name)
 
 if __name__=="__main__":
-    params, rest = getopt.getopt(sys.argv[1:], "tc:vl:x:h", ["task", "config=", "verbose", "log=", "exclude=", "help"])
+    params, rest = getopt.getopt(sys.argv[1:], "tc:vl:x:g:P:h", ["task", "config=", "verbose", "log=", "exclude=", "gui=", "plugin-path=", "print-config", "help"])
     for key,val in params:
         if key in ("-t", "--task"):
             Config.operation.mode = "task"
@@ -46,9 +52,20 @@ if __name__=="__main__":
         #elif key in ("-x", "--exclude"):
         #    Config.plugin.disabled.append(val)
         #    print "Excluding plugin %s\n" % (val,)
+        elif key in ("-g", "--gui"):
+            Config.operation.gui = val
+        elif key in ("-P", "--plugin-path"):
+            Config.plugin.path = val
+        elif key in ("--print-config"):
+            Flags.print_config = True
         elif key in ("-h", "--help"):
             usage(sys.argv[0])
             sys.exit(1)
+
+    if Flags.print_config:
+        print 76*"-"
+        Config.write(sys.stdout)
+        print 76*"-"
 
     pluginSystem = tasker.plugins.PluginSystem()
 
