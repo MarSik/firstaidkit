@@ -276,15 +276,23 @@ class PluginSystem(object):
         """Return the list of imported plugins"""
         return self._plugins.keys()
 
-    def autorun(self, plugin):
+    def autorun(self, plugin, flow = None):
         """Perform automated run of plugin"""
         pklass = self._plugins[plugin].get_plugin() #get top level class of plugin
         Logger.info("Plugin information...")
         Logger.info("name:%s , version:%s , author:%s " % pklass.info())
         flows = pklass.getFlows()
         Logger.info("Provided flows : %s " % flows)
-        flowName = pklass.default_flow
+        if flow==None:
+            flowName = pklass.default_flow
+        else:
+            flowName = flow
+
         Logger.info("Using %s flow" % flowName)
+        if flowName not in flows:
+            Logger.error("Flow %s does not exist in plugin %s", flowName, plugin)
+            return
+
         p = pklass(flowName)
         for (step, rv) in p: #autorun all the needed steps
             Logger.info("Running step %s in plugin %s ...", step, plugin)

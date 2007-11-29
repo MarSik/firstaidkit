@@ -25,7 +25,8 @@ class Flags:
 
 def usage(name):
     print """Usage:
- %s [params] [plugin [flow]]
+ %s [params]
+ %s [params] -f plugin flow
  %s [params] -t plugin task
  params is none or more items from:
   -c <config file> - select different config file
@@ -39,10 +40,12 @@ def usage(name):
 """ % (name, name)
 
 if __name__=="__main__":
-    params, rest = getopt.getopt(sys.argv[1:], "tc:vl:x:g:P:h", ["task", "config=", "verbose", "log=", "exclude=", "gui=", "plugin-path=", "print-config", "help"])
+    params, rest = getopt.getopt(sys.argv[1:], "ftc:vl:x:g:P:h", ["flow", "task", "config=", "verbose", "log=", "exclude=", "gui=", "plugin-path=", "print-config", "help"])
     for key,val in params:
         if key in ("-t", "--task"):
             Config.operation.mode = "task"
+        if key in ("-f", "--flow"):
+            Config.operation.mode = "flow"
         elif key in ("-c", "--config"):
             Config.read(val)
         elif key in ("-v", "--verbose"):
@@ -61,6 +64,16 @@ if __name__=="__main__":
         elif key in ("-h", "--help"):
             usage(sys.argv[0])
             sys.exit(1)
+    if Config.operation.mode == "flow":
+        Config.operation.plugin = rest[0]
+        if len(rest)<=1:
+            Config.operation.mode = "plugin"
+        else:
+            Config.operation.flow = rest[1]
+    elif Config.operation.mode == "task":
+        Config.operation.plugin = rest[0]
+        Config.operation.task = rest[1]
+
 
     if Flags.print_config:
         print 76*"-"
@@ -69,6 +82,15 @@ if __name__=="__main__":
 
     pluginSystem = tasker.plugins.PluginSystem()
 
-    for plugin in pluginSystem.list():
-        pluginSystem.autorun(plugin)
+    if Config.operation.mode == "auto":
+        for plugin in pluginSystem.list():
+            pluginSystem.autorun(plugin)
+    elif Config.operation.mode == "flow":
+        pluginSystem.autorun(Config.operation.plugin, flow = Config.operation.flow)
+    elif Config.operation.mode == "plugin":
+        pluginSystem.autorun(Config.operation.plugin)
+    elif Config.operation.mode == "task":
+        pass
+    else:
+        print "Incorrect task specified\n"
 
