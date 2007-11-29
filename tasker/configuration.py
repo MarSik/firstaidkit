@@ -28,6 +28,13 @@ defaultconfig = """
 [plugin]
 path = /usr/lib/FirstAidKit/plugins
 disabled =
+
+[operation]
+mode = auto
+verbose = False
+
+[log]
+method = stdout
 """
 
 class FAKConfigSection(object):
