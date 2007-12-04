@@ -17,8 +17,8 @@
 
 import sys
 import getopt
-import tasker.plugins
-from tasker.configuration import Config
+from tasker import Tasker
+from tasker import Config
 
 class Flags:
     print_config = False
@@ -37,7 +37,7 @@ def usage(name):
   -g <gui>         - frontend to show results
   -h               - this help
   --print-config   - print resulting config file
-""" % (name, name)
+""" % (name, name, name)
 
 if __name__=="__main__":
     params, rest = getopt.getopt(sys.argv[1:], "ftc:vl:x:g:P:h", ["flow", "task", "config=", "verbose", "log=", "exclude=", "gui=", "plugin-path=", "print-config", "help"])
@@ -80,17 +80,7 @@ if __name__=="__main__":
         Config.write(sys.stdout)
         print 76*"-"
 
-    pluginSystem = tasker.plugins.PluginSystem()
+    singlerun = Tasker(Config)
+    singlerun.run()
 
-    if Config.operation.mode == "auto":
-        for plugin in pluginSystem.list():
-            pluginSystem.autorun(plugin)
-    elif Config.operation.mode == "flow":
-        pluginSystem.autorun(Config.operation.plugin, flow = Config.operation.flow)
-    elif Config.operation.mode == "plugin":
-        pluginSystem.autorun(Config.operation.plugin)
-    elif Config.operation.mode == "task":
-        pass
-    else:
-        print "Incorrect task specified\n"
 
