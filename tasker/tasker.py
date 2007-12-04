@@ -17,15 +17,17 @@
 
 from log import Logger
 from plugins import PluginSystem
+from reporting import Reports
 
 class Tasker:
     """The main interpret of tasks described in Config object"""
 
     def __init__(self, cfg):
         self._config = cfg
+        self._reporting = Reports()
 
     def run(self):
-        pluginSystem = PluginSystem()
+        pluginSystem = PluginSystem(reporting = self._reporting)
 
         if self._config.operation.mode == "auto":
             for plugin in pluginSystem.list():

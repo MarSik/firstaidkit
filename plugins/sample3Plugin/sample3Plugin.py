@@ -24,8 +24,9 @@ class Sample3Plugin(Plugin):
     name = "Sample3Plugin"
     version = "0.0.1"
     author = "Joel Andres Granados"
-    def __init__(self, flow):
-        Plugin.__init__(self, flow)
+
+    def __init__(self, *args, **kwargs):
+        Plugin.__init__(self,  *args, **kwargs)
 
     def prepare(self):
         # Prepare command line.

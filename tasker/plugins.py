@@ -74,13 +74,16 @@ class Plugin(object):
             "clean"      : {ReturnValueTrue: final}
             }
 
-    def __init__(self, flow):
+    def __init__(self, flow, reporting):
         """ Initialize the instance.
 
         flow -- Name of the flow to be used with this instance.
+        reporting -- object used to report information to the user
 
         The flow is defined in the __init__ so we don't have to worry about changing it.
         """
+        self._reporting = reporting
+
         #
         # state we are in.
         #
@@ -237,8 +240,9 @@ class Plugin(object):
 class PluginSystem(object):
     """Encapsulate all plugin detection and import stuff"""
 
-    def __init__(self, config = Config):
+    def __init__(self, reporting, config = Config):
         self._path = Config.plugin.path
+        self._reporting = reporting
         self._plugins = {}
 
         #create list of potential modules in the path
@@ -293,7 +297,7 @@ class PluginSystem(object):
             Logger.error("Flow %s does not exist in plugin %s", flowName, plugin)
             return
 
-        p = pklass(flowName)
+        p = pklass(flowName, reporting = self._reporting)
         for (step, rv) in p: #autorun all the needed steps
             Logger.info("Running step %s in plugin %s ...", step, plugin)
             Logger.info("%s is current step and %s is result of that step." % (step, rv))

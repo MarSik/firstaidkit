@@ -17,4 +17,5 @@
 
 from tasker import Tasker
 from configuration import Config
+from log import Logger
 
