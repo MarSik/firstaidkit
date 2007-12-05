@@ -25,6 +25,9 @@ else:
     cfgfile = ["/etc/firstaidkit.conf", os.environ["HOME"]+"/.firstaidkit.conf"]
 
 defaultconfig = """
+[system]
+root = /mnt/sysimage
+
 [plugin]
 path = /usr/lib/FirstAidKit/plugins
 disabled =

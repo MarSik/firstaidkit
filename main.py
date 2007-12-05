@@ -30,6 +30,7 @@ def usage(name):
  %s [params] -t plugin task
  params is none or more items from:
   -c <config file> - select different config file
+  -r <root path>   - where is the root directory?
   -P <path>        - set different plugin path
   -v               - verbose mode
   -l <method>      - select different log method
@@ -40,7 +41,7 @@ def usage(name):
 """ % (name, name, name)
 
 if __name__=="__main__":
-    params, rest = getopt.getopt(sys.argv[1:], "ftc:vl:x:g:P:h", ["flow", "task", "config=", "verbose", "log=", "exclude=", "gui=", "plugin-path=", "print-config", "help"])
+    params, rest = getopt.getopt(sys.argv[1:], "ftc:r:vl:x:g:P:h", ["flow", "task", "config=", "root=", "verbose", "log=", "exclude=", "gui=", "plugin-path=", "print-config", "help"])
     for key,val in params:
         if key in ("-t", "--task"):
             Config.operation.mode = "task"
@@ -55,6 +56,8 @@ if __name__=="__main__":
         #elif key in ("-x", "--exclude"):
         #    Config.plugin.disabled.append(val)
         #    print "Excluding plugin %s\n" % (val,)
+        elif key in ("-r", "--root"):
+            Config.system.root = val
         elif key in ("-g", "--gui"):
             Config.operation.gui = val
         elif key in ("-P", "--plugin-path"):
