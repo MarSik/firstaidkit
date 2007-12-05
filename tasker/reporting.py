@@ -22,10 +22,10 @@ class Reports(object):
     """Instances of this class are used as reporting mechanism by which the
     plugins can comminucate back to whatever frontend we are using.
 
-    Message has five parts:
+    Message has four parts:
     origin - who sent the message (name of the plugin, Pluginsystem, ...)
     semantics - what action does the message describe
-                (system, plugin, task, info, ..)
+                (INFO, ALERT, PROGRESS, START, STOP)
     importance - how is that message important (debug, info, error, ...)
                  this must be number, possibly the same as in logging module
     message - the message itself
