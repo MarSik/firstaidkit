@@ -22,12 +22,18 @@ class Reports(object):
     """Instances of this class are used as reporting mechanism by which the
     plugins can comminucate back to whatever frontend we are using.
 
-    Message has four parts:
+    Message has five parts:
     origin - who sent the message (name of the plugin, Pluginsystem, ...)
-    semantics - what level does the message describe (system, plugin, task, ..)
+    semantics - what action does the message describe
+                (system, plugin, task, info, ..)
     importance - how is that message important (debug, info, error, ...)
                  this must be number, possibly the same as in logging module
     message - the message itself
+              for INFO and ALERT semantics, this is an arbitrary  text
+              for PROGRESS, this is  (x,y) pair denoting progress
+                (on step x from y steps) or None to hide the progress
+              for others, the defined values are "start" and "stop"
+                the importance field should be ignored
     """
 
     def __init__(self, maxsize=-1):
@@ -43,4 +49,19 @@ class Reports(object):
     #There will be helper methods inspired by logging module
     def error(self, message, origin, semantics):
         return self.put(message, origin, semantics, importance = logging.ERROR)
+
+#semantics values
+#first the "task" levels
+FIRSTAIDKIT = 0
+TASKER = 1
+PLUGINSYSTEM = 2
+PLUGIN = 3
+FLOW = 4
+TASK = 5
+
+#"gui" items
+PROGRESS = 6
+INFO = 7
+ALERT = 8
+
 
