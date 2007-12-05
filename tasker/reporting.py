@@ -32,8 +32,8 @@ class Reports(object):
               for INFO and ALERT semantics, this is an arbitrary  text
               for PROGRESS, this is  (x,y) pair denoting progress
                 (on step x from y steps) or None to hide the progress
-              for others, the defined values are "start" and "stop"
-                the importance field should be ignored
+              for START and STOP, there is no mandatory message and the
+                importance specifies the level
     """
 
     def __init__(self, maxsize=-1):
@@ -51,17 +51,19 @@ class Reports(object):
         return self.put(message, origin, semantics, importance = logging.ERROR)
 
 #semantics values
-#first the "task" levels
-FIRSTAIDKIT = 0
-TASKER = 1
-PLUGINSYSTEM = 2
-PLUGIN = 3
-FLOW = 4
-TASK = 5
+#first the "task" levels for START and STOP
+FIRSTAIDKIT = 100
+TASKER = 90
+PLUGINSYSTEM = 80
+PLUGIN = 70
+FLOW = 60
+TASK = 50
 
-#"gui" items
-PROGRESS = 6
-INFO = 7
-ALERT = 8
+#semantics
+START = 0
+STOP = 1
+PROGRESS = 2
+INFO = 3
+ALERT = 4
 
 
