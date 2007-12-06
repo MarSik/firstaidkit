@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-from tasker import Tasker
+from interpret import Tasker
 from configuration import Config
 from log import Logger
 

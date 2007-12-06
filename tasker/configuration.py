@@ -41,6 +41,9 @@ gui = console
 method = stdout
 """
 
+class LockedError(Exception):
+    pass
+
 class FAKConfigSection(object):
     """Proxy object for one configuration section"""
 
@@ -58,6 +61,9 @@ class FAKConfigSection(object):
         return self.__dict__["configuration"].get(self.__dict__["section_name"], key)
 
     def __setattr__(self, key, value):
+        if hasattr(self.__dict__["configuration"], "_lock") and self.__dict__["configuration"]._lock:
+            raise LockedError(key)
+
         if not self.__dict__["configuration"].has_section(self.__dict__["section_name"]):
             self.__dict__["configuration"].add_section(self.__dict__["section_name"])
         self.__dict__["configuration"].set(self.__dict__["section_name"], key, value)
@@ -68,6 +74,12 @@ class FAKConfigMixIn(object):
 
     def __getattr__(self, section):
         return FAKConfigSection(self, section)
+
+    def lock(self):
+        self._lock = True
+
+    def unlock(self):
+        self._lock = False
 
 class FAKConfig(ConfigParser.SafeConfigParser, FAKConfigMixIn):
     pass

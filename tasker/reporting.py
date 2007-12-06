@@ -18,6 +18,23 @@
 import Queue
 import logging
 
+#semantics values
+#first the "task" levels for START and STOP
+FIRSTAIDKIT = 100
+TASKER = 90
+PLUGINSYSTEM = 80
+PLUGIN = 70
+FLOW = 60
+TASK = 50
+
+#semantics
+START = 0
+STOP = 1
+PROGRESS = 2
+INFO = 3
+ALERT = 4
+EXCEPTION = 5
+
 class Reports(object):
     """Instances of this class are used as reporting mechanism by which the
     plugins can comminucate back to whatever frontend we are using.
@@ -50,20 +67,18 @@ class Reports(object):
     def error(self, message, origin, semantics):
         return self.put(message, origin, semantics, importance = logging.ERROR)
 
-#semantics values
-#first the "task" levels for START and STOP
-FIRSTAIDKIT = 100
-TASKER = 90
-PLUGINSYSTEM = 80
-PLUGIN = 70
-FLOW = 60
-TASK = 50
+    def start(self, message, origin, what = TASK):
+        return self.put(message, origin, START, importance = what)
+    def stop(self, message, origin, what = TASK):
+        return self.put(message, origin, START, importance = what)
 
-#semantics
-START = 0
-STOP = 1
-PROGRESS = 2
-INFO = 3
-ALERT = 4
+    def progress(self, position, maximum, origin, importance = logging.INFO):
+        return self.put((position, maximum), origin, PROGRESS, importance = importance)
+    def info(self, message, origin, importance = logging.INFO):
+        return self.put(message, origin, INFO, importance = importance)
 
+    def alert(self, message, origin, importance = logging.WARNING):
+        return self.put(message, origin, ALERT, importance = importance)
+    def exception(self, message, origin, importance = logging.ERROR):
+        return self.put(message, origin, EXCEPTION, importance = importance)
 

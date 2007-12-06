@@ -83,6 +83,8 @@ if __name__=="__main__":
         Config.write(sys.stdout)
         print 76*"-"
 
+    Config.lock()
+
     singlerun = Tasker(Config)
     singlerun.run()
 
