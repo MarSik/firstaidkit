@@ -53,9 +53,9 @@ if __name__=="__main__":
             Config.operation.verbose = "True"
         elif key in ("-l", "--log"):
             Config.log.method = val
-        #elif key in ("-x", "--exclude"):
-        #    Config.plugin.disabled.append(val)
-        #    print "Excluding plugin %s\n" % (val,)
+        elif key in ("-x", "--exclude"):
+            Config.plugin.disabled = Config.plugin.disabled + ' "%s"' % (val.encode("string-escape"))
+            print "Excluding plugin %s\n" % (val,)
         elif key in ("-r", "--root"):
             Config.system.root = val
         elif key in ("-g", "--gui"):
