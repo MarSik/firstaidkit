@@ -17,7 +17,8 @@
 
 import ConfigParser
 import os
-from StringIO import StringIO
+from cStringIO import StringIO
+from shlex import shlex
 
 if os.environ.has_key("FIRST_AID_KIT_CONF"):
     cfgfile = os.environ["FIRST_AID_KIT_CONF"].split(":")
@@ -61,12 +62,21 @@ class FAKConfigSection(object):
         return self.__dict__["configuration"].get(self.__dict__["section_name"], key)
 
     def __setattr__(self, key, value):
-        if hasattr(self.__dict__["configuration"], "_lock") and self.__dict__["configuration"]._lock:
+        if self.__dict__["configuration"].__dict__.has_key("_lock") and self.__dict__["configuration"].__dict__["_lock"]:
             raise LockedError(key)
 
         if not self.__dict__["configuration"].has_section(self.__dict__["section_name"]):
             self.__dict__["configuration"].add_section(self.__dict__["section_name"])
         self.__dict__["configuration"].set(self.__dict__["section_name"], key, value)
+
+    def _list(self, key):
+        l = []
+        lex = shlex(instream = StringIO(getattr(self, key)), posix = True)
+        token = lex.get_token()
+        while token!=lex.eof:
+            l.append(token)
+            token = lex.get_token()
+        return l
 
 
 class FAKConfigMixIn(object):
@@ -76,10 +86,10 @@ class FAKConfigMixIn(object):
         return FAKConfigSection(self, section)
 
     def lock(self):
-        self._lock = True
+        self.__dict__["_lock"] = True
 
     def unlock(self):
-        self._lock = False
+        self.__dict__["_lock"] = False
 
 class FAKConfig(ConfigParser.SafeConfigParser, FAKConfigMixIn):
     pass
