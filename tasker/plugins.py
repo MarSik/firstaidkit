@@ -262,7 +262,7 @@ class PluginSystem(object):
 
         #try to import the modules as FirstAidKit.plugins.modulename
         for m in importlist:
-            if m in Config.plugin.disabled:
+            if m in Config.plugin._list("disabled"):
                 continue
 
             imp.acquire_lock()
