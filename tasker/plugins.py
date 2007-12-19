@@ -27,6 +27,11 @@ import os
 import subprocess
 from cStringIO import StringIO
 
+class Flow(dict):
+    def __init__(self, rules, description="", *args, **kwargs):
+        self.description = description
+        dict.__init__(self, rules, *args, **kwargs)
+
 class Plugin(object):
     #
     # Some information vars.
@@ -64,7 +69,7 @@ class Plugin(object):
     # with the parent of all ReturnValue classes.
     #
     _defflows = {}
-    _defflows["defflow"] = {
+    _defflows["defflow"] = Flow({
             initial : {ReturnValue: "prepare"},
             "prepare"    : {ReturnValueTrue: "diagnose"},
             "diagnose"   : {ReturnValueTrue: "clean", ReturnValueFalse: "backup"},
@@ -72,7 +77,7 @@ class Plugin(object):
             "fix"        : {ReturnValueTrue: "clean", ReturnValueFalse: "restore"},
             "restore"    : {ReturnValueTrue: "clean", ReturnValueFalse: "clean"},
             "clean"      : {ReturnValueTrue: final}
-            }
+            }, description="The default, fully automated, fixing sequence")
 
     def __init__(self, flow, reporting):
         """ Initialize the instance.
@@ -137,6 +142,14 @@ class Plugin(object):
         fatherf = Plugin._defflows.keys()
         pluginf = cls.flows.keys()
         return set(fatherf+pluginf)
+    
+    @classmethod
+    def getFlow(cls, name):
+        """Return a Flow object associated with provided name"""
+        if cls.flows.has_key(name):
+            return cls.flows[name]
+        else:
+            return Plugin._defflows[name]
 
     #list of all actions provided
     def actions(self):

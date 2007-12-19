@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-from tasker.plugins import Plugin
+from tasker.plugins import Plugin,Flow
 from tasker.returns import *
 
 class Sample2Plugin(Plugin):
@@ -24,7 +24,7 @@ class Sample2Plugin(Plugin):
     # Additional flow defprepareion.
     #
     flows = {}
-    flows["extra"] = {
+    flows["extra"] = Flow({
                     Plugin.initial: {ReturnValue: "prepare"},
                     "prepare"     : {ReturnValueTrue: "diagnose"},
                     "diagnose"    : {ReturnValueTrue: "clean", ReturnValueFalse: "backup"},
@@ -33,7 +33,7 @@ class Sample2Plugin(Plugin):
                     "fix"         : {ReturnValueTrue: "extraStep", ReturnValueFalse: "restore"},
                     "extraStep"   : {ReturnValueTrue: "clean", ReturnValueFalse: "clean"},
                     "clean"       : {ReturnValueTrue: Plugin.final}
-                    }
+                    }, description="Fixing sequence with one added extraStep")
     default_flow = "extra"
 
     name = "Sample2Plugin"

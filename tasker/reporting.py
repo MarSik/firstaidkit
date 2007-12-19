@@ -34,6 +34,7 @@ PROGRESS = 2
 INFO = 3
 ALERT = 4
 EXCEPTION = 5
+END = 1000 #End of operations, final message
 
 class Reports(object):
     """Instances of this class are used as reporting mechanism by which the
@@ -64,6 +65,9 @@ class Reports(object):
 
 
     #There will be helper methods inspired by logging module
+    def end(self):
+        return self.put(None, None, END, importance = 1000)
+
     def error(self, message, origin, semantics):
         return self.put(message, origin, semantics, importance = logging.ERROR)
 

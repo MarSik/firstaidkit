@@ -16,7 +16,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 from tasker.returns import *
-from tasker.plugins import Plugin
+from tasker.plugins import Plugin,Flow
 import subprocess
 
 class Sample3Plugin(Plugin):

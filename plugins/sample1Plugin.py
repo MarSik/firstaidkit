@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-from tasker.plugins import Plugin
+from tasker.plugins import Plugin,Flow
 from tasker.returns import *
 
 class Sample1Plugin(Plugin):

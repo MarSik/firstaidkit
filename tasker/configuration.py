@@ -35,6 +35,7 @@ disabled =
 
 [operation]
 mode = auto
+help = False
 verbose = False
 gui = console
 

@@ -17,11 +17,28 @@
 
 import sys
 import getopt
+from threading import Thread
 from tasker import Tasker
 from tasker import Config
+from tasker import reporting
 
 class Flags:
     print_config = False
+    main_help = False
+
+class Output(Thread):
+    def __init__(self, queue, *args, **kwargs):
+        self._running = True
+        self._queue = queue
+        Thread.__init__(self, *args, **kwargs)
+
+    def run(self):
+        while self._running:
+            message = self._queue.get()
+            if message[2]==reporting.END:
+                self._running = False
+                continue
+            print message
 
 def usage(name):
     print """Usage:
@@ -36,7 +53,7 @@ def usage(name):
   -l <method>      - select different log method
   -x <plugin>      - exclude plugin from run
   -g <gui>         - frontend to show results
-  -h               - this help
+  -h               - help
   --print-config   - print resulting config file
 """ % (name, name, name)
 
@@ -45,8 +62,10 @@ if __name__=="__main__":
     for key,val in params:
         if key in ("-t", "--task"):
             Config.operation.mode = "task"
-        if key in ("-f", "--flow"):
+            Flags.main_help = False
+        elif key in ("-f", "--flow"):
             Config.operation.mode = "flow"
+            Flags.main_help = False
         elif key in ("-c", "--config"):
             Config.read(val)
         elif key in ("-v", "--verbose"):
@@ -65,8 +84,8 @@ if __name__=="__main__":
         elif key in ("--print-config"):
             Flags.print_config = True
         elif key in ("-h", "--help"):
-            usage(sys.argv[0])
-            sys.exit(1)
+            Config.operation.help = "True"
+            Flags.main_help = True
     if Config.operation.mode == "flow":
         Config.operation.plugin = rest[0]
         if len(rest)<=1:
@@ -77,6 +96,9 @@ if __name__=="__main__":
         Config.operation.plugin = rest[0]
         Config.operation.task = rest[1]
 
+    if Flags.main_help:
+        usage(sys.argv[0])
+        sys.exit(1)
 
     if Flags.print_config:
         print 76*"-"
@@ -85,7 +107,17 @@ if __name__=="__main__":
 
     Config.lock()
 
+
     singlerun = Tasker(Config)
-    singlerun.run()
+    
+    outputThread = Output(singlerun.reporting())
+    outputThread.start()
+
+    try:
+        singlerun.run()
+    finally:
+        singlerun.end()
+
+    outputThread.join()
 
 

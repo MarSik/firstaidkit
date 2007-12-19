@@ -25,9 +25,20 @@ class Tasker:
     def __init__(self, cfg):
         self._config = cfg
         self._reporting = Reports()
+        self.pluginSystem = PluginSystem(reporting = self._reporting)
+
+    def reporting(self):
+        return self._reporting
+
+    def pluginsystem(self):
+        return self.pluginSystem
+
+    def end(self):
+        """Signalize end of operations to all necessary places"""
+        self._reporting.end()
 
     def run(self):
-        pluginSystem = PluginSystem(reporting = self._reporting)
+        pluginSystem = self.pluginSystem
 
         if self._config.operation.mode == "auto":
             for plugin in pluginSystem.list():
