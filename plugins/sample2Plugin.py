@@ -23,7 +23,7 @@ class Sample2Plugin(Plugin):
     #
     # Additional flow defprepareion.
     #
-    flows = {}
+    flows = Flow.init(Plugin)
     flows["extra"] = Flow({
                     Plugin.initial: {ReturnValue: "prepare"},
                     "prepare"     : {ReturnValueTrue: "diagnose"},

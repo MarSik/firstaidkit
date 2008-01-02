@@ -18,6 +18,7 @@
 from configuration import Config
 from returns import *
 from errors import *
+from copy import copy,deepcopy
 
 import FirstAidKit
 from log import Logger
@@ -31,6 +32,11 @@ class Flow(dict):
     def __init__(self, rules, description="", *args, **kwargs):
         self.description = description
         dict.__init__(self, rules, *args, **kwargs)
+
+    @staticmethod
+    def init(parent):
+        flows = copy(parent.flows)
+        return flows
 
 class Plugin(object):
     #
@@ -68,8 +74,7 @@ class Plugin(object):
     # have.  As the initial state has no return value it will be indexed
     # with the parent of all ReturnValue classes.
     #
-    _defflows = {}
-    _defflows["defflow"] = Flow({
+    flows["defflow"] = Flow({
             initial : {ReturnValue: "prepare"},
             "prepare"    : {ReturnValueTrue: "diagnose"},
             "diagnose"   : {ReturnValueTrue: "clean", ReturnValueFalse: "backup"},
@@ -134,19 +139,16 @@ class Plugin(object):
         #
         # The flow that will be used for the instance.
         #
-        if flow in Plugin._defflows.keys():
-            self.cflow = Plugin._defflows[flow]
-        elif flow in self.__class__.flows.keys():
-            self.cflow = self.__class__.flows[flow]
+        if flow in self.flows.keys():
+            self.cflow = self.flows[flow]
         else:
             raise InvalidFlowNameException(flow)
 
     @classmethod
     def getFlows(cls):
         """Return a set with the names of all possible flows."""
-        fatherf = Plugin._defflows.keys()
-        pluginf = cls.flows.keys()
-        return set(fatherf+pluginf)
+        fatherf = cls.flows.keys()
+        return set(fatherf)
     
     @classmethod
     def getFlow(cls, name):
@@ -154,7 +156,7 @@ class Plugin(object):
         if cls.flows.has_key(name):
             return cls.flows[name]
         else:
-            return Plugin._defflows[name]
+            raise InvalidFlowNameException(name)
 
     #dependency stuff
     @classmethod
@@ -329,7 +331,7 @@ returns - True if conditions are fully satisfied
         Logger.info("Using %s flow" % flowName)
         if flowName not in flows:
             Logger.error("Flow %s does not exist in plugin %s", flowName, plugin)
-            raise InvalidFlowNameException(d)
+            raise InvalidFlowNameException(flowName)
 
         if dependencies:
             deps = pklass.getDeps()
