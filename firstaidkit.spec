@@ -30,7 +30,7 @@ A tool that automates simple and common system recovery tasks.
 rm -rf $RPM_BUILD_ROOT
 %{__python} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
 %{__install} -d $RPM_BUILD_ROOT/%{_libexecdir}/firstaidkit/plugins
-%{__cp} -rf plugins/* $RPM_BUILD_ROOT/%{_libexecdir}/firstaidkit/plugins
+%{__cp} -rfp plugins/* $RPM_BUILD_ROOT/%{_libexecdir}/firstaidkit/plugins
 
 
 %clean
