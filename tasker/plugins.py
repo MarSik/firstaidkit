@@ -89,6 +89,10 @@ class Plugin(object):
         The flow is defined in the __init__ so we don't have to worry about changing it.
         """
         self._reporting = reporting
+        self._dependencies = dependencies
+
+        self.provide = dependencies.provide
+        self.require = dependencies.require
 
         #
         # state we are in.
@@ -138,11 +142,6 @@ class Plugin(object):
             raise InvalidFlowNameException(flow)
 
     @classmethod
-    def getDeps(cls):
-        """Return list of conditions required to be set before automated run can be done"""
-        return set()
-
-    @classmethod
     def getFlows(cls):
         """Return a set with the names of all possible flows."""
         fatherf = Plugin._defflows.keys()
@@ -156,6 +155,16 @@ class Plugin(object):
             return cls.flows[name]
         else:
             return Plugin._defflows[name]
+
+    #dependency stuff
+    @classmethod
+    def getDeps(cls):
+        """Return list of conditions required to be set before automated run can be done"""
+        return set()
+
+    #methods available only for instance, see interpreter.py and dependency stuff there
+    #def require(self, id)
+    #def provide(self, id)
 
     #list of all actions provided
     def actions(self):

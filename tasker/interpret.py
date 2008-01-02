@@ -28,6 +28,7 @@ class RunDependencies(object):
 
     def provide(self, id):
         """Add flag"""
+        Logger.info("Setting dependency flag %s", id)
         self._provide.add(id)
 
     def require(self, id):
@@ -65,7 +66,7 @@ class Tasker:
                 for plugin in oldlist:
                     if pluginSystem.autorun(plugin): #False when dependencies are not met
                         actlist.remove(plugin)
-            for plugin in aclist:
+            for plugin in actlist:
                 self._reporting.info("Plugin %s was not called because of unsatisfied dependencies" % (plugin,), origin = TASKER, importance = logging.WARNING)
         elif self._config.operation.mode == "flow":
             try:
