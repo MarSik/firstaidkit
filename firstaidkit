@@ -1,3 +1,4 @@
+#!/usr/bin/python -tt
 # First Aid Kit - diagnostic and repair tool for Linux
 # Copyright (C) 2007 Martin Sivak <msivak@redhat.com>
 # 
