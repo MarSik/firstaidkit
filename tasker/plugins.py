@@ -79,11 +79,12 @@ class Plugin(object):
             "clean"      : {ReturnValueTrue: final}
             }, description="The default, fully automated, fixing sequence")
 
-    def __init__(self, flow, reporting):
+    def __init__(self, flow, reporting, dependencies):
         """ Initialize the instance.
 
         flow -- Name of the flow to be used with this instance.
         reporting -- object used to report information to the user
+        dependencies -- object encapsulating the inter-plugin dependency API (require, provide)
 
         The flow is defined in the __init__ so we don't have to worry about changing it.
         """
@@ -135,6 +136,11 @@ class Plugin(object):
             self.cflow = self.__class__.flows[flow]
         else:
             raise InvalidFlowNameException(flow)
+
+    @classmethod
+    def getDeps(cls):
+        """Return list of conditions required to be set before automated run can be done"""
+        return set()
 
     @classmethod
     def getFlows(cls):
@@ -253,9 +259,10 @@ class Plugin(object):
 class PluginSystem(object):
     """Encapsulate all plugin detection and import stuff"""
 
-    def __init__(self, reporting, config = Config):
+    def __init__(self, reporting, dependencies, config = Config):
         self._path = Config.plugin.path
         self._reporting = reporting
+        self._deps = dependencies
         self._plugins = {}
 
         #create list of potential modules in the path
@@ -293,11 +300,16 @@ class PluginSystem(object):
         """Return the list of imported plugins"""
         return self._plugins.keys()
 
-    def autorun(self, plugin, flow = None):
-        """Perform automated run of plugin"""
+    def autorun(self, plugin, flow = None, dependencies = True):
+        """Perform automated run of plugin with condition checking
+returns - True if conditions are fully satisfied
+          False if there is something missing
+          exception when some other error happens"""
+
         pklass = self._plugins[plugin].get_plugin() #get top level class of plugin
         Logger.info("Plugin information...")
         Logger.info("name:%s , version:%s , author:%s " % pklass.info())
+
         flows = pklass.getFlows()
         Logger.info("Provided flows : %s " % flows)
         if flow==None:
@@ -308,12 +320,22 @@ class PluginSystem(object):
         Logger.info("Using %s flow" % flowName)
         if flowName not in flows:
             Logger.error("Flow %s does not exist in plugin %s", flowName, plugin)
-            return
+            raise InvalidFlowNameException(d)
 
-        p = pklass(flowName, reporting = self._reporting)
+        if dependencies:
+            deps = pklass.getDeps()
+            Logger.info("depends on: %s" % (", ".join(deps),))
+            for d in deps:
+                if not self._deps.require(d):
+                    Logger.info("depends on usatisfied condition: %s" % (d,))
+                    return False
+
+        p = pklass(flowName, reporting = self._reporting, dependencies = self._deps)
         for (step, rv) in p: #autorun all the needed steps
             Logger.info("Running step %s in plugin %s ...", step, plugin)
             Logger.info("%s is current step and %s is result of that step." % (step, rv))
+
+        return True
 
     def getplugin(self, plugin):
         """Get instance of plugin, so we can call the steps manually"""

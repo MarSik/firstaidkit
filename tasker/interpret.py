@@ -17,15 +17,31 @@
 
 from log import Logger
 from plugins import PluginSystem
-from reporting import Reports
+from reporting import Reports, TASKER
+import logging
+import copy
+
+class RunDependencies(object):
+    """Encapsulate flags used to control the dependencies between plugins"""
+    def __init__(self):
+        self._provide = set()
+
+    def provide(self, id):
+        """Add flag"""
+        self._provide.add(id)
+
+    def require(self, id):
+        """Return True if flag is present, otherwise false"""
+        return id in self._provide
 
 class Tasker:
     """The main interpret of tasks described in Config object"""
 
     def __init__(self, cfg):
+        self._provide = RunDependencies()
         self._config = cfg
         self._reporting = Reports()
-        self.pluginSystem = PluginSystem(reporting = self._reporting)
+        self.pluginSystem = PluginSystem(reporting = self._reporting, dependencies = self._provide)
 
     def reporting(self):
         return self._reporting
@@ -41,12 +57,23 @@ class Tasker:
         pluginSystem = self.pluginSystem
 
         if self._config.operation.mode == "auto":
-            for plugin in pluginSystem.list():
-                pluginSystem.autorun(plugin)
+            oldlist = set()
+            actlist = set(pluginSystem.list())
+            #iterate through plugins until there is no plugin left or no action performed during whole iteration
+            while len(actlist)>0 and oldlist!=actlist:
+                oldlist = copy.copy(actlist)
+                for plugin in oldlist:
+                    if pluginSystem.autorun(plugin): #False when dependencies are not met
+                        actlist.remove(plugin)
+            for plugin in aclist:
+                self._reporting.info("Plugin %s was not called because of unsatisfied dependencies" % (plugin,), origin = TASKER, importance = logging.WARNING)
         elif self._config.operation.mode == "flow":
-            pluginSystem.autorun(self._config.operation.plugin, flow = self._config.operation.flow)
+            try:
+                pluginSystem.autorun(self._config.operation.plugin, flow = self._config.operation.flow, dependencies = False)
+            except InvalidFlowNameException, e:
+                pass
         elif self._config.operation.mode == "plugin":
-            pluginSystem.autorun(self._config.operation.plugin)
+            pluginSystem.autorun(self._config.operation.plugin, dependencies = False)
         elif self._config.operation.mode == "task":
             pass
         else:
