@@ -29,9 +29,6 @@ class Sample1Plugin(Plugin):
     def prepare(self):
         self._result=ReturnValueTrue
 
-    def destroy(self):
-        self._result=ReturnValueTrue
-
     def backup(self):
         self._result=ReturnValueTrue
 
@@ -43,6 +40,9 @@ class Sample1Plugin(Plugin):
 
     def fix(self):
         self._result=ReturnValueFalse
+
+    def clean(self):
+        self._result=ReturnValueTrue
 
 def get_plugin():
     return Sample1Plugin
