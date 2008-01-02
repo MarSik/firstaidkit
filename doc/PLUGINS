@@ -70,7 +70,7 @@ These are some important things to consider once you are coding a plugin.
     initial : is the initial state for all flows.
     final : is the final state for all flows.
 
-    _defflows : The default flows defined by the Plugin abstract class.
+    flows : The flows defined by the Plugin class.
     default_flow: is the name of flow used when in automatic repair mode
 
    The class methods are:
@@ -81,7 +81,20 @@ These are some important things to consider once you are coding a plugin.
 2. Default functions.
     See section "Common stuff for plugins"
 
-3. self._result and self._state
+3. Flows
+    If you want to redefine or add your own flows into your plugin, the first
+    step to do is to init the flow system like this:
+
+     class MyPlugin(Plugin):
+       flows = Flow.init(Plugin) <-- here you MUST provide the parent class
+
+    And then you can add new flows this way (also see sample2Plugin):
+
+     class MyPlugin(Plugin):
+       flows = Flow.init(Plugin)
+       flows["myflow"] = Flow({flow rules}, description="Description of the flow")
+
+4. self._result and self._state
     These are the two variables that define the location of the plugin
     inside the flow dictionary.  In each function, after it has done
     its intended action, the self._resutl variable must be changed to
@@ -89,7 +102,7 @@ These are some important things to consider once you are coding a plugin.
     inside the plugin.  The self._state value is change using the flow
     dictionary and the self._resutl value.
 
-4. get_plugin()
+5. get_plugin()
     Each plugin must define a get_plugin function.  This function must
     return the main class of the plugin.  This is used to take out info
     from the plugin, and to instantiate it.  If in doubt, take a look
@@ -97,7 +110,7 @@ These are some important things to consider once you are coding a plugin.
     They can give you a prety good idea of what to do when using a 
     module, file ...
 
-5. return values:
+6. return values:
     For each function you code in a plugin you must use predefined return
     classes.  It is necesarry to have the extra wrapper because the python
     native types can get messy (1==True).  Just use the ones provided by 
@@ -120,16 +133,16 @@ and the system cannot end in some undeterministic state.
 
 Python modules
 --------------
-A plugin for the FirstAidKit must inherite from the tasker.Plugin class.
-It must also implement the mandatory plugin steps.  The tasker.Plugin
+A plugin for the FirstAidKit must inherite from the pyfirstaidkit.Plugin class.
+It must also implement the mandatory plugin steps.  The pyfirstaidkit.Plugin
 parent will provide a default flow that will use the functions defined
 by the plugin developer.  Moreover, for the mandatory steps, the plugin
 developer must garantee that the function will return a valid return 
 class (more on return class further on).  In other words, the function
 must return one of the possible return classes included in the default
 flow.
-
-tasker.Plugin defines:
+   
+pyfirstaidkit.Plugin defines:
 nextstep() -- This is used to return the next function that should be 
               executed.  __iter__() is not used because there is no 
               control over __iter__() in an iteration.  nextstep()
