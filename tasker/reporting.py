@@ -34,6 +34,8 @@ PROGRESS = 2
 INFO = 3
 ALERT = 4
 EXCEPTION = 5
+TABLE = 6 #types for arbitrary table-like organized iterables
+TREE = 7  #nested iterables organized as tree
 END = 1000 #End of operations, final message
 
 class Reports(object):
@@ -43,7 +45,7 @@ class Reports(object):
     Message has four parts:
     origin - who sent the message (name of the plugin, Pluginsystem, ...)
     semantics - what action does the message describe
-                (INFO, ALERT, PROGRESS, START, STOP)
+                (INFO, ALERT, PROGRESS, START, STOP, DATA, END)
     importance - how is that message important (debug, info, error, ...)
                  this must be number, possibly the same as in logging module
     message - the message itself
@@ -80,6 +82,12 @@ class Reports(object):
         return self.put((position, maximum), origin, PROGRESS, importance = importance)
     def info(self, message, origin, importance = logging.INFO):
         return self.put(message, origin, INFO, importance = importance)
+
+
+    def tree(self, message, origin, importance = logging.INFO):
+        return self.put(message, origin, TREE, importance = importance)
+    def table(self, message, origin, importance = logging.INFO):
+        return self.put(message, origin, TABLE, importance = importance)
 
     def alert(self, message, origin, importance = logging.WARNING):
         return self.put(message, origin, ALERT, importance = importance)
