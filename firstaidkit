@@ -19,9 +19,9 @@
 import sys
 import getopt
 from threading import Thread
-from tasker import Tasker
-from tasker import Config
-from tasker import reporting
+from pyfirstaidkit import Tasker
+from pyfirstaidkit import Config
+from pyfirstaidkit import reporting
 
 class Flags:
     print_config = False

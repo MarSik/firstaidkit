@@ -15,8 +15,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-from tasker.plugins import Plugin,Flow
-from tasker.returns import *
+from pyfirstaidkit.plugins import Plugin,Flow
+from pyfirstaidkit.returns import *
 
 class Sample2Plugin(Plugin):
     """This plugin will defin one more function and use it in a newly defined flow."""

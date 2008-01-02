@@ -15,9 +15,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-from tasker.returns import *
-from tasker.plugins import Plugin,Flow
-from tasker import Config
+from pyfirstaidkit.returns import *
+from pyfirstaidkit.plugins import Plugin,Flow
+from pyfirstaidkit import Config
 import subprocess
 
 class Sample3Plugin(Plugin):
