@@ -1,11 +1,10 @@
-from distutils.core import setup
-import glob
+from setuptools import setup
 
 setup(name='firstaidkit',
       version='0.1.0',
       description='System Rescue Tool',
-      author='Joel Andres Granados',
-      author_email='jgranado@redhat.com',
+      author='Martin Sivak / Joel Andres Granados',
+      author_email='msivak@redhat.com / jgranado@redhat.com',
       url='http://fedorahosted.org/firstaidkit',
       license='GPLv2',
       packages = ['pyfirstaidkit'],

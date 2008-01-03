@@ -42,9 +42,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc AUTHORS COPYING GPL doc/README doc/PLUGINS
 # For noarch packages: sitelib
 %{python_sitelib}/pyfirstaidkit
+%{python_sitelib}/%{name}-%{version}-py2.5.egg-info
 %{_bindir}/firstaidkit
 %{_libexecdir}/firstaidkit/plugins/*
-
 
 %Changelog
 * Wed Jan 02 2008 Joel Granados <jgranado@redhat.com> 0.1.0-1
