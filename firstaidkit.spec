@@ -2,11 +2,11 @@
 
 Name:           firstaidkit
 Version:        0.1.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        System Rescue Tool
 
 Group:          Applications/System
-License:        GPLv2
+License:        GPLv2+
 URL:            http://fedorahosted.org/firstaidkit
 Source0:        %{name}-%{version}.tar.bz2
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -52,9 +52,13 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/%{name}-%{version}-py2.5.egg-info
 %{_bindir}/firstaidkit
 %{_libexecdir}/firstaidkit/plugins/*
-%{_mandir}/man1/fakplugin.1.gz
+%attr(0644,-,-) %{_mandir}/man1/fakplugin.1.gz
 
 %Changelog
+* Fri Jan 04 2008 Joel Granados <jgranado@redhat.com> 0.1.0-3
+- Change the License variable
+- Fix man page being executable
+
 * Fri Jan 04 2008 Joel Granados <jgranado@redhat.com> 0.1.0-2
 - Include python-setuptools-devel in the BuildRequires
 - Added manpage stuff in the spec file
