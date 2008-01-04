@@ -2,7 +2,7 @@
 
 Name:           firstaidkit
 Version:        0.1.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        System Rescue Tool
 
 Group:          Applications/System
@@ -12,11 +12,17 @@ Source0:        %{name}-%{version}.tar.bz2
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:  python-devel
 
+# Maybe its just enough with the python-setuptools-devel.  Lets use both for now.
+%if 0%{?fedora} >= 8
+BuildRequires: python-setuptools-devel
+%else
+BuildRequires: python-setuptools
+%endif
+
 BuildArch:      noarch
 
 %description
 A tool that automates simple and common system recovery tasks.
-
 
 %prep
 %setup -q
@@ -30,8 +36,9 @@ A tool that automates simple and common system recovery tasks.
 rm -rf $RPM_BUILD_ROOT
 %{__python} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
 %{__install} -d $RPM_BUILD_ROOT/%{_libexecdir}/firstaidkit/plugins
+%{__install} -d $RPM_BUILD_ROOT/%{_mandir}/man1
+%{__install} doc/fakplugin.1 $RPM_BUILD_ROOT/%{_mandir}/man1
 %{__cp} -rfp plugins/* $RPM_BUILD_ROOT/%{_libexecdir}/firstaidkit/plugins
-
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -39,13 +46,18 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc AUTHORS COPYING GPL doc/README doc/PLUGINS
+%doc AUTHORS COPYING doc/README doc/PLUGINS
 # For noarch packages: sitelib
 %{python_sitelib}/pyfirstaidkit
 %{python_sitelib}/%{name}-%{version}-py2.5.egg-info
 %{_bindir}/firstaidkit
 %{_libexecdir}/firstaidkit/plugins/*
+%{_mandir}/man1/fakplugin.1.gz
 
 %Changelog
+* Fri Jan 04 2008 Joel Granados <jgranado@redhat.com> 0.1.0-2
+- Include python-setuptools-devel in the BuildRequires
+- Added manpage stuff in the spec file
+
 * Wed Jan 02 2008 Joel Granados <jgranado@redhat.com> 0.1.0-1
 - Initial spec
