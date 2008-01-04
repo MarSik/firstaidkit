@@ -1,5 +1,7 @@
 .\" FirstAidKit 
-.TH "FirstAidKit" "8" .SH "NAME" FirstAidKit 
+.TH "FirstAidKit" "1" 
+.SH "NAME" FirstAidKit 
+.BR
 .SH "Plugin Sufixes"
 All plugins belong to configured plugin directory. Recognized suffixes are: .py, .pyc, .pyo (python modules) and .so (python compatible binary module)
 
@@ -115,3 +117,22 @@ Queries the state of flag. Returns True if set, False otherwise.
 .SH "Arbitrary Executable Modules"
 The current approach is to create a wrapper python plugin, which holds the metadata
 and calls the binaries as neccessary (see the examples).
+
+.PP
+.SH "SEE ALSO"
+.nf
+http://fedorahosted.org/firstaidkit
+.fi
+
+.PP
+.SH "AUTHORS"
+.nf
+Martin Sivak <msivak@redhat.com>
+Joel Granados <jgranado@redhat.com>
+.fi
+
+.PP
+.SH "BUGS"
+.nf
+Please search/report bugs at http://fedorahosted.org/firstaidkit/newticket
+.fi
