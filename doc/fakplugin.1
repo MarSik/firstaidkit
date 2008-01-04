@@ -36,31 +36,40 @@ The main plugin class has some class methods and some class attributes. These el
 
 The class attributes are: name, version, author, initial (Initial state for all flows), final (Final state for all flows), flows (The flows defined by the Plugin class), default_flow (is the name of the flow used in automatic repair mod )
 
-The class attributes are: info() (returns the name, version and author  in a tuple) and getFlows() (returns a list of possible flow names that the plugin can execute).
+The class attributes are: info() (returns the name, version and author  in a tuple), getDeps() (returns list of required flags for automated mode) and getFlows() (returns a list of possible flow names that the plugin can execute).
 .PP
 
-.IP "2. Default functions:"
+.IP "2. Plugin dependencies"
+You can also specify flags, which are required to be satisfied before the automated mode can use this plugin. The requirements should be returned as python set of strings by the getDeps() class method.
+
+Setting flags is also easy. Just use the provide() method common to all plugins.
+
+.IP "3. Default functions:"
 See section "Common stuff for plugins"
 .PP
 
-.IP "3. Flows:"
+.IP "4. Flows:"
 If you want to redefine or add your own flows into your plugin, the first step to do is to init the flow system like this:
+
  class MyPlugin(Plugin):
   flows = Flow.init(Plugin)
+
+Then you add your flow as new keys to the flows dictionary so it will look like this:
+
  class MyPlugin(Plugin):
   flows = Flow.init(Plugin)
   flows["myflow"] = Flow({flow rules}, description="")
 .PP
 
-.IP "4. self._result and self._state
+.IP "5. self._result and self._state
 These are the two variables that define the location of the plugin inside the flow dictionary.  In each function, after it has done its intended action, the self._resutl variable must be changed to a correct value.  This value will define the next self._state value inside the plugin.  The self._state value is change using the flow dictionary and the self._resutl value.
 .PP
 
-.IP "5. get_plugin()"
+.IP "6. get_plugin()"
 Each plugin must define a get_plugin function.  This function must return the main class of the plugin.  This is used to take out info from the plugin, and to instantiate it.  If in doubt, take a look at the sample plugins that come with the man FirstAidKit code base. They can give you a prety good idea of what to do when using a  module, file ...
 .PP
 
-.IP "6. return values:"
+.IP "7. return values:"
 For each function you code in a plugin you must use predefined return classes.  It is necesarry to have the extra wrapper because the python native types can get messy (1==True).  Just use the ones provided by  the plugin system, or create your own.
 
 .SH "Common stuff"
@@ -96,7 +105,12 @@ Returns tuple of strings defined as (name of plugin, version, author)
 Allows the caller to change to some other flow defined in the plugin.
 .IP "getFlows()"
 Returns all the possible flows that the plugin suports. And of course the steps itself. They are defined as methods with the same names as used in actions().
-
+.IP "getDeps()"
+Returns list of flags which are required for this plugin to operate in automated mode.
+.IP "provide(flag)"
+Adds flag into the pool of satisfied flags.
+.IP "require(flag)"
+Queries the state of flag. Returns True if set, False otherwise.
 
 .SH "Arbitrary Executable Modules"
 The current approach is to create a wrapper python plugin, which holds the metadata
