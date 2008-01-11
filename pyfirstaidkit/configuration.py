@@ -25,12 +25,31 @@ if os.environ.has_key("FIRST_AID_KIT_CONF"):
 else:
     cfgfile = ["/etc/firstaidkit.conf", os.environ["HOME"]+"/.firstaidkit.conf"]
 
-defaultconfig = """
+
+
+def createDefaultConfig():
+    #
+    # Look for the place where the plugins lie.
+    #
+    if os.path.exists("/usr/lib64"):
+        # Then the plugins must be there
+        libdir="lib64"
+    elif os.path.exists("/usr/lib"):
+        # Lets try this one
+        libdir="lib"
+    else:
+        # Something is wrong
+        raise
+
+    #
+    # Put the default file together.
+    #
+    return """
 [system]
 root = /mnt/sysimage
 
 [plugin]
-path = /usr/lib/FirstAidKit/plugins
+path = /usr/%s/firstaidkit-plugins
 disabled =
 
 [operation]
@@ -41,7 +60,10 @@ gui = console
 
 [log]
 method = stdout
-"""
+""" % (libdir,)
+
+defaultconfig = createDefaultConfig()
+
 
 class LockedError(Exception):
     pass

@@ -25,24 +25,31 @@ class Sample1Plugin(Plugin):
     author = "Joel Andres Granados"
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
+        self.reporting = kwargs.get('reporting')
 
     def prepare(self):
         self._result=ReturnValueTrue
+        self.reporting.info("Sample1Plugin in Prepare task", self)
 
     def backup(self):
         self._result=ReturnValueTrue
+        self.reporting.info("Sample1Plugin in backup task", self)
 
     def restore(self):
         self._result=ReturnValueTrue
+        self.reporting.info("Sample1Plugin in Restore task", self)
 
     def diagnose(self):
         self._result=ReturnValueTrue
+        self.reporting.info("Sample1Plugin in diagnose task", self)
 
     def fix(self):
         self._result=ReturnValueFalse
+        self.reporting.info("Sample1Plugin in Fix task", self)
 
     def clean(self):
         self._result=ReturnValueTrue
+        self.reporting.info("Sample1Plugin in Clean task", self)
 
 def get_plugin():
     return Sample1Plugin
