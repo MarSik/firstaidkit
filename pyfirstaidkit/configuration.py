@@ -26,44 +26,25 @@ else:
     cfgfile = ["/etc/firstaidkit.conf", os.environ["HOME"]+"/.firstaidkit.conf"]
 
 
+def createDefaultConfig(config):
+    """Create the default config with the object."""
+    config.system.root = "/mnt/sysimage"
+    config.operation.mode = "auto"
+    config.operation.help = "False"
+    config.operation.gui = "console"
+    config.operation.verbose = "False"
+    config.operation.gui = "console"
+    config.log.method = "file"
+    config.log.filename = "/var/log/firstaidkit.log"
 
-def createDefaultConfig():
     #
     # Look for the place where the plugins lie.
     #
-    if os.path.exists("/usr/lib64"):
-        # Then the plugins must be there
-        libdir="lib64"
-    elif os.path.exists("/usr/lib"):
-        # Lets try this one
-        libdir="lib"
-    else:
-        # Something is wrong
-        raise
-
-    #
-    # Put the default file together.
-    #
-    return """
-[system]
-root = /mnt/sysimage
-
-[plugin]
-path = /usr/%s/firstaidkit-plugins
-disabled =
-
-[operation]
-mode = auto
-help = False
-verbose = False
-gui = console
-
-[log]
-method = stdout
-""" % (libdir,)
-
-defaultconfig = createDefaultConfig()
-
+    if os.path.exists("/usr/lib64"): libdir="lib64"
+    elif os.path.exists("/usr/lib"): libdir="lib"
+    else: raise
+    config.plugin.path = "/usr/%s/firstaidkit-plugins" % libdir
+    config.plugin.disabled = ""
 
 class LockedError(Exception):
     pass
@@ -118,7 +99,7 @@ class FAKConfig(ConfigParser.SafeConfigParser, FAKConfigMixIn):
     pass
 
 Config = FAKConfig()
-Config.readfp(StringIO(defaultconfig), "<default>")
+createDefaultConfig(Config)
 Config.read(cfgfile)
 
 

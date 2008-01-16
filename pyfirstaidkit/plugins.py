@@ -21,7 +21,7 @@ from errors import *
 from copy import copy,deepcopy
 
 import FirstAidKit
-from log import Logger
+#from log import Logger
 
 import imp
 import os
