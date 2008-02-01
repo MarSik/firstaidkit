@@ -110,7 +110,7 @@ if __name__=="__main__":
     Config.lock()
 
     # Now that the config is locked, initialize log for plugin system.
-    pyfirstaidkit.initLogger(Config)
+    initLogger(Config)
 
     singlerun = Tasker(Config)
 
