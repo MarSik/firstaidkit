@@ -1,10 +1,3 @@
-#
-# Spec file for firstaidkit
-#
-# How to create the tar file:
-# After cloning the git repo, run the folloing line from the directory that contains firstaidkit.
-# VER=`cat firstaidkit/firstaidkit.spec | grep Version | awk 'system(echo  )'` ;  mv firstaidkit/ firstaidkit-$VER/ ; tar cvfj firstaidkit-$VER.tar.bz2 firstaidkit-$VER --exclude='*.git' --exclude='.placeholder'; mv firstaidkit-$VER/ firstaidkit/
-
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
 Name:           firstaidkit
