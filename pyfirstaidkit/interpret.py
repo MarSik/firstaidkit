@@ -19,7 +19,8 @@ from plugins import PluginSystem
 from reporting import Reports, TASKER
 import logging
 import copy
-import Logger
+
+Logger=logging.getLogger("firstaidkit")
 
 class RunDependencies(object):
     """Encapsulate flags used to control the dependencies between plugins"""

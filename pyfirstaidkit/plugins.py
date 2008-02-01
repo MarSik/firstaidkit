@@ -21,12 +21,14 @@ from errors import *
 from copy import copy,deepcopy
 
 import FirstAidKit
-import Logger
+import logging
 
 import imp
 import os
 import subprocess
 from cStringIO import StringIO
+
+Logger = logging.getLogger("firstaidkit")
 
 class Flow(dict):
     def __init__(self, rules, description="", *args, **kwargs):

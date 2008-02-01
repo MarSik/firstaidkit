@@ -17,11 +17,9 @@
 
 from interpret import Tasker
 from configuration import Config
-#from log import Logger
 import logging
 import sys
 
-Logger=None
 def initLogger(config=None):
     """We want to initialize loger when we have the filename."""
     Logger = logging.getLogger("firstaidkit")

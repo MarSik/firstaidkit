@@ -22,7 +22,7 @@ from threading import Thread
 from pyfirstaidkit import Tasker
 from pyfirstaidkit import Config
 from pyfirstaidkit import reporting
-from pyfirstaidkit import Logger
+from pyfirstaidkit import initLogger
 
 class Flags:
     print_config = False
