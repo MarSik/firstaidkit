@@ -19,21 +19,16 @@ from interpret import Tasker
 from configuration import Config
 #from log import Logger
 import logging
-import __builtin__
 import sys
 
-class FAKLogger:
-    """Describes the logger that will be used only by the pluginsystem.
-
-    When instanciated it will put the logger in builtins so it is reachable
-    from everywhere in the code. """
-    def __init__(self, config):
-        Logger = logging.getLogger("firstaidkit")
-        Logger.setLevel(logging.DEBUG)
-        if config.log.method == "stdout":
-            Logger.addHandler(logging.StreamHandler(sys.stdout))
-        else:
-            # if nothing else matches we just put it into the file.
-            Logger.addHandler(logging.FileHandler(config.log.filename))
-        __builtin__.Logger = Logger
+Logger=None
+def initLogger(config=None):
+    """We want to initialize loger when we have the filename."""
+    Logger = logging.getLogger("firstaidkit")
+    Logger.setLevel(logging.DEBUG)
+    if config.log.method == "stdout" or config.log.method == None:
+        Logger.addHandler(logging.StreamHandler(sys.stdout))
+    else:
+        # if nothing else matches we just put it into the file.
+        Logger.addHandler(logging.FileHandler(config.log.filename))
 

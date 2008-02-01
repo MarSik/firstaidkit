@@ -22,7 +22,7 @@ from threading import Thread
 from pyfirstaidkit import Tasker
 from pyfirstaidkit import Config
 from pyfirstaidkit import reporting
-from pyfirstaidkit import FAKLogger
+from pyfirstaidkit import Logger
 
 class Flags:
     print_config = False
@@ -110,7 +110,7 @@ if __name__=="__main__":
     Config.lock()
 
     # Now that the config is locked, initialize log for plugin system.
-    FAKLogger(Config)
+    pyfirstaidkit.initLogger(Config)
 
     singlerun = Tasker(Config)
 

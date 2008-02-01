@@ -15,11 +15,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#from log import Logger
 from plugins import PluginSystem
 from reporting import Reports, TASKER
 import logging
 import copy
+import Logger
 
 class RunDependencies(object):
     """Encapsulate flags used to control the dependencies between plugins"""
