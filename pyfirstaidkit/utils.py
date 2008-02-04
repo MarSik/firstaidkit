@@ -31,7 +31,7 @@ Returns the error code returned by process"""
     if pid==0: #child
         os.chroot(chroot)
         os.execv(executable, params)
-        os.exit(1)
+        sys.exit(1)
     else:
         res = os.waitpid(pid, 0)
         return os.WEXITSTATUS(res)

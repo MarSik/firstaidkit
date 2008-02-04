@@ -19,6 +19,7 @@ from plugins import PluginSystem
 from reporting import Reports, TASKER
 import logging
 import copy
+from errors import *
 
 Logger=logging.getLogger("firstaidkit")
 
