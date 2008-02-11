@@ -44,7 +44,7 @@ class RunDependencies(object):
         if setactionflag: self._provide.add(id+"?")
 
     donotprovide = unprovide #alias
-    failed = #alias
+    failed = unprovide #alias
 
     def require(self, id):
         """Return True if flag is present, otherwise false"""
