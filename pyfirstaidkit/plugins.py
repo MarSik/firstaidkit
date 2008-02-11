@@ -99,6 +99,7 @@ class Plugin(object):
         self._dependencies = dependencies
 
         self.provide = dependencies.provide
+        self.unprovide = dependencies.unprovide
         self.require = dependencies.require
 
         #
@@ -164,6 +165,11 @@ class Plugin(object):
     @classmethod
     def getDeps(cls):
         """Return list of conditions required to be set before automated run can be done"""
+        return set()
+    
+    @classmethod
+    def getConflicts(cls):
+        """Return list of conditions required to be UNset before automated run can be done"""
         return set()
 
     #methods available only for instance, see interpreter.py and dependency stuff there
@@ -337,11 +343,19 @@ returns - True if conditions are fully satisfied
 
         if dependencies:
             deps = pklass.getDeps()
-            Logger.info("depends on: %s" % (", ".join(deps),))
-            for d in deps:
-                if not self._deps.require(d):
-                    Logger.info("depends on usatisfied condition: %s" % (d,))
-                    return False
+            if len(deps)>0:
+                Logger.info("depends on: %s" % (", ".join(deps),))
+                for d in deps:
+                    if not self._deps.require(d):
+                        Logger.info("depends on usatisfied condition: %s" % (d,))
+                        return False
+            deps = pklass.getConflicts()
+            if len(deps)>0:
+                Logger.info("depends on flags to be unset: %s" % (", ".join(deps),))
+                for d in deps:
+                    if self._deps.require(d):
+                        Logger.info("depends on condition to be UNset: %s" % (d,))
+                        return False
 
         p = pklass(flowName, reporting = self._reporting, dependencies = self._deps)
         for (step, rv) in p: #autorun all the needed steps

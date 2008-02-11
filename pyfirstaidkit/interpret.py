@@ -28,10 +28,23 @@ class RunDependencies(object):
     def __init__(self):
         self._provide = set()
 
-    def provide(self, id):
+    def provide(self, id, setactionflag = True):
         """Add flag"""
         Logger.info("Setting dependency flag %s", id)
         self._provide.add(id)
+        if setactionflag: self._provide.add(id+"?") #Action flags denote activity happening on some regular flag
+    
+    def unprovide(self, id, setactionflag = True):
+        """Remove flag"""
+        Logger.info("Resetting dependency flag %s", id)
+        try:
+            self._provide.remove(id)
+        except KeyError: #not there
+            pass
+        if setactionflag: self._provide.add(id+"?")
+
+    donotprovide = unprovide #alias
+    failed = #alias
 
     def require(self, id):
         """Return True if flag is present, otherwise false"""
