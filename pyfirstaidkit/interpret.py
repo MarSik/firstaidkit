@@ -72,6 +72,10 @@ class Tasker:
     def run(self):
         pluginSystem = self.pluginSystem
 
+        #initialize the startup set of flags
+        for flag in self._config.operation._list("flags"):
+            self._provide.provide(flag)
+
         if self._config.operation.mode == "auto":
             oldlist = set()
             actlist = set(pluginSystem.list())

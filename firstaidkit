@@ -54,13 +54,14 @@ def usage(name):
   -v               - verbose mode
   -l <method>      - select different log method
   -x <plugin>      - exclude plugin from run
+  -F <flag>        - set startup flag
   -g <gui>         - frontend to show results
   -h               - help
   --print-config   - print resulting config file
 """ % (name, name, name)
 
 if __name__=="__main__":
-    params, rest = getopt.getopt(sys.argv[1:], "ftc:r:vl:x:g:P:h", ["flow", "task", "config=", "root=", "verbose", "log=", "exclude=", "gui=", "plugin-path=", "print-config", "help"])
+    params, rest = getopt.getopt(sys.argv[1:], "ftc:r:vl:x:F:g:P:h", ["flow", "task", "config=", "root=", "verbose", "log=", "exclude=", "flag=", "gui=", "plugin-path=", "print-config", "help"])
     for key,val in params:
         if key in ("-t", "--task"):
             Config.operation.mode = "task"
@@ -77,6 +78,8 @@ if __name__=="__main__":
         elif key in ("-x", "--exclude"):
             Config.plugin.disabled = Config.plugin.disabled + ' "%s"' % (val.encode("string-escape"))
             print "Excluding plugin %s\n" % (val,)
+        elif key in ("-F", "--flag"):
+            Config.operation.flags = Config.operation.flags + ' "%s"' % (val.encode("string-escape"))
         elif key in ("-r", "--root"):
             Config.system.root = val
         elif key in ("-g", "--gui"):

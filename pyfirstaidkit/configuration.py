@@ -29,6 +29,7 @@ else:
 def createDefaultConfig(config):
     """Create the default config with the object."""
     config.system.root = "/mnt/sysimage"
+    config.operation.flags = ""
     config.operation.mode = "auto"
     config.operation.help = "False"
     config.operation.gui = "console"
