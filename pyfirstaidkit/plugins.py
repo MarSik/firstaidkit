@@ -275,6 +275,62 @@ class Plugin(object):
         if self.__class__ is Plugin:
             Logger.warning("Clean is an abstract method, it should be used as such.")
 
+class FlagTrackerPlugin(Plugin):
+    """This kind of plugin monitores all the flags in the system and when certain flags
+    are set, provides some kind of higher level flag.
+
+    Example:
+      monitor flags 'filesystem_drive', 'filesystem_lvm' and 'filesystem_ext3' and if
+      everything is ok set the master flag 'filesystem'"""
+
+    # Higher level master flag to set
+    #flag_decide = "x_decide"
+    flag_decide = None
+
+    # List of flags which have to be set for the higher level flag to be set
+    #flag_list = ["x_decide_1", "x_decide_2"]
+    flag_list = []
+
+    # Wait before we have acquired results from all needed flags
+    @classmethod
+    def getDeps(cls):
+        return set([x+"?" for x in cls.flag_list])
+
+    #
+    # The flow to use with the automated repair mode
+    #
+
+    default_flow = "deflogic"
+
+    #
+    # This is the default flow that all classes deriving from plugin must
+    # have.  As the initial state has no return value it will be indexed
+    # with the parent of all ReturnValue classes.
+    #
+    flows = Flow.init(Plugin)
+    flows["deflogic"] = Flow({
+            Plugin.initial : {ReturnValue: "decide"},
+            "decide"    : {ReturnValue: Plugin.final}
+            }, description="The default, fully automated, deciding sequence")
+
+    def decide(self):
+        """Decide about state of higher level flags."""
+         #We want these functions to be overridden by the plugin developer.
+        if self.__class__ is FlagTrackerPlugin:
+            Logger.warning("Decide is an abstract method, it should be used as such.")
+        
+        if self.flag_decide is None:
+            Logger.warning("You have to specify flag to set when everything is ok.")
+            return ReturnValue
+
+        for flag in self.flag_list:
+            if not self._dependencies.require(flag):
+                return ReturnValue
+
+        self._dependencies.provide(self.flag_decide)
+        return ReturnValue
+
+
 class PluginSystem(object):
     """Encapsulate all plugin detection and import stuff"""
 
