@@ -46,7 +46,7 @@ def createDefaultConfig(config):
     for root in ["firstaidkit-plugins", "firstaidkit-plugins/examples"]:
         for dir in [ "usr/lib64", "usr/lib"]:
             if os.path.exists( "/%s/%s" % (root,dir)):
-                config.paths.add_option( "%s-%s"%(dir[5:], root.replace("/", "-")),
+                config.paths.add_option( "%s-%s"%(dir[5:], root.replace("/", "_")),
                         "/%s/%s" %(root, dir) )
 
 
