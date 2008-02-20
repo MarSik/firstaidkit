@@ -335,41 +335,42 @@ class PluginSystem(object):
     """Encapsulate all plugin detection and import stuff"""
 
     def __init__(self, reporting, dependencies, config = Config):
-        self._path = Config.plugin.path
+        self._paths = Config.plugin.paths.split(',')
         self._reporting = reporting
         self._deps = dependencies
         self._plugins = {}
 
-        #create list of potential modules in the path
-        importlist = set()
-        for f in os.listdir(self._path):
-            fullpath = os.path.join(self._path, f)
-            Logger.debug("Processing file: %s", f)
-            if os.path.isdir(fullpath) and os.path.isfile(os.path.join(self._path, f, "__init__.py")):
-                importlist.add(f)
-                Logger.debug("Adding python module (directory): %s", f)
-            elif os.path.isfile(fullpath) and (f[-3:]==".so" or f[-3:]==".py"):
-                importlist.add(f[:-3])
-                Logger.debug("Adding python module (file): %s", f)
-            elif os.path.isfile(fullpath) and (f[-4:]==".pyc" or f[-4:]==".pyo"):
-                importlist.add(f[:-4])
-                Logger.debug("Adding python module (compiled): %s", f)
+        for path in self._paths:
+            #create list of potential modules in the path
+            importlist = set()
+            for f in os.listdir(path):
+                fullpath = os.path.join(path, f)
+                Logger.debug("Processing file: %s", f)
+                if os.path.isdir(fullpath) and os.path.isfile(os.path.join(path, f, "__init__.py")):
+                    importlist.add(f)
+                    Logger.debug("Adding python module (directory): %s", f)
+                elif os.path.isfile(fullpath) and (f[-3:]==".so" or f[-3:]==".py"):
+                    importlist.add(f[:-3])
+                    Logger.debug("Adding python module (file): %s", f)
+                elif os.path.isfile(fullpath) and (f[-4:]==".pyc" or f[-4:]==".pyo"):
+                    importlist.add(f[:-4])
+                    Logger.debug("Adding python module (compiled): %s", f)
 
-        #try to import the modules as FirstAidKit.plugins.modulename
-        for m in importlist:
-            if m in Config.plugin._list("disabled"):
-                continue
+            #try to import the modules as FirstAidKit.plugins.modulename
+            for m in importlist:
+                if m in Config.plugin._list("disabled"):
+                    continue
 
-            imp.acquire_lock()
-            try:
-                Logger.debug("Importing module %s from %s", m, self._path)
-                moduleinfo = imp.find_module(m, [self._path])
-                module = imp.load_module(".".join([FirstAidKit.__name__, m]), *moduleinfo)
-                Logger.debug("... OK")
-            finally:
-                imp.release_lock()
+                imp.acquire_lock()
+                try:
+                    Logger.debug("Importing module %s from %s", m, path)
+                    moduleinfo = imp.find_module(m, [path])
+                    module = imp.load_module(".".join([FirstAidKit.__name__, m]), *moduleinfo)
+                    Logger.debug("... OK")
+                finally:
+                    imp.release_lock()
 
-            self._plugins[m] = module
+                self._plugins[m] = module
 
     def list(self):
         """Return the list of imported plugins"""
