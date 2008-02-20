@@ -34,7 +34,6 @@ def createDefaultConfig(config):
     config.operation.help = "False"
     config.operation.gui = "console"
     config.operation.verbose = "False"
-    config.operation.gui = "console"
     config.log.method = "file"
     config.log.filename = "/var/log/firstaidkit.log"
     config.plugin.disabled = ""
