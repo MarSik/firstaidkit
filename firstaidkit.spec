@@ -58,10 +58,10 @@ needed firstaidkit plugins.
 %install
 %{__rm} -rf $RPM_BUILD_ROOT
 %{__python} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
-%{__install} -d $RPM_BUILD_ROOT%{_mandir}/man1
+%{__install} -d $RPM_BUILD_ROOT%{_mandir}/man1 $RPM_BUILD_ROOT%{_sysconfdir}
 %{__install} -p doc/fakplugin.1 doc/firstaidkit.1 $RPM_BUILD_ROOT%{_mandir}/man1
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/examples
-%{__install} -p etc/firstaidkit.conf $RPM_BUILD_ROOT%{_sysconfdir}/
+%{__install} -p etc/firstaidkit.conf $RPM_BUILD_ROOT%{_sysconfdir}
 
 %{__cp} -rfp plugins/* $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/examples
 
