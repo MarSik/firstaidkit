@@ -37,15 +37,18 @@ def createDefaultConfig(config):
     config.operation.gui = "console"
     config.log.method = "file"
     config.log.filename = "/var/log/firstaidkit.log"
+    config.plugin.disabled = ""
 
     #
-    # Look for the place where the plugins lie.
+    # Look for the place where the plugins lie.  Its going to be a coma separated list
     #
-    if os.path.exists("/usr/lib64"): libdir="lib64"
-    elif os.path.exists("/usr/lib"): libdir="lib"
-    else: raise
-    config.plugin.path = "/usr/%s/firstaidkit-plugins" % libdir
-    config.plugin.disabled = ""
+    config.plugin.paths = ""
+    for root in [ "usr/lib64", "usr/lib"]:
+        for dir in ["firstaidkit-plugins", "firstaidkit-plugins/examples"]
+            if os.path.exists( "/%s/%s", (root,dir)):
+                config.plugin.paths = config.plugins.paths+",/%s/%s",(root,dir)
+    config.plugin.paths = config.plugin.paths.strip(',')
+
 
 class LockedError(Exception):
     pass
