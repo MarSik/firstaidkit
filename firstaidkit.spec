@@ -61,6 +61,7 @@ needed firstaidkit plugins.
 %{__install} -d $RPM_BUILD_ROOT%{_mandir}/man1
 %{__install} -p doc/fakplugin.1 doc/firstaidkit.1 $RPM_BUILD_ROOT/%{_mandir}/man1
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/examples
+%{__install} -p etc/firstaidkit.conf $RPM_BUILD_ROOT/${_sysconfdir}
 
 %{__cp} -rfp plugins/* $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/examples
 
@@ -75,6 +76,7 @@ needed firstaidkit plugins.
 %{python_sitelib}/pyfirstaidkit
 %{python_sitelib}/%{name}-%{version}-py2.5.egg-info
 %{_bindir}/firstaidkit
+%{_sysconfdir}/firstaidkit.conf
 %attr(0644,root,root) %{_mandir}/man1/firstaidkit.1.gz
 
 %files devel
