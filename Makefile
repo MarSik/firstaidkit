@@ -21,3 +21,7 @@ RELEASE := $(shell awk '/Release:/ { print $$2 }' firstaidkit.spec)
 
 tarball:
 	git-archive --format=tar --prefix=$(NAME)-$(VERSION)/ HEAD | bzip2 -f > $(NAME)-$(VERSION).tar.bz2
+
+rpm-all: tarball
+	rpmbuild -ta $(NAME)-$(VERSION).tar.bz2
+	rm -f $(NAME)-$(VERSION).tar.bz2
