@@ -49,7 +49,8 @@ def usage(name):
  params is none or more items from:
   -c <config file> - select different config file
   -r <root path>   - where is the root directory?
-  -P <path>        - set different plugin path
+  -P <path>        - add different plugin path
+                     it can be used more than once
   -v               - verbose mode
   -l <method>      - select different log method
   -x <plugin>      - exclude plugin from run
@@ -98,7 +99,10 @@ if __name__=="__main__":
         elif key in ("-g", "--gui"):
             Config.operation.gui = val
         elif key in ("-P", "--plugin-path"):
-            Config.plugin.path = val
+            if not os.path.isdir(val):
+                print "%s is not a valid directory.  Exiting..."% val
+                sys.exit(1)
+            Config.set("paths", val.strip("/").replace("/","-"), val)
         elif key in ("--print-config"):
             Flags.print_config = True
         elif key in ("-h", "--help"):

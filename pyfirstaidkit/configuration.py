@@ -40,14 +40,15 @@ def createDefaultConfig(config):
     config.plugin.disabled = ""
 
     #
-    # Look for the place where the plugins lie.  Its going to be a coma separated list
+    # There will be 4 default places where FAK will look for plugins,  these 4 names
+    # will be reserved in the configuration.  lib{,64}-firstaidkit-{,examples}
     #
-    config.plugin.paths = ""
-    for root in [ "usr/lib64", "usr/lib"]:
-        for dir in ["firstaidkit-plugins", "firstaidkit-plugins/examples"]:
+    config.add_section("paths")
+    for root in ["firstaidkit-plugins", "firstaidkit-plugins/examples"]:
+        for dir in [ "usr/lib64", "usr/lib"]:
             if os.path.exists( "/%s/%s" % (root,dir)):
-                config.plugin.paths = config.plugin.paths+",/%s/%s"%(root,dir)
-    config.plugin.paths = config.plugin.paths.strip(',')
+                config.paths.add_option( "%s-%s"%(dir[5:], root.replace("/", "-")),
+                        "/%s/%s" %(root, dir) )
 
 
 class LockedError(Exception):
@@ -85,6 +86,16 @@ class FAKConfigSection(object):
             l.append(token)
             token = lex.get_token()
         return l
+
+    def valueItems(self):
+        """Usefull when you don't care about the name of the items."""
+        if not self.__dict__["configuration"].has_section(self.__dict__["section_name"]):
+            raise ConfigParser.NoSectionError(self.__dict__["section_name"])
+        tmpList = self.__dict__["configuration"].items(self.__dict__["section_name"])
+        retVal = []
+        for element in tmpList:
+            retVal.append(element[1])
+        return retVal
 
 
 class FAKConfigMixIn(object):

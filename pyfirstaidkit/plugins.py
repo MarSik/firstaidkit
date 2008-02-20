@@ -335,7 +335,7 @@ class PluginSystem(object):
     """Encapsulate all plugin detection and import stuff"""
 
     def __init__(self, reporting, dependencies, config = Config):
-        self._paths = Config.plugin.paths.split(',')
+        self._paths = Config.paths.valueItems()
         self._reporting = reporting
         self._deps = dependencies
         self._plugins = {}
