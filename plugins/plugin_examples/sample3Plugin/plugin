@@ -39,4 +39,3 @@ fi
 if [ $TASK = "restore" ]; then
     echo restore true
 fi
-

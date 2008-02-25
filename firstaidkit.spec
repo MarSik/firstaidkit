@@ -63,7 +63,7 @@ needed firstaidkit plugins.
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/examples
 %{__install} -p etc/firstaidkit.conf $RPM_BUILD_ROOT%{_sysconfdir}
 
-%{__cp} -rfp plugins/* $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/examples
+%{__cp} -rfp plugins/plugin_examples/* $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/examples
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
