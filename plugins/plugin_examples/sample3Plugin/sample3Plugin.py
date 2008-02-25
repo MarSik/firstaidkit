@@ -36,9 +36,9 @@ class Sample3Plugin(Plugin):
         (out, err) = proc.communicate()
         out = out.strip()
         if out[-5:] == "false":
-            self._result=Unfavorable
+            self._result=ReturnUnfavorable
         elif out[-4:] == "true":
-            self._result=Favorable
+            self._result=ReturnFavorable
 
     def clean(self):
         clean = [Config.plugin.path+"/sample3Plugin/plugin", "--task", "clean"]
@@ -46,9 +46,9 @@ class Sample3Plugin(Plugin):
         (out, err) = proc.communicate()
         out = out.strip()
         if out[-5:] == "false":
-            self._result=Unfavorable
+            self._result=ReturnUnfavorable
         elif out[-4:] == "true":
-            self._result=Favorable
+            self._result=ReturnFavorable
 
     def backup(self):
         backup = [Config.plugin.path+"/sample3Plugin/plugin", "--task", "backup"]
@@ -56,9 +56,9 @@ class Sample3Plugin(Plugin):
         (out, err) = proc.communicate()
         out = out.strip()
         if out[-5:] == "false":
-            self._result=Unfavorable
+            self._result=ReturnUnfavorable
         elif out[-4:] == "true":
-            self._result=Favorable
+            self._result=ReturnFavorable
 
     def restore(self):
         restore = [Config.plugin.path+"/sample3Plugin/plugin", "--task", "restore"]
@@ -66,9 +66,9 @@ class Sample3Plugin(Plugin):
         (out, err) = proc.communicate()
         out = out.strip()
         if out[-5:] == "false":
-            self._result=Unfavorable
+            self._result=ReturnUnfavorable
         elif out[-4:] == "true":
-            self._result=Favorable
+            self._result=ReturnFavorable
 
     def diagnose(self):
         diagnose = [Config.plugin.path+"/sample3Plugin/plugin", "--task", "diagnose"]
@@ -76,9 +76,9 @@ class Sample3Plugin(Plugin):
         (out, err) = proc.communicate()
         out = out.strip()
         if out[-5:] == "false":
-            self._result=Unfavorable
+            self._result=ReturnUnfavorable
         elif out[-4:] == "true":
-            self._result=Favorable
+            self._result=ReturnFavorable
 
     def fix(self):
         fix = [Config.plugin.path+"/sample3Plugin/plugin", "--task", "fix"]
@@ -86,6 +86,6 @@ class Sample3Plugin(Plugin):
         (out, err) = proc.communicate()
         out = out.strip()
         if out[-5:] == "false":
-            self._result=Unfavorable
+            self._result=ReturnUnfavorable
         elif out[-4:] == "true":
-            self._result=Favorable
+            self._result=ReturnFavorable

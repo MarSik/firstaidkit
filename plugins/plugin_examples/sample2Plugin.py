@@ -26,13 +26,13 @@ class Sample2Plugin(Plugin):
     flows = Flow.init(Plugin)
     flows["extra"] = Flow({
                     Plugin.initial: {ReturnValue: "prepare"},
-                    "prepare"     : {Favorable: "diagnose"},
-                    "diagnose"    : {Favorable: "clean", Unfavorable: "backup"},
-                    "backup"      : {Favorable: "fix", Unfavorable: "clean"},
-                    "restore"     : {Favorable: "clean", Unfavorable: "clean"},
-                    "fix"         : {Favorable: "extraStep", Unfavorable: "restore"},
-                    "extraStep"   : {Favorable: "clean", Unfavorable: "clean"},
-                    "clean"       : {Favorable: Plugin.final}
+                    "prepare"     : {ReturnFavorable: "diagnose"},
+                    "diagnose"    : {ReturnFavorable: "clean", ReturnUnfavorable: "backup"},
+                    "backup"      : {ReturnFavorable: "fix", ReturnUnfavorable: "clean"},
+                    "restore"     : {ReturnFavorable: "clean", ReturnUnfavorable: "clean"},
+                    "fix"         : {ReturnFavorable: "extraStep", ReturnUnfavorable: "restore"},
+                    "extraStep"   : {ReturnFavorable: "clean", ReturnUnfavorable: "clean"},
+                    "clean"       : {ReturnFavorable: Plugin.final}
                     }, description="Fixing sequence with one added extraStep")
     default_flow = "extra"
 
@@ -44,25 +44,25 @@ class Sample2Plugin(Plugin):
         Plugin.__init__(self, *args, **kwargs)
 
     def prepare(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
 
     def clean(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
 
     def backup(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
 
     def restore(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
 
     def diagnose(self):
-        self._result=Unfavorable
+        self._result=ReturnUnfavorable
 
     def fix(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
 
     def extraStep(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
 
 def get_plugin():
     return Sample2Plugin

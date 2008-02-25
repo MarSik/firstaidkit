@@ -80,12 +80,12 @@ class Plugin(object):
     #
     flows["defflow"] = Flow({
             initial : {ReturnValue: "prepare"},
-            "prepare"    : {Favorable: "diagnose"},
-            "diagnose"   : {Favorable: "clean", Unfavorable: "backup"},
-            "backup"     : {Favorable: "fix", Unfavorable: "clean"},
-            "fix"        : {Favorable: "clean", Unfavorable: "restore"},
-            "restore"    : {Favorable: "clean", Unfavorable: "clean"},
-            "clean"      : {Favorable: final}
+            "prepare"    : {ReturnFavorable: "diagnose"},
+            "diagnose"   : {ReturnFavorable: "clean", ReturnUnfavorable: "backup"},
+            "backup"     : {ReturnFavorable: "fix", ReturnUnfavorable: "clean"},
+            "fix"        : {ReturnFavorable: "clean", ReturnUnfavorable: "restore"},
+            "restore"    : {ReturnFavorable: "clean", ReturnUnfavorable: "clean"},
+            "clean"      : {ReturnFavorable: final}
             }, description="The default, fully automated, fixing sequence")
 
     def __init__(self, flow, reporting, dependencies):

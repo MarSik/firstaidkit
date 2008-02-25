@@ -31,23 +31,23 @@ class Sample1Plugin(Plugin):
         return set(["sample_dependency"]).union(Plugin.getDeps())
 
     def prepare(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
 
     def backup(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
 
     def restore(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
 
     def diagnose(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
         self.provide("sample_dependency2")
 
     def fix(self):
-        self._result=Unfavorable
+        self._result=ReturnUnfavorable
 
     def clean(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
 
 def get_plugin():
     return Sample1Plugin

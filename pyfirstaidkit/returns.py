@@ -59,7 +59,7 @@ class ReturnValueNone(ReturnValue):
 # is that the return value be of a specific class.
 #
 
-class Favorable(ReturnValue):
+class ReturnFavorable(ReturnValue):
     """Use whenever the result of a task is positive, expected or offers the
     least resistence.
 
@@ -67,7 +67,7 @@ class Favorable(ReturnValue):
     def __init__(self):
         pass
 
-class Unfavorable(ReturnValue):
+class ReturnUnfavorable(ReturnValue):
     """Used whenever the result of a task is not possitive, not expected or
     offerst the most resistence.
     """

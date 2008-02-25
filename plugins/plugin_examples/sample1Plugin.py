@@ -28,27 +28,27 @@ class Sample1Plugin(Plugin):
         self.reporting = kwargs.get('reporting')
 
     def prepare(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
         self.reporting.info("Sample1Plugin in Prepare task", self)
 
     def backup(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
         self.reporting.info("Sample1Plugin in backup task", self)
 
     def restore(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
         self.reporting.info("Sample1Plugin in Restore task", self)
 
     def diagnose(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
         self.reporting.info("Sample1Plugin in diagnose task", self)
 
     def fix(self):
-        self._result=Unfavorable
+        self._result=ReturnUnfavorable
         self.reporting.info("Sample1Plugin in Fix task", self)
 
     def clean(self):
-        self._result=Favorable
+        self._result=ReturnFavorable
         self.reporting.info("Sample1Plugin in Clean task", self)
 
 def get_plugin():
