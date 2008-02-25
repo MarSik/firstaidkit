@@ -40,3 +40,36 @@ class ReturnValueFalse(ReturnValue):
 class ReturnValueNone(ReturnValue):
     def __init__(self):
         self.value = None
+
+#
+# The Favorable and Unfavorable return classes are implemented to give a more
+# intuitive/logical approach to the default flow.  The value given to the return
+# of each task depends on the objectives of the task and of the place where the
+# task is situated inside the totality of the flow.
+# Examples:
+# 1. If the plugin is in the diagnose flow and if found nothing wrong with the
+#    system it is analysing, the return value would be Favorable.
+# 2. If the plugin is in backup and the backup action is unseccessfull, the
+#    proper return value would be Unfavorable.  In this Favorable would mean that
+#    the backup was successfull and the plugin can move toward the fix task.
+# 3. If the plugin is in fix stage and the problem was not fixed, the return
+#    value should be ResutltNotOk.  On the other hand if the fix has been done
+#    the return value should be Favorable.
+# Remember that the actual values of the classes is not checked,  what is checked
+# is that the return value be of a specific class.
+#
+
+class Favorable(ReturnValue):
+    """Use whenever the result of a task is positive, expected or offers the
+    least resistence.
+
+    """
+    def __init__(self):
+        pass
+
+class Unfavorable(ReturnValue):
+    """Used whenever the result of a task is not possitive, not expected or
+    offerst the most resistence.
+    """
+    def __init__(self):
+        pass

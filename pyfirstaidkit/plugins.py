@@ -80,12 +80,12 @@ class Plugin(object):
     #
     flows["defflow"] = Flow({
             initial : {ReturnValue: "prepare"},
-            "prepare"    : {ReturnValueTrue: "diagnose"},
-            "diagnose"   : {ReturnValueTrue: "clean", ReturnValueFalse: "backup"},
-            "backup"     : {ReturnValueTrue: "fix", ReturnValueFalse: "clean"},
-            "fix"        : {ReturnValueTrue: "clean", ReturnValueFalse: "restore"},
-            "restore"    : {ReturnValueTrue: "clean", ReturnValueFalse: "clean"},
-            "clean"      : {ReturnValueTrue: final}
+            "prepare"    : {Favorable: "diagnose"},
+            "diagnose"   : {Favorable: "clean", Unfavorable: "backup"},
+            "backup"     : {Favorable: "fix", Unfavorable: "clean"},
+            "fix"        : {Favorable: "clean", Unfavorable: "restore"},
+            "restore"    : {Favorable: "clean", Unfavorable: "clean"},
+            "clean"      : {Favorable: final}
             }, description="The default, fully automated, fixing sequence")
 
     def __init__(self, flow, reporting, dependencies):
@@ -240,7 +240,7 @@ class Plugin(object):
         """
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Clean is an abstract method, it should be used as such.")
+            Logger.warning("Prepare is an abstract method, it should be used as such.")
 
     def clean(self):
         """Final actions.
@@ -257,25 +257,25 @@ class Plugin(object):
         """Gather important information needed for restore."""
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Clean is an abstract method, it should be used as such.")
+            Logger.warning("Backup is an abstract method, it should be used as such.")
 
     def restore(self):
         """Try to restore the previous state described in backup."""
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Clean is an abstract method, it should be used as such.")
+            Logger.warning("Restore is an abstract method, it should be used as such.")
 
     def diagnose(self):
         """Diagnose the situation."""
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Clean is an abstract method, it should be used as such.")
+            Logger.warning("Diagnose is an abstract method, it should be used as such.")
 
     def fix(self):
         """Try to fix whatever is wrong in the system."""
          #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Clean is an abstract method, it should be used as such.")
+            Logger.warning("Fix is an abstract method, it should be used as such.")
 
 class FlagTrackerPlugin(Plugin):
     """This kind of plugin monitores all the flags in the system and when certain flags
