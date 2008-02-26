@@ -47,6 +47,8 @@ class Plugin(object):
     name = "Plugin"
     version = "0.0.0"
     author = "nobody"
+    description = ""
+
     #
     # Dictionary that holds all the flows.  The keys for each flow is its
     # name.  The flow will be addressed by this name.  The plugin developer
@@ -375,7 +377,7 @@ class PluginSystem(object):
     def list(self):
         """Return the list of imported plugins"""
         return self._plugins.keys()
-
+    
     def autorun(self, plugin, flow = None, dependencies = True):
         """Perform automated run of plugin with condition checking
 returns - True if conditions are fully satisfied
@@ -422,6 +424,6 @@ returns - True if conditions are fully satisfied
         return True
 
     def getplugin(self, plugin):
-        """Get instance of plugin, so we can call the steps manually"""
+        """Get top level class of plugin, so we can create the instance and call the steps manually"""
         return self._plugins[plugin].get_plugin()
 

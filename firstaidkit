@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import sys, getopt, os
+import sys, getopt
 from threading import Thread
 from pyfirstaidkit import Tasker
 from pyfirstaidkit import Config
@@ -58,11 +58,13 @@ def usage(name):
   -g <gui>         - frontend to show results
   -h               - help
   --print-config   - print resulting config file
+  --list           - list all plugins
+  --info <plugin>  - get information about plugin
 """ % (name, name, name)
 
 if __name__=="__main__":
     params, rest = getopt.getopt(sys.argv[1:], "ftc:r:vl:x:F:g:P:h",
-            ["flow", "task", "config=", "root=", "verbose", "log=", "exclude=",
+            ["list", "info=", "flow", "task", "config=", "root=", "verbose", "log=", "exclude=",
                 "flag=", "gui=", "plugin-path=", "print-config", "help"])
 
     #
@@ -70,11 +72,6 @@ if __name__=="__main__":
     #
     if len(params) == 0:
         Flags.main_help = True
-    if os.geteuid() != 0:
-        # Might want to add the "I want to execute anyway" option.
-        print "\nYou must be root to execute firstaidkit.\n"
-        usage(sys.argv[0])
-        sys.exit(1)
 
     for key,val in params:
         if key in ("-t", "--task"):
@@ -108,6 +105,12 @@ if __name__=="__main__":
         elif key in ("-h", "--help"):
             Config.operation.help = "True"
             Flags.main_help = True
+        elif key in ("--list"):
+            Config.operation.mode = "list"
+        elif key in ("--info"):
+            Config.operation.mode = "info"
+            Config.operation.params = val
+
     if Config.operation.mode == "flow":
         Config.operation.plugin = rest[0]
         if len(rest)<=1:

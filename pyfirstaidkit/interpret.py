@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+import os
 from plugins import PluginSystem
 from reporting import Reports, TASKER
 import logging
@@ -72,6 +73,14 @@ class Tasker:
     def run(self):
         pluginSystem = self.pluginSystem
 
+        # Check the root privilegies
+        if os.geteuid() == 0:
+            self._reporting.info("You are running the firstaidkit as root.", origin = TASKER)
+            self._provide.provide("root")
+        else:
+            self._reporting.info("You are not running the firstaidkit as root. Some plugins may not be available.", origin = TASKER)
+            self._provide.unprovide("root")
+
         #initialize the startup set of flags
         for flag in self._config.operation._list("flags"):
             self._provide.provide(flag)
@@ -96,6 +105,24 @@ class Tasker:
             pluginSystem.autorun(self._config.operation.plugin, dependencies = False)
         elif self._config.operation.mode == "task":
             pass
+        elif self._config.operation.mode == "list":
+            #get list of plugins
+            rep = []
+            for k in pluginSystem.list():
+                p = pluginSystem.getplugin(k)
+                flowinfo = [ (f, p.getFlow(f).description) for f in p.getFlows() ]
+                rep.append((k, p.name, p.version, p.author, p.description, p.default_flow, flowinfo))
+            self._reporting.table(rep, origin = TASKER)
+        elif self._config.operation.mode == "info":
+            #get info about plugin
+            try:
+                p = pluginSystem.getplugin(self._config.operation.params)
+            except KeyError:
+                Logger.error("No such plugin '%s'" % (self._config.operation.params,))
+                return False
+            flowinfo = [ (f, p.getFlow(f).description) for f in p.getFlows() ]
+            rep = {"id": self._config.operation.params, "name": p.name, "version": p.version, "author": p.author, "description": p.description, "flow": p.default_flow, "flows": flowinfo}
+            self._reporting.tree(rep, origin = TASKER)
         else:
             Logger.error("Incorrect task specified")
             return False

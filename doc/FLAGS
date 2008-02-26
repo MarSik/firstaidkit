@@ -10,6 +10,9 @@ unsafe
   This plugin works, but can cause damage when the planets are badly aligned. Run only if you know what are you doing.
   Do not providein any plugin! Dependency flag only!
 
+root
+  This plugin has to run in root environment. Dependency flag only!
+
 storage
   All storage related tests ran with Not applicable or OK results
 

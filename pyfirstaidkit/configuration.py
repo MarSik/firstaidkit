@@ -31,6 +31,7 @@ def createDefaultConfig(config):
     config.system.root = "/mnt/sysimage"
     config.operation.flags = ""
     config.operation.mode = "auto"
+    config.operation.params = ""
     config.operation.help = "False"
     config.operation.gui = "console"
     config.operation.verbose = "False"
