@@ -44,6 +44,7 @@ class Output(Thread):
 def usage(name):
     print """Usage:
  %s [params]
+ %s [params] -a
  %s [params] -f plugin flow
  %s [params] -t plugin task
  params is none or more items from:
@@ -63,8 +64,8 @@ def usage(name):
 """ % (name, name, name)
 
 if __name__=="__main__":
-    params, rest = getopt.getopt(sys.argv[1:], "ftc:r:vl:x:F:g:P:h",
-            ["list", "info=", "flow", "task", "config=", "root=", "verbose", "log=", "exclude=",
+    params, rest = getopt.getopt(sys.argv[1:], "aftc:r:vl:x:F:g:P:h",
+            ["list", "info=", "auto", "flow", "task", "config=", "root=", "verbose", "log=", "exclude=",
                 "flag=", "gui=", "plugin-path=", "print-config", "help"])
 
     #
@@ -76,6 +77,9 @@ if __name__=="__main__":
     for key,val in params:
         if key in ("-t", "--task"):
             Config.operation.mode = "task"
+            Flags.main_help = False
+        elif key in ("-a", "--auto"):
+            Config.operation.mode = "auto"
             Flags.main_help = False
         elif key in ("-f", "--flow"):
             Config.operation.mode = "flow"

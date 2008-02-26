@@ -66,7 +66,7 @@ class FAKConfigSection(object):
             raise ConfigParser.NoSectionError(self.__dict__["section_name"])
 
         if not self.__dict__["configuration"].has_option(self.__dict__["section_name"], key):
-            raise ConfigParser.NoOptionError(key)
+            raise ConfigParser.NoOptionError(key, self.__dict__["section_name"])
 
         return self.__dict__["configuration"].get(self.__dict__["section_name"], key)
 

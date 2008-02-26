@@ -27,23 +27,23 @@ class Sample1Plugin(Plugin):
         Plugin.__init__(self, *args, **kwargs)
 
     def prepare(self):
-        self._result=ReturnFavorable
+        self._result=ReturnSuccess
 
     def backup(self):
-        self._result=ReturnFavorable
+        self._result=ReturnSuccess
 
     def restore(self):
-        self._result=ReturnFavorable
+        self._result=ReturnSuccess
 
     def diagnose(self):
-        self._result=ReturnFavorable
+        self._result=ReturnSuccess
         self.provide("sample_dependency")
 
     def fix(self):
-        self._result=ReturnUnfavorable
+        self._result=ReturnFailure
 
     def clean(self):
-        self._result=ReturnFavorable
+        self._result=ReturnSuccess
 
 def get_plugin():
     return Sample1Plugin

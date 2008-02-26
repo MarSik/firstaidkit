@@ -76,16 +76,16 @@ class Plugin(object):
     #
     # This is the default flow that all classes deriving from plugin must
     # have.  As the initial state has no return value it will be indexed
-    # with the parent of all ReturnValue classes.
+    # with the parent of all Return classes.
     #
     flows["defflow"] = Flow({
-            initial : {ReturnValue: "prepare"},
-            "prepare"    : {ReturnFavorable: "diagnose"},
-            "diagnose"   : {ReturnFavorable: "clean", ReturnUnfavorable: "backup"},
-            "backup"     : {ReturnFavorable: "fix", ReturnUnfavorable: "clean"},
-            "fix"        : {ReturnFavorable: "clean", ReturnUnfavorable: "restore"},
-            "restore"    : {ReturnFavorable: "clean", ReturnUnfavorable: "clean"},
-            "clean"      : {ReturnFavorable: final}
+            initial : {Return: "prepare"},
+            "prepare"    : {ReturnSuccess: "diagnose"},
+            "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "backup"},
+            "backup"     : {ReturnSuccess: "fix", ReturnFailure: "clean"},
+            "fix"        : {ReturnSuccess: "clean", ReturnFailure: "restore"},
+            "restore"    : {ReturnSuccess: "clean", ReturnFailure: "clean"},
+            "clean"      : {ReturnSuccess: final, ReturnFailure: final}
             }, description="The default, fully automated, fixing sequence")
 
     def __init__(self, flow, reporting, dependencies):
@@ -198,10 +198,10 @@ class Plugin(object):
             state=self._state
             result=self._result
         # The self.initial state does not have any return code.
-        # It will only work with the ReturnValue.
+        # It will only work with the Return.
         try:
             if state == self.initial:
-                self._state = self.cflow[self.initial][ReturnValue]
+                self._state = self.cflow[self.initial][Return]
             else:
                 self._state = self.cflow[state][result]
             return self._state
@@ -307,12 +307,12 @@ class FlagTrackerPlugin(Plugin):
     #
     # This is the default flow that all classes deriving from plugin must
     # have.  As the initial state has no return value it will be indexed
-    # with the parent of all ReturnValue classes.
+    # with the parent of all Return classes.
     #
     flows = Flow.init(Plugin)
     flows["deflogic"] = Flow({
-            Plugin.initial : {ReturnValue: "decide"},
-            "decide"    : {ReturnValue: Plugin.final}
+            Plugin.initial : {Return: "decide"},
+            "decide"    : {Return: Plugin.final}
             }, description="The default, fully automated, deciding sequence")
 
     def decide(self):
@@ -323,14 +323,14 @@ class FlagTrackerPlugin(Plugin):
         
         if self.flag_decide is None:
             Logger.warning("You have to specify flag to set when everything is ok.")
-            return ReturnValue
+            return Return
 
         for flag in self.flag_list:
             if not self._dependencies.require(flag):
-                return ReturnValue
+                return Return
 
         self._dependencies.provide(self.flag_decide)
-        return ReturnValue
+        return Return
 
 
 class PluginSystem(object):
