@@ -61,7 +61,7 @@ def usage(name):
   --print-config   - print resulting config file
   --list           - list all plugins
   --info <plugin>  - get information about plugin
-""" % (name, name, name)
+""" % (name, name, name, name)
 
 if __name__=="__main__":
     params, rest = getopt.getopt(sys.argv[1:], "aftc:r:vl:x:F:g:P:h",
