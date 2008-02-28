@@ -19,12 +19,12 @@ from pyfirstaidkit.plugins import Plugin,Flow
 from pyfirstaidkit.returns import *
 
 class Sample2Plugin(Plugin):
-    """This plugin will defin one more function and use it in a newly defined flow."""
+    """This plugin will defin one more function and use it in a newly defined fix flow."""
     #
     # Additional flow defprepareion.
     #
     flows = Flow.init(Plugin)
-    flows["extra"] = Flow({
+    flows["fix"] = Flow({
                     Plugin.initial: {Return: "prepare"},
                     "prepare"     : {ReturnSuccess: "diagnose"},
                     "diagnose"    : {ReturnSuccess: "clean", ReturnFailure: "backup"},
@@ -34,7 +34,6 @@ class Sample2Plugin(Plugin):
                     "extraStep"   : {ReturnSuccess: "clean", ReturnFailure: "clean"},
                     "clean"       : {ReturnSuccess: Plugin.final}
                     }, description="Fixing sequence with one added extraStep")
-    default_flow = "extra"
 
     name = "Sample2Plugin"
     version = "0.0.1"

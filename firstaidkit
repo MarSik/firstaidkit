@@ -121,6 +121,10 @@ if __name__=="__main__":
             Config.operation.mode = "plugin"
         else:
             Config.operation.flow = rest[1]
+    elif Config.operation.mode == "auto":
+        if len(rest)>0:
+            Config.operation.mode = "auto-flow"
+            Config.operation.flow = rest[0]
     elif Config.operation.mode == "task":
         Config.operation.plugin = rest[0]
         Config.operation.task = rest[1]

@@ -85,14 +85,21 @@ class Tasker:
         for flag in self._config.operation._list("flags"):
             self._provide.provide(flag)
 
-        if self._config.operation.mode == "auto":
+        if self._config.operation.mode == "auto" or "auto-flow":
+            flow = None
+            if self._config.operation.mode == "auto-flow":
+                flow = self._config.operation.flow
             oldlist = set()
             actlist = set(pluginSystem.list())
             #iterate through plugins until there is no plugin left or no action performed during whole iteration
             while len(actlist)>0 and oldlist!=actlist:
                 oldlist = copy.copy(actlist)
                 for plugin in oldlist:
-                    if pluginSystem.autorun(plugin): #False when dependencies are not met
+                    #If plugin does not contain the automated flow or if it ran correctly, remove it from list
+                    if flow and not flow in pluginSystem.getplugin(plugin).getFlows():
+                        self._reporting.info("Plugin %s does not contain flow %s" % (plugin, flow,), origin = TASKER)
+                        actlist.remove(plugin)
+                    elif pluginSystem.autorun(plugin, flow = flow):
                         actlist.remove(plugin)
             for plugin in actlist:
                 self._reporting.info("Plugin %s was not called because of unsatisfied dependencies" % (plugin,), origin = TASKER, importance = logging.WARNING)

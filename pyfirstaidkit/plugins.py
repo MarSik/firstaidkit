@@ -53,9 +53,9 @@ class Plugin(object):
     # Dictionary that holds all the flows.  The keys for each flow is its
     # name.  The flow will be addressed by this name.  The plugin developer
     # Can add as many flows as he wants. The developer must use the instance.
-    # obj._flows["name"] = SomeFlow.  Be aware that you can overwirhte 
-    # previously added flows.  This class attribute has to be overriden by 
-    # each plugin.
+    # flows["name"] = SomeFlow.  Be aware that you can overwirhte 
+    # previously added flows.  This class attribute has to be initialized by 
+    # each plugin using flows = Flow.init(ParentClass)
     #
     flows = {}
 
@@ -68,17 +68,21 @@ class Plugin(object):
     final = 1
 
     #
-    # The flow to use with the automated repair mode
-    #
-
-    default_flow = "defflow"
-
-    #
     # This is the default flow that all classes deriving from plugin must
     # have.  As the initial state has no return value it will be indexed
     # with the parent of all Return classes.
     #
-    flows["defflow"] = Flow({
+    # The flow to use with the automated repair mode
+    # has to have name "fix". The flow for diagnose mode
+    # has to be named "diagnose"
+    #
+    flows["diagnose"] = Flow({
+            initial : {Return: "prepare"},
+            "prepare"    : {ReturnSuccess: "diagnose"},
+            "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "clean"},
+            "clean"      : {ReturnSuccess: final, ReturnFailure: final}
+            }, description="The default, fully automated, diagnose sequence")
+    flows["fix"] = Flow({
             initial : {Return: "prepare"},
             "prepare"    : {ReturnSuccess: "diagnose"},
             "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "backup"},
@@ -87,6 +91,12 @@ class Plugin(object):
             "restore"    : {ReturnSuccess: "clean", ReturnFailure: "clean"},
             "clean"      : {ReturnSuccess: final, ReturnFailure: final}
             }, description="The default, fully automated, fixing sequence")
+
+    # By default, when no other parameters are passed, we use the diagnose flow as
+    # the default flow to run. You can change this, BUT it MUST always be a non-changing
+    # non-destructive and safe flow, which does the diagnostics
+
+    default_flow = "diagnose"
 
     def __init__(self, flow, reporting, dependencies):
         """ Initialize the instance.
@@ -299,21 +309,21 @@ class FlagTrackerPlugin(Plugin):
         return set([x+"?" for x in cls.flag_list])
 
     #
-    # The flow to use with the automated repair mode
-    #
-
-    default_flow = "deflogic"
-
-    #
     # This is the default flow that all classes deriving from plugin must
     # have.  As the initial state has no return value it will be indexed
     # with the parent of all Return classes.
     #
+    # The flow to use with the automated repair mode
+    # has to have name "fix". The flow for diagnose mode
+    # has to be named "diagnose"
+    #
+
     flows = Flow.init(Plugin)
-    flows["deflogic"] = Flow({
+    flows["diagnose"] = Flow({
             Plugin.initial : {Return: "decide"},
             "decide"    : {Return: Plugin.final}
             }, description="The default, fully automated, deciding sequence")
+    flows["fix"] = flows["diagnose"]
 
     def decide(self):
         """Decide about state of higher level flags."""
