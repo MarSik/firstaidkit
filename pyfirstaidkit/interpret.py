@@ -85,7 +85,7 @@ class Tasker:
         for flag in self._config.operation._list("flags"):
             self._provide.provide(flag)
 
-        if self._config.operation.mode == "auto" or "auto-flow":
+        if self._config.operation.mode in ("auto", "auto-flow"):
             flow = None
             if self._config.operation.mode == "auto-flow":
                 flow = self._config.operation.flow
