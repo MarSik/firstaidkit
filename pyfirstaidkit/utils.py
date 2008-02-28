@@ -19,20 +19,23 @@ import os
 import sys
 import subprocess
 
-def spawnvch(executable, params, chroot): #returns errorcode
-    """Simpliest chroot modification of spawn
+def chroot_func(dir):
+    def do_chroot():
+        return os.chroot(dir)
+
+    if os.path.abspath(dir)=="/":
+        return lambda: True
+    else:
+        return do_chroot
+
+def spawnvch(executable, args, chroot, env = None):
+    """Use Popen to launch program in chroot
  executable - path to binary to execute (in chroot!)
- params - it's parameters
+ args - it's parameters
  chroot - directory to chroot to
 
-Returns the error code returned by process"""
+Returns the subprocess.Popen object"""
 
-    pid = os.fork()
-    if pid==0: #child
-        os.chroot(chroot)
-        os.execv(executable, params)
-        sys.exit(1)
-    else:
-        res = os.waitpid(pid, 0)
-        return os.WEXITSTATUS(res)
+    return subprocess.Popen(executable = executable, args = args, preexec_fn = chroot_func(chroot), env = env,
+            stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
