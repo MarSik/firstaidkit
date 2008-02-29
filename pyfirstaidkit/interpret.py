@@ -96,8 +96,8 @@ class Tasker:
                 oldlist = copy.copy(actlist)
                 for plugin in oldlist:
                     #If plugin does not contain the automated flow or if it ran correctly, remove it from list
-                    if flow and not flow in pluginSystem.getplugin(plugin).getFlows():
-                        self._reporting.info("Plugin %s does not contain flow %s" % (plugin, flow,), origin = TASKER)
+                    if (flow and not flow in pluginSystem.getplugin(plugin).getFlows()) or (not flow and not pluginSystem.getplugin(plugin).default_flow in pluginSystem.getplugin(plugin).getFlows()):
+                        self._reporting.info("Plugin %s does not contain flow %s" % (plugin, flow or pluginSystem.getplugin(plugin).default_flow,), origin = TASKER)
                         actlist.remove(plugin)
                     elif pluginSystem.autorun(plugin, flow = flow):
                         actlist.remove(plugin)
