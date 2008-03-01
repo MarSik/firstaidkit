@@ -167,7 +167,6 @@ rescuable(PedDisk * disk, PedSector start, PedSector end){
                 &sect_geom, &entire_dev, 1, disk->dev->length);
 
         part = ped_partition_new (disk, part_type, NULL, s, end);
-//printf("1\n");
         if(!part){
             ped_disk_remove_partition(disk, part);
             ped_constraint_done(&disk_constraint);
@@ -175,7 +174,6 @@ rescuable(PedDisk * disk, PedSector start, PedSector end){
             continue;
         }
 
-//printf("2\n");
         /* add the partition to the disk */
         if(!ped_disk_add_partition(disk, part, &disk_constraint)){
             ped_disk_remove_partition(disk, part);
@@ -184,7 +182,6 @@ rescuable(PedDisk * disk, PedSector start, PedSector end){
             continue;
         }
 
-//printf("3\n");
         /* try to detect filesystem in the partition region */
         fs_type = ped_file_system_probe(&part->geom);
         if(!fs_type){
@@ -194,7 +191,6 @@ rescuable(PedDisk * disk, PedSector start, PedSector end){
             continue;
         }
 
-//printf("4\n");
         /* try to find the exact region the filesystem ocupies */
         probed = ped_file_system_probe_specific(fs_type, &part->geom);
         if(!probed){
@@ -205,7 +201,6 @@ rescuable(PedDisk * disk, PedSector start, PedSector end){
             continue;
         }
 
-//printf("5\n");
         /* see if probed is inside the partition region */
         if(!ped_geometry_test_inside(&part->geom, probed)) {
             ped_disk_remove_partition(disk, part);
@@ -215,11 +210,9 @@ rescuable(PedDisk * disk, PedSector start, PedSector end){
             continue;
         }
 
-//printf("6\n");
         /* create a constraint for the probed region */
         part_constraint = ped_constraint_exact (probed);
 
-//printf("7\n");
         /* set the region for the partition */
         if (!ped_disk_set_partition_geom (part->disk, part, part_constraint,
                                           probed->start, probed->end)) {
@@ -230,7 +223,6 @@ rescuable(PedDisk * disk, PedSector start, PedSector end){
             part = NULL;
             continue;
         }
-//printf("8\n");
         break;
     }
     ped_exception_leave_all();// show errors.
@@ -240,7 +232,6 @@ rescuable(PedDisk * disk, PedSector start, PedSector end){
 //        ped_geometry_destroy(probed);
 //        ped_geometry_destroy(entire_dev);
 //    }
-    printf("returnrin\n");
     return part;
 }
 
@@ -421,11 +412,9 @@ undelpart_getRescuable(PyObject * self, PyObject * args){
             continue;
         }
 
-        printf(" current %d, part->geomS %d, part->geom %d, num %d\n", current, part->geom.start, part->geom.end, part->num);
         if(part->num == -1 && part->geom.start < part->geom.end){
             /* There might be a partition between current and part->geom.start */
             recoverablePart = rescuable(clone, part->geom.start, part->geom.end);
-            //printf("after the rescuable\n");
             if(recoverablePart != NULL){
                 /* create the python object */
                 tempList = _getPPartList(recoverablePart->num,
@@ -444,7 +433,6 @@ undelpart_getRescuable(PyObject * self, PyObject * args){
                 clone = NULL;
             }
         }
-        //printf("next partitino\n");
         part = ped_disk_next_partition(disk, part);
     }
 
