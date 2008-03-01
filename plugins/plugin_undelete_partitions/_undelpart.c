@@ -172,15 +172,24 @@ add_partition(PedDisk * disk, partElem part){
         ped_constraint_init (&disk_constraint, ped_alignment_any, ped_alignment_any,
                 &sect_geom, &entire_dev, 1, disk->dev->length);
 
+<<<<<<< HEAD:plugins/plugin_undelete_partitions/_undelpart.c
         parttemp = ped_partition_new (disk, part_type, NULL, s, part.partend);
         if(!parttemp){
             ped_disk_remove_partition(disk, parttemp);
+=======
+        part = ped_partition_new (disk, part_type, NULL, s, end);
+        if(!part){
+            ped_disk_remove_partition(disk, part);
+>>>>>>> take away print messages.:plugins/plugin_undelete_partitions/_undelpart.c
             ped_constraint_done(&disk_constraint);
             parttemp = NULL;
             continue;
         }
 
+<<<<<<< HEAD:plugins/plugin_undelete_partitions/_undelpart.c
 
+=======
+>>>>>>> take away print messages.:plugins/plugin_undelete_partitions/_undelpart.c
         /* add the partition to the disk */
         ped_exception_fetch_all(); //dont show errors
         if(!ped_disk_add_partition(disk, parttemp, &disk_constraint)){
@@ -232,13 +241,66 @@ add_partition(PedDisk * disk, partElem part){
             parttemp = NULL;
             continue;
         }
+<<<<<<< HEAD:plugins/plugin_undelete_partitions/_undelpart.c
         ped_partition_set_system(parttemp, fs_type);
         ped_disk_commit(disk);
         ped_disk_commit_to_dev(disk);
         ped_disk_commit_to_os(disk);
+=======
+>>>>>>> take away print messages.:plugins/plugin_undelete_partitions/_undelpart.c
         break;
     }
+<<<<<<< HEAD:plugins/plugin_undelete_partitions/_undelpart.c
    return parttemp;
+=======
+    ped_exception_leave_all();// show errors.
+//    if(part != NULL){
+//        ped_constraint_done(part_constraint);
+//        ped_constraint_done(&disk_constraint);
+//        ped_geometry_destroy(probed);
+//        ped_geometry_destroy(entire_dev);
+//    }
+    return part;
+}
+
+/*
+ * Copy from parted.
+ */
+static int add_partition(PedPartition * part){
+    const PedFileSystemType*        fs_type;
+    PedGeometry*                    probed;
+    PedExceptionOption              ex_opt;
+    PedConstraint*                  constraint;
+    char*                           found_start;
+    char*                           found_end;
+
+    fs_type = ped_file_system_probe (&part->geom);
+    if (!fs_type)
+            return 0;
+    probed = ped_file_system_probe_specific (fs_type, &part->geom);
+    if (!probed)
+            return 0;
+
+    if (!ped_geometry_test_inside (&part->geom, probed)) {
+            ped_geometry_destroy (probed);
+            return 0;
+    }
+
+    constraint = ped_constraint_exact (probed);
+    if (!ped_disk_set_partition_geom (part->disk, part, constraint,
+                                      probed->start, probed->end)) {
+            ped_constraint_destroy (constraint);
+            return 0;
+    }
+    ped_constraint_destroy (constraint);
+
+    found_start = ped_unit_format (probed->dev, probed->start);
+    found_end = ped_unit_format (probed->dev, probed->end);
+
+    ped_partition_set_system (part, fs_type);
+    ped_disk_commit (part->disk);
+    return 1;
+>>>>>>> take away print messages.:plugins/plugin_undelete_partitions/_undelpart.c
 }
 
 /* Pythong facing functions.
@@ -361,19 +423,41 @@ undelpart_getRescuable(PyObject * self, PyObject * args){
      * the numpart is less than 1.  The basic idea is to traverse all the partitions
      * and look for holes in between.
      */
-    for(part = ped_disk_next_partition(disk, NULL); part ;
-            part = ped_disk_next_partition(disk, part) ){
-        // All partitions with partnum less than 1 is a possibility.
-        if(part->num < 1 && part->geom.start < part->geom.end){
-            /* create the python object */
-            tempList = _getPPartList(part->num, part->geom.start, part->geom.end);
-            /* Append the list to the return value */
-            if(tempList == NULL || PyList_Append(partitions, tempList) == -1){
-                PyErr_SetString(PyExc_StandardError,
-                        "Error creating the partition information.");
-                goto handle_error_destroy_disk;
+   start = (PedSector)0;
+    current = start;
+    end = dev->length;
+    part = ped_disk_next_partition(disk, NULL);
+    while(part){
+
+        /* We clone the disk to avoid strangeness in the loop with the disk object */
+        clone = ped_disk_duplicate(disk);
+        if(clone == NULL){
+            part = ped_disk_next_partition(disk, part);
+            continue;
+        }
+
+        if(part->num == -1 && part->geom.start < part->geom.end){
+            /* There might be a partition between current and part->geom.start */
+            recoverablePart = rescuable(clone, part->geom.start, part->geom.end);
+            if(recoverablePart != NULL){
+                /* create the python object */
+                tempList = _getPPartList(recoverablePart->num,
+                        recoverablePart->geom.start,
+                        recoverablePart->geom.end);
+                /* Append the list to the return value */
+                if(tempList == NULL || PyList_Append(partitions, tempList) == -1){
+                    PyErr_SetString(PyExc_StandardError,
+                            "Error creating the partition information.");
+                    goto handle_error;
+                }
+                /* free used objects */
+                ped_disk_remove_partition(clone, recoverablePart);
+                ped_disk_destroy(clone);
+                recoverablePart = NULL;
+                clone = NULL;
             }
         }
+        part = ped_disk_next_partition(disk, part);
     }
     ped_disk_destroy(disk);
 
