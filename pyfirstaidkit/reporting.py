@@ -36,6 +36,7 @@ ALERT = 4
 EXCEPTION = 5
 TABLE = 6 #types for arbitrary table-like organized iterables
 TREE = 7  #nested iterables organized as tree
+QUESTION = 999 #type of message which contains respond-to field
 END = 1000 #End of operations, final message
 
 class Reports(object):
@@ -54,17 +55,33 @@ class Reports(object):
                 (on step x from y steps) or None to hide the progress
               for START and STOP, there is no mandatory message and the
                 importance specifies the level
+    reply - the instance of Queue.Queue, which should receive the replies
+    title - title of the message
     """
 
     def __init__(self, maxsize=-1):
         self._queue = Queue.Queue(maxsize = maxsize)
+        self._mailboxes = []
 
-    def put(self, message, origin, semantics, importance = logging.INFO):
-        return self._queue.put((origin, semantics, importance, message))
+    def put(self, message, origin, semantics, importance = logging.INFO, reply = None, title = "", destination = None):
+        if destination is None:
+            destination = self._queue
+        return destination.put({"origin": origin, "semantics": semantics, "importance": importance, "message": message, "reply": reply, "title": title})
 
-    def get(self, *args, **kwargs):
-        return self._queue.get(*args, **kwargs)
+    def get(self, mailbox = None, *args, **kwargs):
+        if mailbox is None:
+            mailbox = self._queue
+        return mailbox.get(*args, **kwargs)
 
+    def openMailbox(self, maxsize=-1):
+        """Allocate new mailbox for replies"""
+        mb = Queue.Queue(maxsize = maxsize)
+        self._mailboxes.append(mb)
+        return mb
+
+    def closeMailbox(self, mb):
+        """Close mailbox when not needed anymore"""
+        self._mailboxes.remove(mb)
 
     #There will be helper methods inspired by logging module
     def end(self):

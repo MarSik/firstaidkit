@@ -36,7 +36,7 @@ class Output(Thread):
     def run(self):
         while self._running:
             message = self._queue.get()
-            if message[2]==reporting.END:
+            if message["semantics"]==reporting.END:
                 self._running = False
                 continue
             print message
