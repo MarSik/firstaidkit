@@ -18,6 +18,7 @@
 from pyfirstaidkit.plugins import Plugin,Flow
 from pyfirstaidkit.returns import *
 from pyfirstaidkit.utils import *
+from pyfirstaidkit.reporting import PLUGIN
 from pyfirstaidkit import Config
 from random import Random
 
@@ -54,6 +55,8 @@ class PasswdPlugin(Plugin):
             newpasswd.append(rng.choice(charlist))
 
         print spawnvch(executable = "/usr/bin/passwd", args = ["/usr/bin/passwd", "root"], chroot = Config.system.root).communicate(input = newpasswd+"\n"+newpasswd+"\n")
+
+        self._reporting.info("Root password was reset to '%s'" % (newpasswd,), origin = PLUGIN)
 
         self._result=Return
 
