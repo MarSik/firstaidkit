@@ -236,42 +236,82 @@ rescuable(PedDisk * disk, PedSector start, PedSector end){
 }
 
 /*
- * Copy from parted.
+ * Copy from parted.  This function will not check for the validity of the
+ * sectors given by part.  If the sectors are invalid it will fail.  If you
+ * want to know if a specific partition is rescuable use rescuable method.
  */
-static int add_partition(PedPartition * part){
-    const PedFileSystemType*        fs_type;
-    PedGeometry*                    probed;
-    PedExceptionOption              ex_opt;
-    PedConstraint*                  constraint;
-    char*                           found_start;
-    char*                           found_end;
+static int
+add_partition(PedDisk * disk, partElem partelem){
 
-    fs_type = ped_file_system_probe (&part->geom);
-    if (!fs_type)
-            return 0;
-    probed = ped_file_system_probe_specific (fs_type, &part->geom);
-    if (!probed)
-            return 0;
+    PedFileSystemType * fs_type;
+    PedPartitionType part_type;
+    PedPartition * part;
+    PedGeometry * probed;
+    PedConstraint * part_constraint;
 
-    if (!ped_geometry_test_inside (&part->geom, probed)) {
-            ped_geometry_destroy (probed);
-            return 0;
+
+    part_type = _disk_get_part_type_for_sector(disk,
+            (partelem.partstart + partelem.partend) /2 );
+    part = ped_partition_new (disk, part_type, NULL, partelem.partstart,
+            partelem.partend);
+    if(!part)
+        return 0;
+
+    /* add the partition to the disk */
+//    if(!ped_disk_add_partition(disk, part, &disk_constraint)){
+//        ped_disk_remove_partition(disk, part);
+//        ped_constraint_done(&disk_constraint);
+//        part = NULL;
+//        continue;
+//    }
+//
+    /* try to detect filesystem in the partition region */
+    fs_type = ped_file_system_probe(&part->geom);
+    if(!fs_type){
+        ped_partition_destroy(part);
+        goto handle_error;
     }
 
-    constraint = ped_constraint_exact (probed);
-    if (!ped_disk_set_partition_geom (part->disk, part, constraint,
+    /* try to find the exact region the filesystem ocupies */
+    probed = ped_file_system_probe_specific(fs_type, &part->geom);
+    if(!probed){
+        ped_geometry_destroy(probed);
+        ped_partition_destroy(part);
+        goto handle_error;
+    }
+
+    /* see if probed is inside the partition region */
+    if(!ped_geometry_test_inside(&part->geom, probed)) {
+        ped_geometry_destroy(probed);
+        ped_partition_destroy(part);
+        goto handle_error;
+    }
+
+    /* create a constraint for the probed region */
+    part_constraint = ped_constraint_exact (probed);
+
+    /* set the region for the partition */
+    if (!ped_disk_set_partition_geom (part->disk, part, part_constraint,
                                       probed->start, probed->end)) {
-            ped_constraint_destroy (constraint);
-            return 0;
+        ped_constraint_done(part_constraint);
+        ped_geometry_destroy(probed);
+        ped_partition_destroy(part);
+        goto handle_error;
     }
-    ped_constraint_destroy (constraint);
 
-    found_start = ped_unit_format (probed->dev, probed->start);
-    found_end = ped_unit_format (probed->dev, probed->end);
+    if(!ped_disk_add_partition(disk, part, part_constraint)){
+        ped_constraint_done(part_constraint);
+        ped_geometry_destroy(probed);
+        ped_partition_destroy(part);
+        goto handle_error;
+    }
+    ped_partition_set_system(part, fs_type);
 
-    ped_partition_set_system (part, fs_type);
-    ped_disk_commit (part->disk);
     return 1;
+
+    handle_error:
+    return 0;
+
 }
 
 /* Pythong facing functions.
@@ -528,20 +568,16 @@ undelpart_getPartitionList(PyObject * self, PyObject * args){
 static PyObject *
 undelpart_setPartitionList(PyObject * self, PyObject * args){
 
-    PedPartitionType part_type;
     PedDisk * disk;
-    PedDevice * dev;
     PedPartition * part; //individual partitions.
 
     PyObject * partList; //list of partitions.
-    PyObject * tempList;
-    PyObject * partNum, * partStart, * partEnd;
 
-    partElem * _partList; //Resulting list from the python object.
-    partElem * _partListSystem; //partitions that are in the system.
-    int partListSize = 0; //The size of both python and local lists.
-    int i,j;
-    int inTheList, inTheSystem;
+    partElem * _partList, * _toErase, * _toAdd;//arrays.
+    int _partListSize = 0, _toEraseSize = 0, _toAddSize = 0;//array sizes
+    int aOffset = 0, eOffset = 0; //array offsets
+    int erasable;
+    int i;
     char * path;
 
     /* Check the arguments */
@@ -556,82 +592,93 @@ undelpart_setPartitionList(PyObject * self, PyObject * args){
     }
 
     /* Put the values of the list into a array of partElem */
-    partListSize = PyList_Size(partList);
-    _partList[partListSize+1];
-    for(i=0; i < partListSize ; i++){
+    _partListSize = PyList_Size(partList);
+    _partList[_partListSize+1];
+    for(i=0; i < _partListSize ; i++){
         _partList[i] = _getCPartList(PyList_GetItem(partList, i));
         if( PyErr_Occurred() || _partList[i].partnum == -1 )
             goto handle_error;
     }
-    _partList[partListSize].partnum = '\0';
+    _partList[_partListSize].partnum = '\0';
 
-    /* create the disk an dev */
+    /* create the disk */
     disk = _getDiskFromPath(path);
     if(disk == NULL){
         PyErr_SetString(PyExc_StandardError, "Error reading disk information.");
         goto handle_error;
     }
-    dev = disk->dev;
 
-    /* Travers all the disks and erase the ones that are not on the list */
-    inTheList = 0;
-    _partListSystem[partListSize+1];
-    _partListSystem[0].partnum = '\0';
-    j=0; //it will be the offset of _partListSystem
-    for(part = ped_disk_next_partition(disk, NULL) ;  part ; 
+    /*
+     * create the erasable array
+     */
+    // our size will be the greates part number for disk.
+    _toEraseSize = ped_disk_get_last_partition_num(disk);
+    // cannot modify disk in the for.
+    for(part = ped_disk_next_partition(disk, NULL) ;  part ;
             part = ped_disk_next_partition(disk, part)){
-        if(part->num < 0)
-            continue;
-
-        /*look at the list*/
-        for(i=0 ; _partList[i].partnum != '\0' ; i++){
-            if(part->num == _partList[i].partnum){
-                inTheList = 1;
-                _partListSystem[j] = _partList[i];
-                _partListSystem[++j].partnum = '\0';
+        erasable = 1;
+        for(i=0; _partList[i].partnum != '\0'; i++){
+             if(part->num == _partList[i].partnum){
+                erasable = 0;
                 break;
             }
         }
-
-        if(! inTheList){
-            if(ped_disk_remove_partition(disk, part)){
-                PyErr_SetString(PyExc_StandardError,
-                        "Could not remove partition from disk.");
-                goto handle_error;
-            }
+        if(erasable){
+            _toErase[eOffset] = _partList[i];
+            _toErase[++eOffset].partnum = '\0';
         }
-        inTheList = 0;
     }
 
-    /* Travers all the disks and erase the ones that are not on the system */
-    inTheSystem = 0;
+    /*
+     * Create the addable array
+     */
     for(i=0; _partList[i].partnum != '\0' ; i++){
-        for(j=0; _partListSystem[j].partnum != '\0' ; j++){
-            if(_partList[i].partnum == _partListSystem[j].partnum){
-                inTheSystem = 1;
-                break;
-            }
+        part = ped_disk_get_partition(disk, i);
+        if(part == NULL){
+            _toAdd[aOffset] = _partList[i];
+            _toAdd[++aOffset].partnum = '\0';
         }
+        ped_partition_destroy(part);//might be overkill here.
+    }
 
-        if(! inTheSystem){
-            /* try to add the partition */
-
-            part_type = _disk_get_part_type_for_sector(disk,
-                    (_partList[i].partstart + _partList[i].partend) /2 );
-            part = ped_partition_new (disk, part_type, NULL,
-                    _partList[i].partstart, _partList[i].partend);
-            if(part)
-                add_partition(part);
-            inTheSystem=0;
+    /*
+     * We add and erase and commit.
+     */
+    for(i=0; _toErase[i].partnum != '\0'; i++){
+        part = ped_disk_get_partition(disk, i);
+        if(part == NULL){
+            PyErr_SetString(PyExc_StandardError,
+                    "Error reading partition partition.");
+            goto handle_error;
+        }
+        if(!ped_disk_delete_partition(disk, part)){
+            PyErr_SetString(PyExc_StandardError, "Error deleting partition.");
+            goto handle_error;
         }
     }
+    for(i=0; _toAdd[i].partnum != '\0'; i++){
+        if(!add_partition(disk, _toAdd[i])){
+            PyErr_SetString(PyExc_StandardError, "Error adding partition.");
+            goto handle_error;
+        }
+    }
+    if(!ped_disk_check(disk)){
+        PyErr_SetString(PyExc_StandardError,
+                "The resulting partition table is invalid.");
+        goto handle_error;
+    }
+    // commit to the device and tell the operating system about it.
+    if( !ped_disk_commit_to_dev(disk) && !ped_disk_commit_to_os(disk)){
+        PyErr_SetString(PyExc_StandardError,
+                "Could not commit partition table to device or os.");
+        goto handle_error;
+    }
+
 
     return Py_True;
 
     handle_error:
-
     assert(PyErr_Occurred());
-
     return NULL;
 }
 
@@ -700,7 +747,7 @@ undelpart_rescue(PyObject * self, PyObject * args){
                 (_partList[i].partstart + _partList[i].partend) /2 );
         part = ped_partition_new (disk, part_type, NULL,
                 _partList[i].partstart, _partList[i].partend);
-        if(part && add_partition(part)){
+        if(part && add_partition(disk, _partList[i])){
             tempList = _getPPartList(part->num, part->geom.start, part->geom.end);
             /* Append the list to the return value */
             if(tempList == NULL || PyList_Append(rescuedParts, tempList) == -1){
