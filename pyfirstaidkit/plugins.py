@@ -98,17 +98,19 @@ class Plugin(object):
 
     default_flow = "diagnose"
 
-    def __init__(self, flow, reporting, dependencies):
+    def __init__(self, flow, reporting, dependencies, path = None):
         """ Initialize the instance.
 
         flow -- Name of the flow to be used with this instance.
         reporting -- object used to report information to the user
         dependencies -- object encapsulating the inter-plugin dependency API (require, provide)
+        path -- directory from where was this plugin imported
 
         The flow is defined in the __init__ so we don't have to worry about changing it.
         """
         self._reporting = reporting
         self._dependencies = dependencies
+        self._path = path
 
         self.provide = dependencies.provide
         self.unprovide = dependencies.unprovide
@@ -383,6 +385,7 @@ class PluginSystem(object):
                     imp.release_lock()
 
                 self._plugins[m] = module
+                Logger.debug("Module %s successfully imported with basedir %s", m, os.path.dirname(module.__file__))
 
     def list(self):
         """Return the list of imported plugins"""
@@ -395,6 +398,7 @@ returns - True if conditions are fully satisfied
           exception when some other error happens"""
 
         pklass = self._plugins[plugin].get_plugin() #get top level class of plugin
+        plugindir = os.path.dirname(self._plugins[plugin].__file__)
         Logger.info("Plugin information...")
         Logger.info("name:%s , version:%s , author:%s " % pklass.info())
 
@@ -426,7 +430,7 @@ returns - True if conditions are fully satisfied
                         Logger.info("depends on condition to be UNset: %s" % (d,))
                         return False
 
-        p = pklass(flowName, reporting = self._reporting, dependencies = self._deps)
+        p = pklass(flowName, reporting = self._reporting, dependencies = self._deps, path = plugindir)
         for (step, rv) in p: #autorun all the needed steps
             Logger.info("Running step %s in plugin %s ...", step, plugin)
             Logger.info("%s is current step and %s is result of that step." % (step, rv))

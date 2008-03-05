@@ -31,7 +31,7 @@ class Sample3Plugin(Plugin):
 
     def prepare(self):
         # Prepare command line.
-        prepare = [Config.plugin.path+"/sample3Plugin/plugin", "--task", "prepare"]
+        prepare = [self._path + "/plugin", "--task", "prepare"]
         proc = subprocess.Popen(prepare, stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
         out = out.strip()
@@ -41,7 +41,7 @@ class Sample3Plugin(Plugin):
             self._result=ReturnSuccess
 
     def clean(self):
-        clean = [Config.plugin.path+"/sample3Plugin/plugin", "--task", "clean"]
+        clean = [self._path+"/plugin", "--task", "clean"]
         proc = subprocess.Popen(clean, stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
         out = out.strip()
@@ -51,7 +51,7 @@ class Sample3Plugin(Plugin):
             self._result=ReturnSuccess
 
     def backup(self):
-        backup = [Config.plugin.path+"/sample3Plugin/plugin", "--task", "backup"]
+        backup = [self._path+"/plugin", "--task", "backup"]
         proc = subprocess.Popen(backup, stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
         out = out.strip()
@@ -61,7 +61,7 @@ class Sample3Plugin(Plugin):
             self._result=ReturnSuccess
 
     def restore(self):
-        restore = [Config.plugin.path+"/sample3Plugin/plugin", "--task", "restore"]
+        restore = [self._path+"/plugin", "--task", "restore"]
         proc = subprocess.Popen(restore, stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
         out = out.strip()
@@ -71,7 +71,7 @@ class Sample3Plugin(Plugin):
             self._result=ReturnSuccess
 
     def diagnose(self):
-        diagnose = [Config.plugin.path+"/sample3Plugin/plugin", "--task", "diagnose"]
+        diagnose = [self._path+"/plugin", "--task", "diagnose"]
         proc = subprocess.Popen(diagnose, stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
         out = out.strip()
@@ -81,7 +81,7 @@ class Sample3Plugin(Plugin):
             self._result=ReturnSuccess
 
     def fix(self):
-        fix = [Config.plugin.path+"/sample3Plugin/plugin", "--task", "fix"]
+        fix = [self._path+"/plugin", "--task", "fix"]
         proc = subprocess.Popen(fix, stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
         out = out.strip()
