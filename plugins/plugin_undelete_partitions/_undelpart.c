@@ -153,7 +153,7 @@ rescuable(PedDisk * disk, PedSector start, PedSector end){
     PedPartitionType part_type;
     PedFileSystemType * fs_type;
 
-    /* Initialize the entire_dev geom for the contraint calculation */
+    /* Initialize the entire_dev geom for the constraint calculation */
     ped_geometry_init(&entire_dev, disk->dev, 0, disk->dev->length);
     part_type = _disk_get_part_type_for_sector (disk, (start + end) / 2);
 
@@ -412,10 +412,12 @@ undelpart_getRescuable(PyObject * self, PyObject * args){
             continue;
         }
 
+        printf("partNum %d, partStart %d, partEnd %d\n", part->num, part->geom.start, part->geom.end);
         if(part->num == -1 && part->geom.start < part->geom.end){
             /* There might be a partition between current and part->geom.start */
             recoverablePart = rescuable(clone, part->geom.start, part->geom.end);
             if(recoverablePart != NULL){
+                printf("partNum %d is recoverablel\n", recoverablePart->num);
                 /* create the python object */
                 tempList = _getPPartList(recoverablePart->num,
                         recoverablePart->geom.start,
