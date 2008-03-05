@@ -183,7 +183,7 @@ if __name__=="__main__":
 
     singlerun = Tasker(Config)
 
-    if not Config.operation.verbose:
+    if Config.operation.verbose=="False":
         outputThread = Output(singlerun.reporting())
     else:
         outputThread = Output(singlerun.reporting(), importance = 0)
