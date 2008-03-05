@@ -18,6 +18,7 @@
 from configuration import Config
 from returns import *
 from errors import *
+from reporting import *
 from copy import copy,deepcopy
 
 import FirstAidKit
@@ -348,9 +349,12 @@ class FlagTrackerPlugin(Plugin):
 class PluginSystem(object):
     """Encapsulate all plugin detection and import stuff"""
 
+    name = "Plugin System"
+
     def __init__(self, reporting, dependencies, config = Config):
         self._paths = Config.paths.valueItems()
         self._reporting = reporting
+        self._reporting.start(level = PLUGINSYSTEM, origin = self)
         self._deps = dependencies
         self._plugins = {}
 
@@ -359,16 +363,16 @@ class PluginSystem(object):
             importlist = set()
             for f in os.listdir(path):
                 fullpath = os.path.join(path, f)
-                Logger.debug("Processing file: %s", f)
+                self._reporting.debug("Processing file: %s" % (f,), level = PLUGINSYSTEM, origin = self)
                 if os.path.isdir(fullpath) and os.path.isfile(os.path.join(path, f, "__init__.py")):
                     importlist.add(f)
-                    Logger.debug("Adding python module (directory): %s", f)
+                    self._reporting.debug("Adding python module (directory): %s" % (f,), level = PLUGINSYSTEM, origin = self)
                 elif os.path.isfile(fullpath) and (f[-3:]==".so" or f[-3:]==".py"):
                     importlist.add(f[:-3])
-                    Logger.debug("Adding python module (file): %s", f)
+                    self._reporting.debug("Adding python module (file): %s" % (f,), level = PLUGINSYSTEM, origin = self)
                 elif os.path.isfile(fullpath) and (f[-4:]==".pyc" or f[-4:]==".pyo"):
                     importlist.add(f[:-4])
-                    Logger.debug("Adding python module (compiled): %s", f)
+                    self._reporting.debug("Adding python module (compiled): %s" % (f,), level = PLUGINSYSTEM, origin = self)
 
             #try to import the modules as FirstAidKit.plugins.modulename
             for m in importlist:
@@ -377,15 +381,15 @@ class PluginSystem(object):
 
                 imp.acquire_lock()
                 try:
-                    Logger.debug("Importing module %s from %s", m, path)
+                    self._reporting.debug("Importing module %s from %s" % (m, path), level = PLUGINSYSTEM, origin = self)
                     moduleinfo = imp.find_module(m, [path])
                     module = imp.load_module(".".join([FirstAidKit.__name__, m]), *moduleinfo)
-                    Logger.debug("... OK")
                 finally:
                     imp.release_lock()
 
                 self._plugins[m] = module
-                Logger.debug("Module %s successfully imported with basedir %s", m, os.path.dirname(module.__file__))
+                self._reporting.debug("Module %s successfully imported with basedir %s" % (m, os.path.dirname(module.__file__)),
+                        level = PLUGINSYSTEM, origin = self)
 
     def list(self):
         """Return the list of imported plugins"""
@@ -396,6 +400,8 @@ class PluginSystem(object):
 returns - True if conditions are fully satisfied
           False if there is something missing
           exception when some other error happens"""
+
+        self._reporting.start(level = PLUGIN, origin = self, message = plugin)
 
         pklass = self._plugins[plugin].get_plugin() #get top level class of plugin
         plugindir = os.path.dirname(self._plugins[plugin].__file__)
@@ -411,7 +417,7 @@ returns - True if conditions are fully satisfied
 
         Logger.info("Using %s flow" % flowName)
         if flowName not in flows:
-            Logger.error("Flow %s does not exist in plugin %s", flowName, plugin)
+            self._reporting.exception(message = "Flow %s does not exist in plugin %s" % (flowName, plugin), level = PLUGINSYSTEM, origin = self)
             raise InvalidFlowNameException(flowName)
 
         if dependencies:
@@ -421,6 +427,7 @@ returns - True if conditions are fully satisfied
                 for d in deps:
                     if not self._deps.require(d):
                         Logger.info("depends on usatisfied condition: %s" % (d,))
+                        self._reporting.stop(level = PLUGIN, origin = self, message = plugin)
                         return False
             deps = pklass.getConflicts()
             if len(deps)>0:
@@ -428,13 +435,17 @@ returns - True if conditions are fully satisfied
                 for d in deps:
                     if self._deps.require(d):
                         Logger.info("depends on condition to be UNset: %s" % (d,))
+                        self._reporting.stop(level = PLUGIN, origin = self, message = plugin)
                         return False
 
         p = pklass(flowName, reporting = self._reporting, dependencies = self._deps, path = plugindir)
         for (step, rv) in p: #autorun all the needed steps
+            self._reporting.start(level = TASK, origin = p, message = step)
             Logger.info("Running step %s in plugin %s ...", step, plugin)
             Logger.info("%s is current step and %s is result of that step." % (step, rv))
+            self._reporting.stop(level = TASK, origin = p, message = step)
 
+        self._reporting.stop(level = PLUGIN, origin = self, message = plugin)
         return True
 
     def getplugin(self, plugin):

@@ -18,6 +18,8 @@
 import Queue
 import logging
 
+Logger = logging.getLogger("firstaidkit")
+
 #semantics values
 #first the "task" levels for START and STOP
 FIRSTAIDKIT = 100
@@ -39,13 +41,21 @@ TREE = 7  #nested iterables organized as tree
 QUESTION = 999 #type of message which contains respond-to field
 END = 1000 #End of operations, final message
 
+class Origin(object):
+    """Class which defines mandatory interface for origin, when using the reporting system"""
+    name = "Origin:Unknown"
+
+    def __init__(self, name):
+        self.name = name
+
 class Reports(object):
     """Instances of this class are used as reporting mechanism by which the
     plugins can comminucate back to whatever frontend we are using.
 
     Message has four parts:
-    origin - who sent the message (name of the plugin, Pluginsystem, ...)
-    semantics - what action does the message describe
+    origin - who sent the message (instance of the plugin, Pluginsystem, ...)
+    level - which level of First Aid Kit sent the message (PLUGIN, TASKER, ..)
+    action - what action does the message describe
                 (INFO, ALERT, PROGRESS, START, STOP, DATA, END)
     importance - how is that message important (debug, info, error, ...)
                  this must be number, possibly the same as in logging module
@@ -63,10 +73,10 @@ class Reports(object):
         self._queue = Queue.Queue(maxsize = maxsize)
         self._mailboxes = []
 
-    def put(self, message, origin, semantics, importance = logging.INFO, reply = None, title = "", destination = None):
+    def put(self, message, level, origin, action, importance = logging.INFO, reply = None, title = "", destination = None):
         if destination is None:
             destination = self._queue
-        return destination.put({"origin": origin, "semantics": semantics, "importance": importance, "message": message, "reply": reply, "title": title})
+        return destination.put({"level": level, "origin": origin, "action": action, "importance": importance, "message": message, "reply": reply, "title": title})
 
     def get(self, mailbox = None, *args, **kwargs):
         if mailbox is None:
@@ -85,29 +95,35 @@ class Reports(object):
 
     #There will be helper methods inspired by logging module
     def end(self):
-        return self.put(None, None, END, importance = 1000)
+        return self.put(None, FIRSTAIDKIT, None, END, importance = 1000)
 
-    def error(self, message, origin, semantics):
-        return self.put(message, origin, semantics, importance = logging.ERROR)
+    def error(self, message, level, origin, action):
+        Logger.error(origin.name+": "+message)
+        return self.put(message, level, origin, action, importance = logging.ERROR)
 
-    def start(self, message, origin, what = TASK):
-        return self.put(message, origin, START, importance = what)
-    def stop(self, message, origin, what = TASK):
-        return self.put(message, origin, START, importance = what)
+    def start(self, level, origin, message = ""):
+        return self.put(message, level, origin, START, importance = logging.DEBUG)
+    def stop(self, level, origin, message = ""):
+        return self.put(message, level, origin, STOP, importance = logging.DEBUG)
 
-    def progress(self, position, maximum, origin, importance = logging.INFO):
-        return self.put((position, maximum), origin, PROGRESS, importance = importance)
-    def info(self, message, origin, importance = logging.INFO):
-        return self.put(message, origin, INFO, importance = importance)
+    def progress(self, position, maximum, level, origin, importance = logging.INFO):
+        return self.put((position, maximum), level, origin, PROGRESS, importance = importance)
 
+    def info(self, message, level, origin, importance = logging.INFO):
+        Logger.info(origin.name+": "+message)
+        return self.put(message, level, origin, INFO, importance = importance)
+    def debug(self, message, level, origin, importance = logging.DEBUG):
+        Logger.debug(origin.name+": "+message)
+        return self.put(message, level, origin, INFO, importance = importance)
 
-    def tree(self, message, origin, importance = logging.INFO):
-        return self.put(message, origin, TREE, importance = importance)
-    def table(self, message, origin, importance = logging.INFO):
-        return self.put(message, origin, TABLE, importance = importance)
+    def tree(self, message, level, origin, importance = logging.INFO, title = ""):
+        return self.put(message, level, origin, TREE, importance = importance, title = title)
+    def table(self, message, level, origin, importance = logging.INFO, title = ""):
+        return self.put(message, level, origin, TABLE, importance = importance, title = title)
 
-    def alert(self, message, origin, importance = logging.WARNING):
-        return self.put(message, origin, ALERT, importance = importance)
-    def exception(self, message, origin, importance = logging.ERROR):
-        return self.put(message, origin, EXCEPTION, importance = importance)
+    def alert(self, message, level, origin, importance = logging.WARNING):
+        return self.put(message, level, origin, ALERT, importance = importance)
+    def exception(self, message, level, origin, importance = logging.ERROR):
+        Logger.error(origin.name+": "+message)
+        return self.put(message, level, origin, EXCEPTION, importance = importance)
 

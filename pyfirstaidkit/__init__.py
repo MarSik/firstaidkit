@@ -24,7 +24,9 @@ def initLogger(config=None):
     """We want to initialize loger when we have the filename."""
     Logger = logging.getLogger("firstaidkit")
     Logger.setLevel(logging.DEBUG)
-    if config.log.method == "stdout" or config.log.method == None:
+    if config.log.method == "none":
+        Logger.addHandler(logging.FileHandler("/dev/null"))
+    elif config.log.method == "stdout" or config.log.method == None:
         Logger.addHandler(logging.StreamHandler(sys.stdout))
     else:
         # if nothing else matches we just put it into the file.

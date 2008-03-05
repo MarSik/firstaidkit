@@ -16,7 +16,9 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 from pyfirstaidkit.plugins import Plugin,Flow
+from pyfirstaidkit.reporting import PLUGIN
 from pyfirstaidkit.returns import *
+
 
 class Sample1Plugin(Plugin):
     """This plugin uses the predefined flow in the Plugin abstract class."""
@@ -29,27 +31,27 @@ class Sample1Plugin(Plugin):
 
     def prepare(self):
         self._result=ReturnSuccess
-        self.reporting.info("Sample1Plugin in Prepare task", self)
+        self.reporting.info("Sample1Plugin in Prepare task", origin = self, level = PLUGIN)
 
     def backup(self):
         self._result=ReturnSuccess
-        self.reporting.info("Sample1Plugin in backup task", self)
+        self.reporting.info("Sample1Plugin in backup task", origin = self, level = PLUGIN)
 
     def restore(self):
         self._result=ReturnSuccess
-        self.reporting.info("Sample1Plugin in Restore task", self)
+        self.reporting.info("Sample1Plugin in Restore task", origin = self, level = PLUGIN)
 
     def diagnose(self):
         self._result=ReturnSuccess
-        self.reporting.info("Sample1Plugin in diagnose task", self)
+        self.reporting.info("Sample1Plugin in diagnose task", origin = self, level = PLUGIN)
 
     def fix(self):
         self._result=ReturnFailure
-        self.reporting.info("Sample1Plugin in Fix task", self)
+        self.reporting.info("Sample1Plugin in Fix task", origin = self, level = PLUGIN)
 
     def clean(self):
         self._result=ReturnSuccess
-        self.reporting.info("Sample1Plugin in Clean task", self)
+        self.reporting.info("Sample1Plugin in Clean task", origin = self, level = PLUGIN)
 
 def get_plugin():
     return Sample1Plugin

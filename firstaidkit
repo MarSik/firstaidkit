@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import sys, getopt, os
+import sys, getopt, os, pprint, logging
 from threading import Thread
 from pyfirstaidkit import Tasker
 from pyfirstaidkit import Config
@@ -28,18 +28,56 @@ class Flags:
     main_help = False
 
 class Output(Thread):
-    def __init__(self, queue, *args, **kwargs):
+    def __init__(self, queue, importance = logging.INFO, *args, **kwargs):
+        Thread.__init__(self, *args, **kwargs)
         self._running = True
         self._queue = queue
-        Thread.__init__(self, *args, **kwargs)
+        self._importance = importance
 
     def run(self):
+        levelstack = []
+
         while self._running:
             message = self._queue.get()
-            if message["semantics"]==reporting.END:
+
+            if message["action"]==reporting.END:
                 self._running = False
                 continue
-            print message
+            elif message["action"]==reporting.QUESTION:
+                print "FIXME: Questions not implemented yet"
+            elif message["action"]==reporting.START:
+                if self._importance<=message["importance"]:
+                    print "START: %s (%s)" % (message["origin"].name, message["message"])
+                levelstack.append(message["origin"].name)
+            elif message["action"]==reporting.STOP:
+                if self._importance<=message["importance"]:
+                    print "STOP: %s (%s)" % (message["origin"].name, message["message"])
+                if levelstack[-1]!=message["origin"].name:
+                    print "WARNING: START/STOP ordering mismatch in stack: "+" / ".join(levelstack)
+                else:
+                    levelstack.pop()
+            elif message["action"]==reporting.PROGRESS:
+                if self._importance<=message["importance"]:
+                    print "PROGRESS: %d of %d (%s)" % (message["message"][0], message["message"][1], message["origin"].name)
+            elif message["action"]==reporting.INFO:
+                if self._importance<=message["importance"]:
+                    print "INFO: %s (%s)" % (message["message"], message["origin"].name)
+            elif message["action"]==reporting.ALERT:
+                if self._importance<=message["importance"]:
+                    print "ALERT: %s (%s)" % (message["message"], message["origin"].name)
+            elif message["action"]==reporting.EXCEPTION:
+                print "EXCEPTION: %s (%s)" % (message["message"], message["origin"].name)
+            elif message["action"]==reporting.TABLE:
+                if self._importance<=message["importance"]:
+                    print "TABLE %s FROM %s" % (message["title"], message["origin"].name,)
+                    pprint.pprint(message["message"])
+            elif message["action"]==reporting.TREE:
+                if self._importance<=message["importance"]:
+                    print "TREE %s FROM %s" % (message["title"], message["origin"].name,)
+                    pprint.pprint(message["message"])
+            else:
+                print "FIXME: Unknown message action %d!!" % (message["action"],)
+                print message
 
 def usage(name):
     print """Usage:
@@ -145,7 +183,11 @@ if __name__=="__main__":
 
     singlerun = Tasker(Config)
 
-    outputThread = Output(singlerun.reporting())
+    if not Config.operation.verbose:
+        outputThread = Output(singlerun.reporting())
+    else:
+        outputThread = Output(singlerun.reporting(), importance = 0)
+
     outputThread.start()
 
     try:
