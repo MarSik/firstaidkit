@@ -44,7 +44,6 @@ class UndeletePartition(Plugin):
     author = "Joel Andres Granados"
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
-        # The reporting object
 
         # Dictionary that will hold the partitions that are not included in the
         # partition table of a certain disk and can be recovered. It will also
@@ -58,6 +57,11 @@ class UndeletePartition(Plugin):
         self._result=ReturnSuccess
         self._reporting.info("Prepare task", UndeletePartition.name)
 
+    #
+    # The diagnose will not be a real diagnose but more of an informative task.
+    # It will report all the possible paritions that could house a rescuable
+    # partition.
+    #
     def diagnose(self):
         self._reporting.info("Beginning Diagnose...", UndeletePartition.name)
         self.disks = _undelpart.getDiskList()
@@ -68,8 +72,8 @@ class UndeletePartition(Plugin):
         for key, value in self.disks.iteritems():
             self.disks[key] = [ _undelpart.getRescuable(key), _undelpart.getPartitionTable(key), [] ]
             if len(self.disks[key][0]) > 0:
-                self._reporting.info("Found %s recoverable partitions in %s disk." %
-                        (self.disks[key], key), UndeletePartition.name )
+               self._reporting.info("Possible partitions to recover: %s" % self.disks[key],
+                        UndeletePartition.name )
                 rescuablePresent = True
         if not rescuablePresent:
             self._result = ReturnSuccess
@@ -96,19 +100,25 @@ class UndeletePartition(Plugin):
         if backupSane:
             self._result = ReturnSuccess
 
+    #
+    # Every partition that we suspect is rescuable, we try to rescue.  This will take a
+    # long time.
+    #
     def fix(self):
         self._reporting.info("Lets see if I can fix this... Starting fix task.", UndeletePartition.name )
+       self._reporting.info("Might want to go and get a cup of coffee,"
+                "this could take a looooooong time...", UndeletePartition.name )
         self._result = ReturnSuccess
+        rescued = []
         try:
             for disk, members in self.disks.iteritems():
-                if len(members[0]) > 0:
-                    self._reporting.info("Recovering %s from %s."% (members[0], disk),UndeletePartition.name)
-                    recoveredDisks = _undelpart.rescue(disk, members[0])
-                    self._reporting.info("Recovered %s of %s from %s partitions."%(recoveredDisks,
-                        members[0], disk),UndeletePartition.name )
-                    self.disks[disk][2] = _undelpart.getPartitionTable(disk)
+               if len(members[0]) > 0:#there are partitions to rescue :)
+                    self._reporting.info("Trying to rescue %s from disk %s"%
+                            (members[0], disk))
+                    rescued = _undelpart.rescue(members[0])
+                    self._reporting.info("Partitions rescued: %s"%rescued)
                 elif len(members[0]) ==  0:
-                    self._reporting.info("Nothing to recover on disk %s."%disk,UndeletePartition.name )
+                   self._reporting.info("Nothing to rescue on disk %s."%disk,UndeletePartition.name )
                 else:
                     self_result = ReturnFailure
                     break
@@ -119,17 +129,30 @@ class UndeletePartition(Plugin):
             self._reporting.info("Please wait until the original partition table is recovered.",UndeletePartition.name)
             self._result = ReturnFailure
 
+    #
+    # We are not really erasing anything, so recovering is kinda out of the point.  That said
+    # anything can happen with partitioning. :)  Lets get the current partitionList and try
+    # to add all the partitions that are not in the current part list but are in the backedup
+    # one.
+    #
     def restore(self):
         self._reporting.info("Starting Restoring task." , UndeletePartition.name)
-        # All the disks that have a new partition are ok,  Lets make sure that we
-        # restore all of the other disks.
-        for disk, members in self.disks.iteritems():
-            if len(members[2]) == 0:
-                self._reporting.info("Restoring %s partition table."%disk,UndeletePartition.name)
-                _undelpart.setPartitionTable(disk, members[1])
-            else:
-                self._reporting.info("Disk %s does not need restore."%disk, UndeletePartition.name)
-
+       tempPartList = []
+        backupPartList = []
+        for disk, members in self.disk.iteritems():
+            tempPartList = _undelpart.getPartitionList(disk)
+            backupPartList = members[1]
+            for part in backupPartList:
+                if part not in tempPartList:# we need to restore
+                    self._reporting.info("Trying to restore partition %s on disk %s" %
+                            (part, disk))
+                    restore = _undelpart.rescue(disk, [part])
+                    if len(restore) > 0:
+                        self._reporting.info("Restored partition %s on disk %s"%
+                                (part, disk))
+                    else:
+                        self._reporting.info("Could not restore partititon %s on disk %s"%
+                                (part, disk))
         # Return the signal to its previous state.
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         self._result = ReturnSuccess
