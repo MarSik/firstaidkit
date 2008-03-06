@@ -112,26 +112,32 @@ _getPPartList( int partnum, int partstart, int partend ){
 static partElem
 _getCPartList( PyObject * list ){
     partElem _list = {0};
-    _list.partnum = -1;
 
     // check that its a list.
-    if(!PyList_Check(list))
+    if(!PyList_Check(list)){
+        PyErr_SetString(PyExc_StandardError,
+                "Error malformed argument, list does not contian lisit.");
         return _list;
+    }
 
     // check that it has three elements.
-    if(PyList_Size(list) < 3)
+    if(PyList_Size(list) < 3){
+        PyErr_SetString(PyExc_StandardError,
+                "Error Malformed argument, contained list is to small.");
         return _list;
+    }
 
     // Populate the _partList array.
-    _list.partnum = PyInt_AsLong( PyList_GetItem(list, 0) );
+    _list.partnum = PyLong_AsLong( PyNumber_Long(PyList_GetItem(list, 0)) );
     _list.partstart = PyLong_AsLong( PyList_GetItem(list, 1) );
     _list.partend = PyLong_AsLong( PyList_GetItem(list, 2) );
     if( PyErr_Occurred())
-        return _list;
+        _list.partnum = '\0';
     return _list;
 }
 
-static int MEGABYTE_SECTORS (PedDevice* dev)
+static int
+MEGABYTE_SECTORS (PedDevice* dev)
 {
         return PED_MEGABYTE_SIZE / dev->sector_size;
 }
@@ -159,7 +165,9 @@ rescuable(PedDisk * disk, PedSector start, PedSector end){
 
     ped_exception_fetch_all(); //dont show errors
 
-    for (s = start; s < end; s++) {
+    /* The end is a temporary hack until we get the method of search done */
+    printf("start %d, end %d, real end %d\n", start, start+(end-start)/10, end);
+    for (s = start; s < start+(end-start)/10; s++) {
 
         /* Get a part from the specific s sector with the device constraint */
         ped_geometry_init (&sect_geom, disk->dev, s, 1);
@@ -236,81 +244,33 @@ rescuable(PedDisk * disk, PedSector start, PedSector end){
 }
 
 /*
- * Copy from parted.  This function will not check for the validity of the
- * sectors given by part.  If the sectors are invalid it will fail.  If you
- * want to know if a specific partition is rescuable use rescuable method.
+ * We have rescuable function that does all of the dirty work.  The only
+ * thing left to do is to commit the changes to the disk.  The final commit
+ * is left to the calling function.
  */
-static int
+static PedPartition *
 add_partition(PedDisk * disk, partElem partelem){
 
-    PedFileSystemType * fs_type;
-    PedPartitionType part_type;
     PedPartition * part;
-    PedGeometry * probed;
-    PedConstraint * part_constraint;
 
+    /* Lets check if it is already there */
+    part = ped_disk_get_partition(disk, partelem.partnum);
+    if(!part){
 
-    part_type = _disk_get_part_type_for_sector(disk,
-            (partelem.partstart + partelem.partend) /2 );
-    part = ped_partition_new (disk, part_type, NULL, partelem.partstart,
-            partelem.partend);
-    if(!part)
-        return 0;
+        printf("start %d, end %d, partnum %d\n", partelem.partstart, partelem.partend, partelem.partnum);
+        part = rescuable(disk, partelem.partstart, partelem.partend);
+        if(!part)
+            goto handle_error;
 
-    /* add the partition to the disk */
-//    if(!ped_disk_add_partition(disk, part, &disk_constraint)){
-//        ped_disk_remove_partition(disk, part);
-//        ped_constraint_done(&disk_constraint);
-//        part = NULL;
-//        continue;
-//    }
-//
-    /* try to detect filesystem in the partition region */
-    fs_type = ped_file_system_probe(&part->geom);
-    if(!fs_type){
-        ped_partition_destroy(part);
-        goto handle_error;
+        //ped_partition_set_system(part, part->fs_type);
+        ped_disk_commit_to_dev(disk);
+        ped_disk_commit_to_os(disk);
     }
 
-    /* try to find the exact region the filesystem ocupies */
-    probed = ped_file_system_probe_specific(fs_type, &part->geom);
-    if(!probed){
-        ped_geometry_destroy(probed);
-        ped_partition_destroy(part);
-        goto handle_error;
-    }
-
-    /* see if probed is inside the partition region */
-    if(!ped_geometry_test_inside(&part->geom, probed)) {
-        ped_geometry_destroy(probed);
-        ped_partition_destroy(part);
-        goto handle_error;
-    }
-
-    /* create a constraint for the probed region */
-    part_constraint = ped_constraint_exact (probed);
-
-    /* set the region for the partition */
-    if (!ped_disk_set_partition_geom (part->disk, part, part_constraint,
-                                      probed->start, probed->end)) {
-        ped_constraint_done(part_constraint);
-        ped_geometry_destroy(probed);
-        ped_partition_destroy(part);
-        goto handle_error;
-    }
-
-    if(!ped_disk_add_partition(disk, part, part_constraint)){
-        ped_constraint_done(part_constraint);
-        ped_geometry_destroy(probed);
-        ped_partition_destroy(part);
-        goto handle_error;
-    }
-    ped_partition_set_system(part, fs_type);
-
-    return 1;
+    return part;
 
     handle_error:
-    return 0;
+    return NULL;
 
 }
 
@@ -452,12 +412,10 @@ undelpart_getRescuable(PyObject * self, PyObject * args){
             continue;
         }
 
-        printf("partNum %d, partStart %d, partEnd %d\n", part->num, part->geom.start, part->geom.end);
         if(part->num == -1 && part->geom.start < part->geom.end){
             /* There might be a partition between current and part->geom.start */
             recoverablePart = rescuable(clone, part->geom.start, part->geom.end);
             if(recoverablePart != NULL){
-                printf("partNum %d is recoverablel\n", recoverablePart->num);
                 /* create the python object */
                 tempList = _getPPartList(recoverablePart->num,
                         recoverablePart->geom.start,
@@ -573,7 +531,7 @@ undelpart_setPartitionList(PyObject * self, PyObject * args){
 
     PyObject * partList; //list of partitions.
 
-    partElem * _partList, * _toErase, * _toAdd;//arrays.
+    partElem * _partList = NULL, * _toErase = NULL, * _toAdd = NULL;//arrays.
     int _partListSize = 0, _toEraseSize = 0, _toAddSize = 0;//array sizes
     int aOffset = 0, eOffset = 0; //array offsets
     int erasable;
@@ -593,10 +551,14 @@ undelpart_setPartitionList(PyObject * self, PyObject * args){
 
     /* Put the values of the list into a array of partElem */
     _partListSize = PyList_Size(partList);
-    _partList[_partListSize+1];
+    _partList = malloc(sizeof(partElem)*_partListSize+1);
+    if(!_partList){
+        PyErr_SetString(PyExc_StandardError, "Error allocating memory.");
+        goto handle_error;
+    }
     for(i=0; i < _partListSize ; i++){
         _partList[i] = _getCPartList(PyList_GetItem(partList, i));
-        if( PyErr_Occurred() || _partList[i].partnum == -1 )
+        if(PyErr_Occurred() || _partList[i].partnum == '\0')
             goto handle_error;
     }
     _partList[_partListSize].partnum = '\0';
@@ -613,7 +575,11 @@ undelpart_setPartitionList(PyObject * self, PyObject * args){
      */
     // our size will be the greates part number for disk.
     _toEraseSize = ped_disk_get_last_partition_num(disk);
-    // cannot modify disk in the for.
+    _toErase = malloc(sizeof(partElem)*_toEraseSize+1);
+    if(!_toErase){
+        PyErr_SetString(PyExc_StandardError, "Error allocating memory.");
+        goto handle_error;
+    }
     for(part = ped_disk_next_partition(disk, NULL) ;  part ;
             part = ped_disk_next_partition(disk, part)){
         erasable = 1;
@@ -632,6 +598,12 @@ undelpart_setPartitionList(PyObject * self, PyObject * args){
     /*
      * Create the addable array
      */
+    _toAddSize = _partListSize;
+    _toAdd = malloc(sizeof(partElem)*_toAddSize+1);
+    if(!_toAdd){
+        PyErr_SetString(PyExc_StandardError, "Error allocating memory.");
+        goto handle_error;
+    }
     for(i=0; _partList[i].partnum != '\0' ; i++){
         part = ped_disk_get_partition(disk, i);
         if(part == NULL){
@@ -674,11 +646,19 @@ undelpart_setPartitionList(PyObject * self, PyObject * args){
         goto handle_error;
     }
 
+    free(_toAdd);
+    free(_toErase);
+    free(_partList);
 
     return Py_True;
 
     handle_error:
     assert(PyErr_Occurred());
+
+    free(_toAdd);
+    free(_toErase);
+    free(_partList);
+
     return NULL;
 }
 
@@ -691,23 +671,20 @@ static PyObject *
 undelpart_rescue(PyObject * self, PyObject * args){
 
     PedDisk * disk;
-    PedDevice * dev;
     PedPartition * part;
-    PedPartitionType part_type;
 
     PyObject * partList;
     PyObject * rescuedParts;
     PyObject * tempList;
-    PyObject * partNum, * partStart, *partEnd;
 
-    partElem * _partList;
+    partElem * _partList = NULL;
     char * path;
-    int partListSize;
+    int partListSize = 0;
     int i;
 
     /* Check the arguments */
     if(!PyArg_ParseTuple(args, "sO", &path, &partList)){
-        PyErr_SetString(PyExc_TypeError, "Arguments are not valid (String, [])");
+        PyErr_SetString(PyExc_TypeError, "Arguments are not valid (String, List)");
         goto handle_error;
     }
     if(! PyList_Check(partList)){
@@ -725,7 +702,11 @@ undelpart_rescue(PyObject * self, PyObject * args){
 
     /* Put the values of the list into a array of partElem */
     partListSize = PyList_Size(partList);
-    _partList[partListSize+1];
+    _partList = malloc(sizeof(partElem)*partListSize+1);
+    if(!_partList){
+        PyErr_SetString(PyExc_StandardError, "Error allocating memory.");
+        goto handle_error;
+    }
     for(i=0; i < partListSize ; i++){
         _partList[i] = _getCPartList(PyList_GetItem(partList, i));
         if( PyErr_Occurred() || _partList[i].partnum == -1)
@@ -739,15 +720,14 @@ undelpart_rescue(PyObject * self, PyObject * args){
         PyErr_SetString(PyExc_StandardError, "Error reading disk information.");
         goto handle_error;
     }
-    dev = disk->dev;
 
     /* Try to add each partition. */
-    for(i=0 ; i < partListSize ; i++){
-        part_type = _disk_get_part_type_for_sector(disk,
-                (_partList[i].partstart + _partList[i].partend) /2 );
-        part = ped_partition_new (disk, part_type, NULL,
-                _partList[i].partstart, _partList[i].partend);
-        if(part && add_partition(disk, _partList[i])){
+    for(i=0 ; _partList[i].partnum ; i++){
+        part = add_partition(disk, _partList[i]);
+        if(!part){
+            // could not rescue this partition. sorry
+            continue;
+        }else{
             tempList = _getPPartList(part->num, part->geom.start, part->geom.end);
             /* Append the list to the return value */
             if(tempList == NULL || PyList_Append(rescuedParts, tempList) == -1){
@@ -757,11 +737,14 @@ undelpart_rescue(PyObject * self, PyObject * args){
             }
         }
     }
+    free(_partList);
 
     return rescuedParts;
 
     handle_error:
     assert(PyErr_Occurred());
+
+    free(_partList);
 
     return NULL;
 }
