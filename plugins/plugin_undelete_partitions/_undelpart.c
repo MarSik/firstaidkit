@@ -142,157 +142,112 @@ MEGABYTE_SECTORS (PedDevice* dev)
         return PED_MEGABYTE_SIZE / dev->sector_size;
 }
 
-
 /*
- * Returns the partition if it is rescuable.  Null if nothing was done.
+ * Tries to recover the partition part in the disk disk.  Reutrns null if it
+ * was not possible, or the partition if it was.
  */
 static PedPartition *
-rescuable(PedDisk * disk, PedSector start, PedSector end){
+add_partition(PedDisk * disk, partElem part){
 
     //PedDisk * clone;
     PedSector s;
     PedGeometry * probed;
     PedGeometry sect_geom;
     PedGeometry entire_dev;
-    PedPartition  * part = NULL;
+    PedPartition  * parttemp = NULL;
     PedConstraint disk_constraint, * part_constraint;
     PedPartitionType part_type;
     PedFileSystemType * fs_type;
 
     /* Initialize the entire_dev geom for the constraint calculation */
     ped_geometry_init(&entire_dev, disk->dev, 0, disk->dev->length);
-    part_type = _disk_get_part_type_for_sector (disk, (start + end) / 2);
+    part_type = _disk_get_part_type_for_sector (disk, (part.partstart + part.partend) / 2);
 
-    ped_exception_fetch_all(); //dont show errors
 
     /* The end is a temporary hack until we get the method of search done */
-    printf("start %d, end %d, real end %d\n", start, start+(end-start)/10, end);
-    for (s = start; s < start+(end-start)/10; s++) {
+    printf("start %d, end %d, real end %d\n", part.partstart, part.partstart+(part.partend-part.partstart)/10, part.partend);
+    for (s = part.partstart; s < part.partstart+(part.partend-part.partstart)/10; s++) {
         if( s%1000 == 0)
-            printf("s %d, end %d\n", s, start+(end-start)/10);
-
-        part = ped_partition_new (disk, part_type, NULL, s, end);
-        if(!part){
-            ped_disk_remove_partition(disk, part);
-            part = NULL;
-            continue;
-        }
+            printf("s %d, end %d\n", s, part.partstart+(part.partend-part.partstart)/10);
 
         /* Get a part from the specific s sector with the device constraint */
         ped_geometry_init (&sect_geom, disk->dev, s, 1);
         ped_constraint_init (&disk_constraint, ped_alignment_any, ped_alignment_any,
                 &sect_geom, &entire_dev, 1, disk->dev->length);
+printf("1");
+        parttemp = ped_partition_new (disk, part_type, NULL, s, part.partend);
+        if(!parttemp){
+            ped_disk_remove_partition(disk, parttemp);
+            ped_constraint_done(&disk_constraint);
+            parttemp = NULL;
+            continue;
+        }
+
+printf("2");
         /* add the partition to the disk */
-        if(!ped_disk_add_partition(disk, part, &disk_constraint)){
-            ped_disk_remove_partition(disk, part);
+        ped_exception_fetch_all(); //dont show errors
+        if(!ped_disk_add_partition(disk, parttemp, &disk_constraint)){
+            ped_disk_remove_partition(disk, parttemp);
             ped_constraint_done(&disk_constraint);
-            part = NULL;
+            parttemp = NULL;
             continue;
         }
+        ped_exception_leave_all();// show errors.
 
+printf("3");
         /* try to detect filesystem in the partition region */
-        fs_type = ped_file_system_probe(&part->geom);
+        fs_type = ped_file_system_probe(&parttemp->geom);
         if(!fs_type){
-            ped_disk_remove_partition(disk, part);
+            ped_disk_remove_partition(disk, parttemp);
             ped_constraint_done(&disk_constraint);
-            part = NULL;
+            parttemp = NULL;
             continue;
         }
 
+printf("4");
         /* try to find the exact region the filesystem ocupies */
-        probed = ped_file_system_probe_specific(fs_type, &part->geom);
+        probed = ped_file_system_probe_specific(fs_type, &parttemp->geom);
         if(!probed){
-            ped_disk_remove_partition(disk, part);
+            ped_disk_remove_partition(disk, parttemp);
             ped_constraint_done(&disk_constraint);
             ped_geometry_destroy(probed);
-            part = NULL;
+            parttemp = NULL;
             continue;
         }
 
+printf("5");
         /* see if probed is inside the partition region */
-        if(!ped_geometry_test_inside(&part->geom, probed)) {
-            ped_disk_remove_partition(disk, part);
+printf("parttem start %d, parttemp end %d, probed start %d, probed end %d\n", parttemp->geom.start, parttemp->geom.end, probed->start, probed->end);
+        if(!ped_geometry_test_inside(&parttemp->geom, probed)) {
+            ped_disk_remove_partition(disk, parttemp);
             ped_constraint_done(&disk_constraint);
             ped_geometry_destroy(probed);
-            part = NULL;
+            parttemp = NULL;
             continue;
         }
 
+printf("6");
         /* create a constraint for the probed region */
         part_constraint = ped_constraint_exact (probed);
 
         /* set the region for the partition */
-        if (!ped_disk_set_partition_geom (part->disk, part, part_constraint,
+        if (!ped_disk_set_partition_geom (parttemp->disk, parttemp, part_constraint,
                                           probed->start, probed->end)) {
-            ped_disk_remove_partition(disk, part);
+            ped_disk_remove_partition(disk, parttemp);
             ped_constraint_done(part_constraint);
             ped_constraint_done(&disk_constraint);
             ped_geometry_destroy(probed);
-            part = NULL;
+            parttemp = NULL;
             continue;
         }
+        printf("here I am\n");
+        ped_partition_set_system(parttemp, fs_type);
+        ped_disk_commit(disk);
+        //ped_disk_commit_to_dev(disk);
+        //ped_disk_commit_to_os(disk);
         break;
     }
-    ped_exception_leave_all();// show errors.
-    return part;
-}
-
-/*
- * Will return true if one of the sectores it recieves (start or end) is
- * contained in one of the valid partitions of disk.  The actual disk that
- * is passed is cloned.  return -1 on failure.
- */
-static int
-range_in_valid_partitions(PedDisk * disk, PedSector start, PedSector end){
-    PedDisk * clone;
-    PedPartition * part;
-    int contained = 0;
-    clone = ped_disk_duplicate(disk);
-    if(!clone)
-        contained = -1;
-    for(part=ped_disk_next_partition(disk, NULL) ; part ;
-            part=ped_disk_next_partition(disk,part) ){
-        if(part->num == -1 || part->type == PED_PARTITION_EXTENDED)
-            continue;
-        printf("part.start %d, part.end %d, start %d, end %d,partnum %d\n", part->geom.start, part->geom.end, start, end, part->num);
-        if( (part->geom.start <= start && start <= part->geom.end) ||
-                part->geom.start <= end && end <= part->geom.end){
-            contained = 1;
-            break;
-        }
-    }
-    ped_disk_destroy(clone);
-    return contained;
-}
-
-/*
- * We have rescuable function that does all of the dirty work.  The only 
- * thing left to do is to commit the changes to the disk.  The final commit
- * is left to the calling function.
- */
-static PedPartition *
-add_partition(PedDisk * disk, partElem partelem){
-
-    PedPartition * part;
-
-    /* Lets check if it is already there */
-    if(!range_in_valid_partitions(disk, partelem.partstart, partelem.partend)){
-
-        printf("start %d, end %d, partnum %d\n", partelem.partstart, partelem.partend, partelem.partnum);
-        part = rescuable(disk, partelem.partstart, partelem.partend);
-        if(!part)
-            goto handle_error;
-
-        //ped_partition_set_system(part, part->fs_type);
-        ped_disk_commit_to_dev(disk);
-        ped_disk_commit_to_os(disk);
-    }
-
-    return part;
-
-    handle_error:
-    return NULL;
-
+   return parttemp;
 }
 
 /* Pythong facing functions.
@@ -376,18 +331,15 @@ undelpart_getDiskList(PyObject * self, PyObject * args){
 
 /*
  * Returns a list of partitions that are present in the disk but not in its
- * partition table. If the disk does not exist it returns None. If the disk
- * has no rescueable partitions it returns a void list.  Most of this is
- * a copy of the parted code.
+ * partition table. If the disk does not exist it errors. If the disk
+ * has no rescueable partitions it returns a void list.  It is a list of
+ * possible partitions,  it will NOT check for rescuability.
  */
 static PyObject *
 undelpart_getRescuable(PyObject * self, PyObject * args){
 
-    PedDisk  * disk, * clone;
-    PedDevice * dev;
+    PedDisk  * disk;
     PedPartition * part;
-    PedPartition * recoverablePart = NULL;
-    PedSector current, start, end;
 
     PyObject * tempList;
     PyObject * partitions;
@@ -403,75 +355,49 @@ undelpart_getRescuable(PyObject * self, PyObject * args){
     partitions = PyList_New(0);
     if(partitions == NULL){
         PyErr_SetString(PyExc_StandardError, "Error creating a new list.");
-        goto handle_error;
+        goto handle_error_destroy_disk;
     }
 
-    /* create the disk an dev */
+    /* create the disk */
     disk = _getDiskFromPath(path);
     if(disk == NULL){
         PyErr_SetString(PyExc_StandardError, "Error reading disk information.");
-        goto handle_error;
+        goto handle_error_destroy_disk;
     }
-    dev = disk->dev;
 
     /*
      * We start looking for the partitions.  The partitions will be detected if
-     * it contains a filesystem.  The basic idea is to traverse all the partitions
-     * and look for holes in between.  When a hole is found, we look for a
-     * partition inside the hole.
+     * the numpart is less than 1.  The basic idea is to traverse all the partitions
+     * and look for holes in between.
      */
-    start = (PedSector)0;
-    current = start;
-    end = dev->length;
-    part = ped_disk_next_partition(disk, NULL);
-    while(part){
-
-        /* We clone the disk to avoid strangeness in the loop with the disk object */
-        clone = ped_disk_duplicate(disk);
-        if(clone == NULL){
-            part = ped_disk_next_partition(disk, part);
-            continue;
-        }
-
-        if(part->num == -1 && part->geom.start < part->geom.end){
-            /* There might be a partition between current and part->geom.start */
-            recoverablePart = rescuable(clone, part->geom.start, part->geom.end);
-            if(recoverablePart != NULL){
-                /* create the python object */
-                tempList = _getPPartList(recoverablePart->num,
-                        recoverablePart->geom.start,
-                        recoverablePart->geom.end);
-                /* Append the list to the return value */
-                if(tempList == NULL || PyList_Append(partitions, tempList) == -1){
-                    PyErr_SetString(PyExc_StandardError,
-                            "Error creating the partition information.");
-                    goto handle_error;
-                }
-                /* free used objects */
-                ped_disk_remove_partition(clone, recoverablePart);
-                ped_disk_destroy(clone);
-                recoverablePart = NULL;
-                clone = NULL;
+    for(part = ped_disk_next_partition(disk, NULL); part ;
+            part = ped_disk_next_partition(disk, part) ){
+        // All partitions with partnum less than 1 is a possibility.
+        if(part->num < 1 && part->geom.start < part->geom.end){
+            /* create the python object */
+            tempList = _getPPartList(part->num, part->geom.start, part->geom.end);
+            /* Append the list to the return value */
+            if(tempList == NULL || PyList_Append(partitions, tempList) == -1){
+                PyErr_SetString(PyExc_StandardError,
+                        "Error creating the partition information.");
+                goto handle_error_destroy_disk;
             }
         }
-        part = ped_disk_next_partition(disk, part);
     }
-
-    if(disk != NULL)
-        ped_disk_destroy(disk);
+    ped_disk_destroy(disk);
 
     return partitions;
 
-    handle_error:
-    assert(PyErr_Occurred());
-
-    if(disk != NULL )
+    handle_error_destroy_disk:
         ped_disk_destroy(disk);
 
-    Py_XDECREF(partitions);
-    Py_XDECREF(tempList);
+    handle_error:
+        assert(PyErr_Occurred());
 
-    return NULL;
+        Py_XDECREF(partitions);
+        Py_XDECREF(tempList);
+
+        return NULL;
 }
 
 /*
@@ -730,8 +656,10 @@ undelpart_rescue(PyObject * self, PyObject * args){
     }
     for(i=0; i < partListSize ; i++){
         _partList[i] = _getCPartList(PyList_GetItem(partList, i));
-        if( PyErr_Occurred() || _partList[i].partnum == -1)
+        if( PyErr_Occurred() || _partList[i].partnum == '\0'){
+            printf("its here\n");
             goto handle_error;
+        }
     }
     _partList[partListSize].partnum = '\0';
 
