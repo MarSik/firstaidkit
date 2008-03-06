@@ -370,6 +370,7 @@ undelpart_getDiskList(PyObject * self, PyObject * args){
         goto handle_error;
     }
 
+    ped_device_free_all();
     return dict;
 
     handle_error:
@@ -378,6 +379,7 @@ undelpart_getDiskList(PyObject * self, PyObject * args){
     Py_XDECREF(diskName);
     Py_XDECREF(list);
     Py_XDECREF(dict);
+    ped_device_free_all();
 
     return NULL;
 }
@@ -460,6 +462,7 @@ undelpart_getRescuable(PyObject * self, PyObject * args){
         part = ped_disk_next_partition(disk, part);
     }
     ped_disk_destroy(disk);
+    ped_device_free_all();
 
     return partitions;
 
@@ -472,6 +475,7 @@ undelpart_getRescuable(PyObject * self, PyObject * args){
         Py_XDECREF(partitions);
         Py_XDECREF(tempList);
 
+        ped_device_free_all();
         return NULL;
 }
 
@@ -526,6 +530,7 @@ undelpart_getPartitionList(PyObject * self, PyObject * args){
             goto handle_error;
         }
     }
+    ped_device_free_all();
 
     return partList;
 
@@ -534,6 +539,8 @@ undelpart_getPartitionList(PyObject * self, PyObject * args){
 
     Py_XDECREF(partList);
     Py_XDECREF(tempList);
+
+    ped_device_free_all();
 
     return NULL;
 }
@@ -616,6 +623,7 @@ undelpart_rescue(PyObject * self, PyObject * args){
     }
     ped_disk_destroy(disk);
     free(_partList);
+    ped_device_free_all();
 
     return rescuedParts;
 
@@ -623,6 +631,7 @@ undelpart_rescue(PyObject * self, PyObject * args){
     assert(PyErr_Occurred());
 
     free(_partList);
+    ped_device_free_all();
 
     return NULL;
 }
