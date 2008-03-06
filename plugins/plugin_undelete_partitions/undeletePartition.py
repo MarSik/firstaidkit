@@ -30,7 +30,7 @@ class UndeletePartition(Plugin):
     """
 
     flows = Flow.init(Plugin)
-    # We have not resotre in the noBackup flow because we have no information to restore with.
+    # We have not restore in the noBackup flow because we have no information to restore with.
     flows["noBackup"] = Flow({
                     Plugin.initial: {Return: "prepare"},
                     "prepare"     : {ReturnSuccess: "diagnose"},
