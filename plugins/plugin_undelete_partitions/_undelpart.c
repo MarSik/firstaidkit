@@ -165,16 +165,13 @@ add_partition(PedDisk * disk, partElem part){
 
 
     /* The end is a temporary hack until we get the method of search done */
-    printf("start %d, end %d, real end %d\n", part.partstart, part.partstart+(part.partend-part.partstart)/10, part.partend);
     for (s = part.partstart; s < part.partstart+(part.partend-part.partstart)/10; s++) {
-        if( s%1000 == 0)
-            printf("s %d, end %d\n", s, part.partstart+(part.partend-part.partstart)/10);
 
         /* Get a part from the specific s sector with the device constraint */
         ped_geometry_init (&sect_geom, disk->dev, s, 1);
         ped_constraint_init (&disk_constraint, ped_alignment_any, ped_alignment_any,
                 &sect_geom, &entire_dev, 1, disk->dev->length);
-printf("1");
+
         parttemp = ped_partition_new (disk, part_type, NULL, s, part.partend);
         if(!parttemp){
             ped_disk_remove_partition(disk, parttemp);
@@ -183,7 +180,7 @@ printf("1");
             continue;
         }
 
-printf("2");
+
         /* add the partition to the disk */
         ped_exception_fetch_all(); //dont show errors
         if(!ped_disk_add_partition(disk, parttemp, &disk_constraint)){
@@ -194,7 +191,6 @@ printf("2");
         }
         ped_exception_leave_all();// show errors.
 
-printf("3");
         /* try to detect filesystem in the partition region */
         fs_type = ped_file_system_probe(&parttemp->geom);
         if(!fs_type){
@@ -204,7 +200,6 @@ printf("3");
             continue;
         }
 
-printf("4");
         /* try to find the exact region the filesystem ocupies */
         probed = ped_file_system_probe_specific(fs_type, &parttemp->geom);
         if(!probed){
@@ -215,9 +210,7 @@ printf("4");
             continue;
         }
 
-printf("5");
         /* see if probed is inside the partition region */
-printf("parttem start %d, parttemp end %d, probed start %d, probed end %d\n", parttemp->geom.start, parttemp->geom.end, probed->start, probed->end);
         if(!ped_geometry_test_inside(&parttemp->geom, probed)) {
             ped_disk_remove_partition(disk, parttemp);
             ped_constraint_done(&disk_constraint);
@@ -226,7 +219,6 @@ printf("parttem start %d, parttemp end %d, probed start %d, probed end %d\n", pa
             continue;
         }
 
-printf("6");
         /* create a constraint for the probed region */
         part_constraint = ped_constraint_exact (probed);
 
@@ -240,11 +232,10 @@ printf("6");
             parttemp = NULL;
             continue;
         }
-        printf("here I am\n");
         ped_partition_set_system(parttemp, fs_type);
         ped_disk_commit(disk);
-        //ped_disk_commit_to_dev(disk);
-        //ped_disk_commit_to_os(disk);
+        ped_disk_commit_to_dev(disk);
+        ped_disk_commit_to_os(disk);
         break;
     }
    return parttemp;
@@ -657,7 +648,6 @@ undelpart_rescue(PyObject * self, PyObject * args){
     for(i=0; i < partListSize ; i++){
         _partList[i] = _getCPartList(PyList_GetItem(partList, i));
         if( PyErr_Occurred() || _partList[i].partnum == '\0'){
-            printf("its here\n");
             goto handle_error;
         }
     }
@@ -686,6 +676,7 @@ undelpart_rescue(PyObject * self, PyObject * args){
             }
         }
     }
+    ped_disk_destroy(disk);
     free(_partList);
 
     return rescuedParts;
