@@ -82,9 +82,11 @@ class Output(Thread):
 def usage(name):
     print """Usage:
  %s [params]
- %s [params] -a
- %s [params] -f plugin flow
- %s [params] -t plugin task
+ %s [params] -a         - runs the automated default mode [diagnose]
+ %s [params] -a <flow>  - runs the automated mode with specified flow
+ %s [params] -a fix     - automated fixing sequence [using the fix flows]
+ %s [params] -f <plugin> <flow>
+ %s [params] -t <plugin> <task>
  params is none or more items from:
   -c <config file> - select different config file
   -r <root path>   - where is the root directory?
@@ -99,7 +101,7 @@ def usage(name):
   --print-config   - print resulting config file
   --list           - list all plugins
   --info <plugin>  - get information about plugin
-""" % (name, name, name, name)
+""" % (name, name, name, name, name, name)
 
 if __name__=="__main__":
     params, rest = getopt.getopt(sys.argv[1:], "aftc:r:vl:x:F:g:P:h",
