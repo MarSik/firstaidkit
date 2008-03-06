@@ -168,20 +168,20 @@ rescuable(PedDisk * disk, PedSector start, PedSector end){
     /* The end is a temporary hack until we get the method of search done */
     printf("start %d, end %d, real end %d\n", start, start+(end-start)/10, end);
     for (s = start; s < start+(end-start)/10; s++) {
+        if( s%1000 == 0)
+            printf("s %d, end %d\n", s, start+(end-start)/10);
+
+        part = ped_partition_new (disk, part_type, NULL, s, end);
+        if(!part){
+            ped_disk_remove_partition(disk, part);
+            part = NULL;
+            continue;
+        }
 
         /* Get a part from the specific s sector with the device constraint */
         ped_geometry_init (&sect_geom, disk->dev, s, 1);
         ped_constraint_init (&disk_constraint, ped_alignment_any, ped_alignment_any,
                 &sect_geom, &entire_dev, 1, disk->dev->length);
-
-        part = ped_partition_new (disk, part_type, NULL, s, end);
-        if(!part){
-            ped_disk_remove_partition(disk, part);
-            ped_constraint_done(&disk_constraint);
-            part = NULL;
-            continue;
-        }
-
         /* add the partition to the disk */
         if(!ped_disk_add_partition(disk, part, &disk_constraint)){
             ped_disk_remove_partition(disk, part);
@@ -234,17 +234,39 @@ rescuable(PedDisk * disk, PedSector start, PedSector end){
         break;
     }
     ped_exception_leave_all();// show errors.
-//    if(part != NULL){
-//        ped_constraint_done(part_constraint);
-//        ped_constraint_done(&disk_constraint);
-//        ped_geometry_destroy(probed);
-//        ped_geometry_destroy(entire_dev);
-//    }
     return part;
 }
 
 /*
- * We have rescuable function that does all of the dirty work.  The only
+ * Will return true if one of the sectores it recieves (start or end) is
+ * contained in one of the valid partitions of disk.  The actual disk that
+ * is passed is cloned.  return -1 on failure.
+ */
+static int
+range_in_valid_partitions(PedDisk * disk, PedSector start, PedSector end){
+    PedDisk * clone;
+    PedPartition * part;
+    int contained = 0;
+    clone = ped_disk_duplicate(disk);
+    if(!clone)
+        contained = -1;
+    for(part=ped_disk_next_partition(disk, NULL) ; part ;
+            part=ped_disk_next_partition(disk,part) ){
+        if(part->num == -1 || part->type == PED_PARTITION_EXTENDED)
+            continue;
+        printf("part.start %d, part.end %d, start %d, end %d,partnum %d\n", part->geom.start, part->geom.end, start, end, part->num);
+        if( (part->geom.start <= start && start <= part->geom.end) ||
+                part->geom.start <= end && end <= part->geom.end){
+            contained = 1;
+            break;
+        }
+    }
+    ped_disk_destroy(clone);
+    return contained;
+}
+
+/*
+ * We have rescuable function that does all of the dirty work.  The only 
  * thing left to do is to commit the changes to the disk.  The final commit
  * is left to the calling function.
  */
@@ -254,8 +276,7 @@ add_partition(PedDisk * disk, partElem partelem){
     PedPartition * part;
 
     /* Lets check if it is already there */
-    part = ped_disk_get_partition(disk, partelem.partnum);
-    if(!part){
+    if(!range_in_valid_partitions(disk, partelem.partstart, partelem.partend)){
 
         printf("start %d, end %d, partnum %d\n", partelem.partstart, partelem.partend, partelem.partnum);
         part = rescuable(disk, partelem.partstart, partelem.partend);
