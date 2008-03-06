@@ -27,31 +27,30 @@ class Sample1Plugin(Plugin):
     author = "Joel Andres Granados"
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
-        self.reporting = kwargs.get('reporting')
 
     def prepare(self):
         self._result=ReturnSuccess
-        self.reporting.info("Sample1Plugin in Prepare task", origin = self, level = PLUGIN)
+        self._reporting.info("Sample1Plugin in Prepare task", origin = self, level = PLUGIN)
 
     def backup(self):
         self._result=ReturnSuccess
-        self.reporting.info("Sample1Plugin in backup task", origin = self, level = PLUGIN)
+        self._reporting.info("Sample1Plugin in backup task", origin = self, level = PLUGIN)
 
     def restore(self):
         self._result=ReturnSuccess
-        self.reporting.info("Sample1Plugin in Restore task", origin = self, level = PLUGIN)
+        self._reporting.info("Sample1Plugin in Restore task", origin = self, level = PLUGIN)
 
     def diagnose(self):
         self._result=ReturnSuccess
-        self.reporting.info("Sample1Plugin in diagnose task", origin = self, level = PLUGIN)
+        self._reporting.info("Sample1Plugin in diagnose task", origin = self, level = PLUGIN)
 
     def fix(self):
         self._result=ReturnFailure
-        self.reporting.info("Sample1Plugin in Fix task", origin = self, level = PLUGIN)
+        self._reporting.info("Sample1Plugin in Fix task", origin = self, level = PLUGIN)
 
     def clean(self):
         self._result=ReturnSuccess
-        self.reporting.info("Sample1Plugin in Clean task", origin = self, level = PLUGIN)
+        self._reporting.info("Sample1Plugin in Clean task", origin = self, level = PLUGIN)
 
 def get_plugin():
     return Sample1Plugin

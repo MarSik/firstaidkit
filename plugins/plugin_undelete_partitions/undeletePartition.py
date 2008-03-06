@@ -45,7 +45,6 @@ class UndeletePartition(Plugin):
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
         # The reporting object
-        self.reporting = kwargs.get('reporting')
 
         # Dictionary that will hold the partitions that are not included in the
         # partition table of a certain disk and can be recovered. It will also
@@ -57,39 +56,39 @@ class UndeletePartition(Plugin):
     def prepare(self):
         # For now there is no real action in the prepare task.
         self._result=ReturnSuccess
-        self.reporting.info("Prepare task", UndeletePartition.name)
+        self._reporting.info("Prepare task", UndeletePartition.name)
 
     def diagnose(self):
-        self.reporting.info("Beginning Diagnose...", UndeletePartition.name)
+        self._reporting.info("Beginning Diagnose...", UndeletePartition.name)
         self.disks = _undelpart.getDiskList()
-        self.reporting.info("%s: Disks present in the system %s" %
+        self._reporting.info("%s: Disks present in the system %s" %
                 (UndeletePartition.name, self.disks.keys()), self )
         # When we find a rescuable partition we change this to true.
         rescuablePresent = False
         for key, value in self.disks.iteritems():
             self.disks[key] = [ _undelpart.getRescuable(key), _undelpart.getPartitionTable(key), [] ]
             if len(self.disks[key][0]) > 0:
-                self.reporting.info("Found %s recoverable partitions in %s disk." %
+                self._reporting.info("Found %s recoverable partitions in %s disk." %
                         (self.disks[key], key), UndeletePartition.name )
                 rescuablePresent = True
         if not rescuablePresent:
             self._result = ReturnSuccess
-            self.reporting.info("Did not find any partitions that need rescueing.",
+            self._reporting.info("Did not find any partitions that need rescueing.",
                     UndeletePartition.name)
         else:
             self._result = ReturnFailure
 
     def backup(self):
-        self.reporting.info("Backing up partition table." , UndeletePartition.name)
+        self._reporting.info("Backing up partition table." , UndeletePartition.name)
         # We actually already have the backup of the partition table in the self.disks dict.
         # Lets check anyway.
         backupSane = True
         for disk, members in self.disks.iteritems():
             if members[1] == None or len(members[1]) <= 0:
                 # We don't really have the partition table backup.
-                self.reporting.info("%s: Couldn't backup the partition table for %s."%
+                self._reporting.info("%s: Couldn't backup the partition table for %s."%
                         (UndeletePartition.name, disk), self)
-                self.reporting.info("To force the recovery of this disk without the backup " \
+                self._reporting.info("To force the recovery of this disk without the backup " \
                     "please run the flow named noBackup from this plugin.", UndeletePartition.name)
                 backupSane = False
                 self._result = ReturnFailure
@@ -98,45 +97,45 @@ class UndeletePartition(Plugin):
             self._result = ReturnSuccess
 
     def fix(self):
-        self.reporting.info("Lets see if I can fix this... Starting fix task.", UndeletePartition.name )
+        self._reporting.info("Lets see if I can fix this... Starting fix task.", UndeletePartition.name )
         self._result = ReturnSuccess
         try:
             for disk, members in self.disks.iteritems():
                 if len(members[0]) > 0:
-                    self.reporting.info("Recovering %s from %s."% (members[0], disk),UndeletePartition.name)
+                    self._reporting.info("Recovering %s from %s."% (members[0], disk),UndeletePartition.name)
                     recoveredDisks = _undelpart.rescue(disk, members[0])
-                    self.reporting.info("Recovered %s of %s from %s partitions."%(recoveredDisks,
+                    self._reporting.info("Recovered %s of %s from %s partitions."%(recoveredDisks,
                         members[0], disk),UndeletePartition.name )
                     self.disks[disk][2] = _undelpart.getPartitionTable(disk)
                 elif len(members[0]) ==  0:
-                    self.reporting.info("Nothing to recover on disk %s."%disk,UndeletePartition.name )
+                    self._reporting.info("Nothing to recover on disk %s."%disk,UndeletePartition.name )
                 else:
                     self_result = ReturnFailure
                     break
         except KeyboardInterrupt, e:
-            self.reporting.info("Received a user interruption... Moving to Restore task.",UndeletePartition.name)
+            self._reporting.info("Received a user interruption... Moving to Restore task.",UndeletePartition.name)
             # The user might want to keep on pushing ctrl-c, lets lock the SIGINT signal.
             signal.signal(signal.SIGINT, keyboaordInterruptHandler)
-            self.reporting.info("Please wait until the original partition table is recovered.",UndeletePartition.name)
+            self._reporting.info("Please wait until the original partition table is recovered.",UndeletePartition.name)
             self._result = ReturnFailure
 
     def restore(self):
-        self.reporting.info("Starting Restoring task." , UndeletePartition.name)
+        self._reporting.info("Starting Restoring task." , UndeletePartition.name)
         # All the disks that have a new partition are ok,  Lets make sure that we
         # restore all of the other disks.
         for disk, members in self.disks.iteritems():
             if len(members[2]) == 0:
-                self.reporting.info("Restoring %s partition table."%disk,UndeletePartition.name)
+                self._reporting.info("Restoring %s partition table."%disk,UndeletePartition.name)
                 _undelpart.setPartitionTable(disk, members[1])
             else:
-                self.reporting.info("Disk %s does not need restore."%disk, UndeletePartition.name)
+                self._reporting.info("Disk %s does not need restore."%disk, UndeletePartition.name)
 
         # Return the signal to its previous state.
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         self._result = ReturnSuccess
 
     def clean(self):
-        self.reporting.info("Cleanning...",UndeletePartition.name)
+        self._reporting.info("Cleanning...",UndeletePartition.name)
         self._result = ReturnSuccess
 
 def keyboardInterruptHandler(signum, frame):
