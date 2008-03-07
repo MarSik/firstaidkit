@@ -65,14 +65,14 @@ class UndeletePartition(Plugin):
         self._reporting.info("Beginning Diagnose...", origin = self, level = PLUGIN)
         self.disks = _undelpart.getDiskList()
         self._reporting.info("Disks present in the system %s"%self.disks.keys(),
-                origin = self, level = PLUGIN, self )
+                origin = self, level = PLUGIN)
         # When we find a rescuable partition we change this to true.
         rescuablePresent = False
         for key, value in self.disks.iteritems():
             self.disks[key] = [ _undelpart.getRescuable(key), _undelpart.getPartitionTable(key), [] ]
             if len(self.disks[key][0]) > 0:
                 self._reporting.info("Possible partitions to recover: %s"%self.disks[key],
-                        origin = self, level = PLUGIN )
+                        origin = self, level = PLUGIN)
                 rescuablePresent = True
         if not rescuablePresent:
             self._result = ReturnSuccess
@@ -90,7 +90,7 @@ class UndeletePartition(Plugin):
             if members[1] == None or len(members[1]) <= 0:
                 # We don't really have the partition table backup.
                 self._reporting.info("Couldn't backup the partition table for %s."%disk,
-                        origin = self, level = PLUGIN, self)
+                        origin = self, level = PLUGIN)
                 self._reporting.info("To force the recovery of this disk without the backup " \
                     "please run the flow named noBackup from this plugin.",
                     origin = self, level = PLUGIN)
@@ -106,22 +106,22 @@ class UndeletePartition(Plugin):
     #
     def fix(self):
         self._reporting.info("Lets see if I can fix this... Starting fix task.",
-                origin = self, level = PLUGIN )
+                origin = self, level = PLUGIN)
         self._reporting.info("Might want to go and get a cup of coffee,"
-                "this could take a looooooong time...", origin = self, level = PLUGIN )
+                "this could take a looooooong time...", origin = self, level = PLUGIN)
         self._result = ReturnSuccess
         rescued = []
         try:
             for disk, members in self.disks.iteritems():
                 if len(members[0]) > 0:#there are partitions to rescue :)
                     self._reporting.info("Trying to rescue %s from disk %s"%(members[0], disk),
-                            origin = self, level = PLUGIN )
+                            origin = self, level = PLUGIN)
                     rescued = _undelpart.rescue(members[0])
                     self._reporting.info("Partitions rescued: %s"%rescued,
                             origin = self, level = PLUGIN)
                 elif len(members[0]) ==  0:
                     self._reporting.info("Nothing to rescue on disk %s."%disk,
-                            origin = self, level = PLUGIN )
+                            origin = self, level = PLUGIN)
                 else:
                     self_result = ReturnFailure
                     break
