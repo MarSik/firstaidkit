@@ -19,9 +19,16 @@ NAME := "firstaidkit"
 VERSION := $(shell awk '/Version:/ { print $$2 }' firstaidkit.spec)
 RELEASE := $(shell awk '/Release:/ { print $$2 }' firstaidkit.spec)
 
+PLUGIN_PATH = plugins
+# all the plugins that have a make build to run
+PLUGIN_DIRS = plugin_undelete_partitions
+
 tarball:
 	git-archive --format=tar --prefix=$(NAME)-$(VERSION)/ HEAD | bzip2 -f > $(NAME)-$(VERSION).tar.bz2
 
 rpm-all: tarball
 	rpmbuild -ta $(NAME)-$(VERSION).tar.bz2
 	rm -f $(NAME)-$(VERSION).tar.bz2
+
+subdirs:
+	for d in $(PLUGIN_DIRS); do make -C $(PLUGIN_PATH)/$$d build; [ $$? == 0 ] || exit 1; done

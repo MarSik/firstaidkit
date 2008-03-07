@@ -650,7 +650,7 @@ static struct PyMethodDef undelpart_methods [] = {
         METH_VARARGS, "Get the partition list off of a certain disk.  This is intended "
             "to be used as a backup.  It returns the number of the partition, start "
             "sector and the end sector."},
-   { "rescue",
+    {"rescue",
         (PyCFunction)undelpart_rescue,
         METH_VARARGS, "Try to put the list of rescuable partitions into the partition "
             "table.  If the partitions are already there, nothing will be done.  A list "
