@@ -17,6 +17,7 @@
 
 from pyfirstaidkit.plugins import Plugin,Flow
 from pyfirstaidkit.returns import *
+from pyfirstaidkit.reporting import PLUGIN
 import signal
 import _undelpart
 
