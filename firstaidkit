@@ -104,9 +104,15 @@ def usage(name):
 """ % (name, name, name, name, name, name)
 
 if __name__=="__main__":
-    params, rest = getopt.getopt(sys.argv[1:], "aftc:r:vl:x:F:g:P:h",
-            ["list", "info=", "auto", "flow", "task", "config=", "root=", "verbose", "log=", "exclude=",
-                "flag=", "gui=", "plugin-path=", "print-config", "help"])
+    try:
+        params, rest = getopt.getopt(sys.argv[1:], "aftc:r:vl:x:F:g:P:h",
+                ["list", "info=", "auto", "flow", "task", "config=", "root=",
+                "verbose", "log=", "exclude=","flag=", "gui=", "plugin-path=",
+                "print-config", "help"])
+    except Exception, e:
+        print "\nError parsing the argument line: ",e,"\n"
+        usage(sys.argv)
+        sys.exit(1)
 
     #
     # Preliminary checks before we parse the options.
