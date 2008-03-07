@@ -70,7 +70,7 @@ class UndeletePartition(Plugin):
         # When we find a rescuable partition we change this to true.
         rescuablePresent = False
         for key, value in self.disks.iteritems():
-            self.disks[key] = [ _undelpart.getRescuable(key), _undelpart.getPartitionTable(key), [] ]
+            self.disks[key] = [ _undelpart.getRescuable(key), _undelpart.getPartitionList(key), [] ]
             if len(self.disks[key][0]) > 0:
                 self._reporting.info("Possible partitions to recover: %s"%self.disks[key],
                         origin = self, level = PLUGIN)
