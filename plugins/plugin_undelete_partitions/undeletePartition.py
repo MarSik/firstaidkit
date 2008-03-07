@@ -72,7 +72,7 @@ class UndeletePartition(Plugin):
         for key, value in self.disks.iteritems():
             self.disks[key] = [ _undelpart.getRescuable(key), _undelpart.getPartitionTable(key), [] ]
             if len(self.disks[key][0]) > 0:
-               self._reporting.info("Possible partitions to recover: %s" % self.disks[key],
+                self._reporting.info("Possible partitions to recover: %s" % self.disks[key],
                         UndeletePartition.name )
                 rescuablePresent = True
         if not rescuablePresent:
@@ -106,19 +106,19 @@ class UndeletePartition(Plugin):
     #
     def fix(self):
         self._reporting.info("Lets see if I can fix this... Starting fix task.", UndeletePartition.name )
-       self._reporting.info("Might want to go and get a cup of coffee,"
+        self._reporting.info("Might want to go and get a cup of coffee,"
                 "this could take a looooooong time...", UndeletePartition.name )
         self._result = ReturnSuccess
         rescued = []
         try:
             for disk, members in self.disks.iteritems():
-               if len(members[0]) > 0:#there are partitions to rescue :)
+                if len(members[0]) > 0:#there are partitions to rescue :)
                     self._reporting.info("Trying to rescue %s from disk %s"%
                             (members[0], disk))
                     rescued = _undelpart.rescue(members[0])
                     self._reporting.info("Partitions rescued: %s"%rescued)
                 elif len(members[0]) ==  0:
-                   self._reporting.info("Nothing to rescue on disk %s."%disk,UndeletePartition.name )
+                    self._reporting.info("Nothing to rescue on disk %s."%disk,UndeletePartition.name )
                 else:
                     self_result = ReturnFailure
                     break
@@ -137,7 +137,7 @@ class UndeletePartition(Plugin):
     #
     def restore(self):
         self._reporting.info("Starting Restoring task." , UndeletePartition.name)
-       tempPartList = []
+        tempPartList = []
         backupPartList = []
         for disk, members in self.disk.iteritems():
             tempPartList = _undelpart.getPartitionList(disk)
