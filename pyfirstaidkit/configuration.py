@@ -44,10 +44,10 @@ def createDefaultConfig(config):
     # will be reserved in the configuration.  lib{,64}-firstaidkit-{,examples}
     #
     config.add_section("paths")
-    for root in ["firstaidkit-plugins", "firstaidkit-plugins/examples"]:
-        for dir in [ "usr/lib64", "usr/lib"]:
+    for dir in ["firstaidkit-plugins", "firstaidkit-plugins/examples"]:
+        for root in [ "usr/lib64", "usr/lib"]:
             if os.path.exists( "/%s/%s" % (root,dir)):
-                config.paths.add_option( "%s-%s"%(dir[5:], root.replace("/", "_")),
+                config.set( "paths",  "%s-%s"%(dir[5:], root.replace("/", "_")),
                         "/%s/%s" %(root, dir) )
 
 
