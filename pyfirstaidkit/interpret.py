@@ -78,10 +78,12 @@ class Tasker:
 
         # Check the root privilegies
         if os.geteuid() == 0:
-            self._reporting.info("You are running the firstaidkit as root.", level = TASKER, origin = self, importance = logging.WARNING)
+            self._reporting.info("You are running the firstaidkit as root.",
+                    level = TASKER, origin = self, importance = logging.WARNING)
             self._provide.provide("root")
         else:
-            self._reporting.info("You are not running the firstaidkit as root. Some plugins may not be available.", level = TASKER, origin = self, importance = logging.WARNING)
+            self._reporting.info("You are not running the firstaidkit as root." \
+                    "Some plugins may not be available.", level = TASKER, origin = self, importance = logging.WARNING)
             self._provide.unprovide("root")
 
         #initialize the startup set of flags
@@ -99,16 +101,22 @@ class Tasker:
                 oldlist = copy.copy(actlist)
                 for plugin in oldlist:
                     #If plugin does not contain the automated flow or if it ran correctly, remove it from list
-                    if (flow and not flow in pluginSystem.getplugin(plugin).getFlows()) or (not flow and not pluginSystem.getplugin(plugin).default_flow in pluginSystem.getplugin(plugin).getFlows()):
-                        self._reporting.info("Plugin %s does not contain flow %s" % (plugin, flow or pluginSystem.getplugin(plugin).default_flow,), level = TASKER, origin = self)
+                    if ((flow and not flow in pluginSystem.getplugin(plugin).getFlows()) or
+                                (not flow and not pluginSystem.getplugin(plugin).default_flow in
+                                pluginSystem.getplugin(plugin).getFlows())):
+                        self._reporting.info("Plugin %s does not contain flow %s"%
+                                (plugin, flow or pluginSystem.getplugin(plugin).default_flow,), 
+                                level = TASKER, origin = self)
                         actlist.remove(plugin)
                     elif pluginSystem.autorun(plugin, flow = flow):
                         actlist.remove(plugin)
             for plugin in actlist:
-                self._reporting.info("Plugin %s was not called because of unsatisfied dependencies" % (plugin,), level = TASKER, origin = self, importance = logging.WARNING)
+                self._reporting.info("Plugin %s was not called because of unsatisfied dependencies"%
+                        (plugin,), level = TASKER, origin = self, importance = logging.WARNING)
         elif self._config.operation.mode == "flow":
             try:
-                pluginSystem.autorun(self._config.operation.plugin, flow = self._config.operation.flow, dependencies = False)
+                pluginSystem.autorun(self._config.operation.plugin, 
+                        flow = self._config.operation.flow, dependencies = False)
             except InvalidFlowNameException, e:
                 pass
         elif self._config.operation.mode == "plugin":
@@ -131,8 +139,11 @@ class Tasker:
                 Logger.error("No such plugin '%s'" % (self._config.operation.params,))
                 return False
             flowinfo = [ (f, p.getFlow(f).description) for f in p.getFlows() ]
-            rep = {"id": self._config.operation.params, "name": p.name, "version": p.version, "author": p.author, "description": p.description, "flow": p.default_flow, "flows": flowinfo}
-            self._reporting.tree(rep, level = TASKER, origin = self, title = "Information about plugin %s" % (self._config.operation.params,))
+            rep = {"id": self._config.operation.params, "name": p.name, 
+                    "version": p.version, "author": p.author, 
+                    "description": p.description, "flow": p.default_flow, "flows": flowinfo}
+            self._reporting.tree(rep, level = TASKER, origin = self, 
+                    title = "Information about plugin %s" % (self._config.operation.params,))
         else:
             Logger.error("Incorrect task specified")
             self._reporting.stop(level = TASKER, origin = self)
