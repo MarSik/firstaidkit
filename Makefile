@@ -32,3 +32,10 @@ rpm-all: tarball
 
 subdirs:
 	for d in $(PLUGIN_DIRS); do make -C $(PLUGIN_PATH)/$$d build; [ $$? == 0 ] || exit 1; done
+
+bumpver:
+	@MAYORVER=$$(echo $(VERSION) | cut -d . -f 0-2); \
+	NEWSUBVER=$$((`echo $(VERSION) | cut -d . -f 3`+1)); \
+	sed -i "s/Version:        $(VERSION)/Version:        $$MAYORVER.$$NEWSUBVER/" firstaidkit.spec; \
+	sed -i "s/Release:        .*%/Release:        1%/" firstaidkit.spec; \
+	sed -i "s/version=.*/version='$$MAYORVER.$$NEWSUBVER',/" setup.py;
