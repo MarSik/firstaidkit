@@ -149,7 +149,7 @@ if __name__=="__main__":
             if not os.path.isdir(val):
                 print "%s is not a valid directory.  Exiting..."% val
                 sys.exit(1)
-            Config.set("paths", val.strip("/").replace("/","-"), val)
+            Config.set("paths", val.strip("/"), val)
         elif key in ("--print-config"):
             Flags.print_config = True
         elif key in ("-h", "--help"):
