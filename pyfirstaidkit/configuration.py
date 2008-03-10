@@ -28,7 +28,6 @@ else:
 
 def createDefaultConfig(config):
     """Create the default config with the object."""
-    config.system.root = "/mnt/sysimage"
     config.operation.flags = ""
     config.operation.mode = "auto"
     config.operation.params = ""
@@ -38,6 +37,12 @@ def createDefaultConfig(config):
     config.log.method = "file"
     config.log.filename = "/var/log/firstaidkit.log"
     config.plugin.disabled = ""
+
+    # Setup a sane default root directory.
+    if os.path.isdir("/mnt/sysimage"):
+        config.system.root = "/mnt/sysimage"
+    else
+        config.system.root = "/"
 
     #
     # There will be 4 default places where FAK will look for plugins,  these 4 names
