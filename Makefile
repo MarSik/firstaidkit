@@ -39,3 +39,8 @@ bumpver:
 	sed -i "s/Version:        $(VERSION)/Version:        $$MAYORVER.$$NEWSUBVER/" firstaidkit.spec; \
 	sed -i "s/Release:        .*%/Release:        1%/" firstaidkit.spec; \
 	sed -i "s/version=.*/version='$$MAYORVER.$$NEWSUBVER',/" setup.py;
+
+newver:
+	make bumpver
+	git commit -a -m "new minor version"
+	make rpm-all
