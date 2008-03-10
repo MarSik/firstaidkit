@@ -47,8 +47,7 @@ def createDefaultConfig(config):
     for dir in ["firstaidkit-plugins", "firstaidkit-plugins/examples"]:
         for root in [ "usr/lib64", "usr/lib"]:
             if os.path.exists( "/%s/%s" % (root,dir)):
-                config.set( "paths",  "%s-%s"%(dir[5:], root.replace("/", "_")),
-                        "/%s/%s" %(root, dir) )
+                config.set( "paths",  "%s/%s"%(dir[5:], root),"/%s/%s" %(root, dir) )
 
 
 class LockedError(Exception):
