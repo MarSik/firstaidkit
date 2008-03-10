@@ -120,6 +120,9 @@ with the password system.
 %{_libdir}/firstaidkit-plugins/passwd.py
 
 %Changelog
+* Mon Mar 10 2008 Joel Granados <jgranado@redhat.com> 0.1.1-1
+- new version
+
 * Wed Jan 09 2008 Joel Granados <jgranado@redhat.com> 0.1.0-6
 - Put examples under the firstaidkit-plugins dir
 - Create a firstaidkit-plugin-all package
