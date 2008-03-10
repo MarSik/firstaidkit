@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='firstaidkit',
-      version='0.1.0',
+      version='0.1.1',
       description='System Rescue Tool',
       author='Martin Sivak / Joel Andres Granados',
       author_email='msivak@redhat.com / jgranado@redhat.com',
