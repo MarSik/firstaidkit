@@ -117,7 +117,7 @@ class UndeletePartition(Plugin):
                 if len(members[0]) > 0:#there are partitions to rescue :)
                     self._reporting.info("Trying to rescue %s from disk %s"%(members[0], disk),
                             origin = self, level = PLUGIN)
-                    rescued = _undelpart.rescue(members[0])
+                    rescued = _undelpart.rescue(disk,members[0])
                     self._reporting.info("Partitions rescued: %s"%rescued,
                             origin = self, level = PLUGIN)
                 elif len(members[0]) ==  0:
