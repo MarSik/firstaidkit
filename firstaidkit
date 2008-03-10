@@ -183,6 +183,7 @@ if __name__=="__main__":
         print 76*"-"
         Config.write(sys.stdout)
         print 76*"-"
+        sys.exit(0)
 
     Config.lock()
 
