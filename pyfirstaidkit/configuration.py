@@ -41,7 +41,7 @@ def createDefaultConfig(config):
     # Setup a sane default root directory.
     if os.path.isdir("/mnt/sysimage"):
         config.system.root = "/mnt/sysimage"
-    else
+    else:
         config.system.root = "/"
 
     #
