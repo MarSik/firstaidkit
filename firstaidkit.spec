@@ -39,6 +39,9 @@ Provides the examples and requires firstaidkit without plugins.
 Group:          Applications/System
 Summary:        All firstaidkit plugins
 Requires:       %{name} = %{version}-%{release}
+Requires:       %{name}-plugin-undelete-partitions
+Requires:       %{name}-plugin-passwd
+
 
 %description plugin-all
 This package provides all the necessary firstaidkit plugins.  It
