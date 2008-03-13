@@ -122,30 +122,3 @@ with the password system.
 %files plugin-passwd
 %{_libdir}/firstaidkit-plugins/passwd.py
 
-%Changelog
-* Mon Mar 10 2008 Joel Granados <jgranado@redhat.com> 0.1.1-1
-- new version
-
-* Wed Jan 09 2008 Joel Granados <jgranado@redhat.com> 0.1.0-6
-- Put examples under the firstaidkit-plugins dir
-- Create a firstaidkit-plugin-all package
-
-* Tue Jan 08 2008 Joel Granados <jgranado@redhat.com> 0.1.0-5
-- Leave just the firstaidkit and firstaidkit-devel pacages.
-
-* Mon Jan 07 2008 Joel Granados <jgranado@redhat.com> 0.1.0-4
-- Create firstaidkit dummy package
-- Create firstaidkit-pluginsystem subpackage
-- Create firstaidkit-devel subpackage
-- Bump the release tag
-
-* Fri Jan 04 2008 Joel Granados <jgranado@redhat.com> 0.1.0-3
-- Change the License variable
-- Fix man page being executable
-
-* Fri Jan 04 2008 Joel Granados <jgranado@redhat.com> 0.1.0-2
-- Include python-setuptools-devel in the BuildRequires
-- Added manpage stuff in the spec file
-
-* Wed Jan 02 2008 Joel Granados <jgranado@redhat.com> 0.1.0-1
-- Initial spec
