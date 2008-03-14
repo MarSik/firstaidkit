@@ -366,13 +366,16 @@ class PluginSystem(object):
                 self._reporting.debug("Processing file: %s" % (f,), level = PLUGINSYSTEM, origin = self)
                 if os.path.isdir(fullpath) and os.path.isfile(os.path.join(path, f, "__init__.py")):
                     importlist.add(f)
-                    self._reporting.debug("Adding python module (directory): %s" % (f,), level = PLUGINSYSTEM, origin = self)
+                    self._reporting.debug("Adding python module (directory): %s" % (f,),
+                            level = PLUGINSYSTEM, origin = self)
                 elif os.path.isfile(fullpath) and (f[-3:]==".so" or f[-3:]==".py"):
                     importlist.add(f[:-3])
-                    self._reporting.debug("Adding python module (file): %s" % (f,), level = PLUGINSYSTEM, origin = self)
+                    self._reporting.debug("Adding python module (file): %s" % (f,),
+                            level = PLUGINSYSTEM, origin = self)
                 elif os.path.isfile(fullpath) and (f[-4:]==".pyc" or f[-4:]==".pyo"):
                     importlist.add(f[:-4])
-                    self._reporting.debug("Adding python module (compiled): %s" % (f,), level = PLUGINSYSTEM, origin = self)
+                    self._reporting.debug("Adding python module (compiled): %s" % (f,),
+                            level = PLUGINSYSTEM, origin = self)
 
             #try to import the modules as FirstAidKit.plugins.modulename
             for m in importlist:
@@ -381,25 +384,27 @@ class PluginSystem(object):
 
                 imp.acquire_lock()
                 try:
-                    self._reporting.debug("Importing module %s from %s" % (m, path), level = PLUGINSYSTEM, origin = self)
+                    self._reporting.debug("Importing module %s from %s" % (m, path), 
+                            level = PLUGINSYSTEM, origin = self)
                     moduleinfo = imp.find_module(m, [path])
                     module = imp.load_module(".".join([FirstAidKit.__name__, m]), *moduleinfo)
                 finally:
                     imp.release_lock()
 
                 self._plugins[m] = module
-                self._reporting.debug("Module %s successfully imported with basedir %s" % (m, os.path.dirname(module.__file__)),
-                        level = PLUGINSYSTEM, origin = self)
+                self._reporting.debug("Module %s successfully imported with basedir %s" % 
+                        (m, os.path.dirname(module.__file__)), level = PLUGINSYSTEM, origin = self)
 
     def list(self):
         """Return the list of imported plugins"""
         return self._plugins.keys()
-    
+
     def autorun(self, plugin, flow = None, dependencies = True):
         """Perform automated run of plugin with condition checking
-returns - True if conditions are fully satisfied
-          False if there is something missing
-          exception when some other error happens"""
+
+        returns - True if conditions are fully satisfied
+        False if there is something missing
+        exception when some other error happens"""
 
         self._reporting.start(level = PLUGIN, origin = self, message = plugin)
 
@@ -417,7 +422,8 @@ returns - True if conditions are fully satisfied
 
         Logger.info("Using %s flow" % flowName)
         if flowName not in flows:
-            self._reporting.exception(message = "Flow %s does not exist in plugin %s" % (flowName, plugin), level = PLUGINSYSTEM, origin = self)
+            self._reporting.exception(message = "Flow %s does not exist in plugin %s" % 
+                    (flowName, plugin), level = PLUGINSYSTEM, origin = self)
             raise InvalidFlowNameException(flowName)
 
         if dependencies:
