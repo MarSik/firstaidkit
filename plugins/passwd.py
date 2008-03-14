@@ -57,7 +57,8 @@ class PasswdPlugin(Plugin):
         print spawnvch(executable = "/usr/bin/passwd", args = ["/usr/bin/passwd", "root"],
                 chroot = Config.system.root).communicate(input = "%s\n%s\n"%(newpasswd,newpasswd))
 
-        self._reporting.info("Root password was reset to '%s'" % (newpasswd,), level = PLUGIN, origin = self)
+        self._reporting.info("Root password was reset to '%s'" % 
+                ("".join(newpasswd),), level = PLUGIN, origin = self)
 
         self._result=ReturnSuccess
 
