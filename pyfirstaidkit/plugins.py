@@ -315,6 +315,8 @@ Just fill the issue_tests list with classes describing the tests and let it run.
         for i in self.tests:
             self._reporting.info(level = TASK, origin = self, message = "Investigating '%s'" % (i.name,))
             result = result or i.detect()
+            if i.happened():
+                self._reporting.info(level = TASK, origin = self, message = i.str())
 
         if result:
             self._result=ReturnSuccess
