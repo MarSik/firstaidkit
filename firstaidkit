@@ -179,6 +179,10 @@ if __name__=="__main__":
     elif Config.operation.mode == "task":
         Config.operation.plugin = rest[0]
         Config.operation.task = rest[1]
+    elif Config.operation.mode == "":
+        print "\nError in command arguments: no mode specified\n"
+        usage(sys.argv)
+        sys.exit(1)
 
     if Flags.main_help:
         usage(sys.argv[0])

@@ -29,7 +29,7 @@ else:
 def createDefaultConfig(config):
     """Create the default config with the object."""
     config.operation.flags = ""
-    config.operation.mode = "auto"
+    config.operation.mode = ""
     config.operation.params = ""
     config.operation.help = "False"
     config.operation.gui = "console"
