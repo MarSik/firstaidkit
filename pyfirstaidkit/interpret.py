@@ -21,6 +21,7 @@ from reporting import Reports, TASKER, PLUGINSYSTEM
 import logging
 import copy
 from errors import *
+from utils import FileBackupStore
 
 Logger=logging.getLogger("firstaidkit")
 
@@ -60,7 +61,8 @@ class Tasker:
         self._provide = RunDependencies()
         self._config = cfg
         self._reporting = Reports()
-        self.pluginSystem = PluginSystem(reporting = self._reporting, dependencies = self._provide)
+        self._backups = FileBackupStore(cfg.backup.path)
+        self.pluginSystem = PluginSystem(reporting = self._reporting, dependencies = self._provide, backups = self._backups)
 
     def reporting(self):
         return self._reporting

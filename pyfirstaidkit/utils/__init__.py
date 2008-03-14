@@ -18,6 +18,8 @@
 import os
 import sys
 import subprocess
+from backup import *
+from errors import *
 
 def chroot_func(dir):
     def do_chroot():
@@ -38,4 +40,6 @@ Returns the subprocess.Popen object"""
 
     return subprocess.Popen(executable = executable, args = args, preexec_fn = chroot_func(chroot), env = env,
             stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+
+
 

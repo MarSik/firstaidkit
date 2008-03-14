@@ -37,6 +37,8 @@ def createDefaultConfig(config):
     config.log.method = "file"
     config.log.filename = "/var/log/firstaidkit.log"
     config.plugin.disabled = ""
+    config.backup.method = "file"
+    config.backup.path = "/tmp/backup"
 
     # Setup a sane default root directory.
     if os.path.isdir("/mnt/sysimage"):
