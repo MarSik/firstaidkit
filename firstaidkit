@@ -162,6 +162,11 @@ if __name__=="__main__":
             Config.operation.params = val
 
     if Config.operation.mode == "flow":
+        if len(rest) < 1:
+            print "Error in the command arguments.\n"
+            usage(sys.argv)
+            sys.exit(1)
+
         Config.operation.plugin = rest[0]
         if len(rest)<=1:
             Config.operation.mode = "plugin"
