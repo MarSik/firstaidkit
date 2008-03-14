@@ -88,8 +88,8 @@ def usage(name):
  %s [params] -f <plugin> <flow>
  %s [params] -t <plugin> <task>
  params is none or more items from:
-  -c <config file> - select different config file
-  -r <root path>   - where is the root directory?
+  -c <config file> - location of the config file
+  -r <root path>   - location of the root directory
   -P <path>        - add different plugin path
                      it can be used more than once
   -v               - verbose mode

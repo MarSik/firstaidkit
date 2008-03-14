@@ -1,9 +1,93 @@
 .\" FirstAidKit 
-.TH "FirstAidKit" "1" 
-.SH "NAME" FirstAidKit 
+.TH "FirstAidKit" "1"
+.SH "NAME" FirstAidKit
+.BR
+.SH "SYNOPSIS"
+firstaidkit [options] [-a | --auto] [fix | FLOW ]
+.br
+firstaidkit [options] [-f | --flow ] PLUGIN FLOW
+.br
+firstaidkit [options] [-t | --task ] PLUGIN TASK
+.br
+firstaidkit [options] --print-config
+.br
+firstaidkit [options] --list
+.br
+firstaidkit [options] --info <plugin>
+
 .BR
 .SH "DESCRIPTION"
-firstaidkit executes simple and common recovery tasks in an automated way.  It also has a cli that lets you control firstaidkits behavior
+Firstaidkit executes simple and common recovery tasks in an automated way. The basic
+elements in the system are: backend plugin system, the plugins, the plugin
+flows and plugin tasks.  The plugins can be thought of as individual
+recovery processes.  There can be a plugin for password recovery for example.
+A plugin task is an individual step in the recovery proces of a given plugin.
+To continue with the password example, a task for this plugin could be a process
+that changes the root passwd or a process that checks if there is a password in
+/etc/passwd.  Finally we have the flows.  These are structures that organize the
+different tasks in a plugin.  There could be, for example, a "fast" flow that
+just changes the passwd without checking /etc/passwd, there could also be a
+"strict" flow that checks for the existence of /etc/passwd and modifies the
+passwd based on what it found in the first task.
+
+Firstaidkit also has a CLI that lets you control firstaidkits behavior. The execution
+of firstiadkit has 6 modes of operation:
+
+.IP "Automated Default. -a, --auto"
+This mode runs all the plugins that firstaidkit can detect in the paths
+(The paths can be set in the config file).  It will run the flow denomintated
+"diagnose" for all these plugins.  When a plugin does not have a diagnose
+flow (Some plugins like passwd don't have it), it will be ignored.  The
+general idea with this mode is to see what is going on in different parts
+of the system.  The behavior of this mode can be modified by passing  on of
+two parameters: The flow name or "fix".
+
+When fix is specified, it will run the fix flow of all the plugins.  This is
+*not* the default behavior because this might not be what the user wants.
+A more sensible approach is to list the possible problems and then for the
+user to run individual plugins to address all of the listed problems or a
+subset of them.
+
+When FLOW is specified, the flow named FLOW is run in each plugin.  As with
+the default behavior, the plugin is ignored when the flow is not there.
+
+.IP "Flow Selection. -f PLUGIN FLOW, --flow PLUGIN FLOW"
+Basically lets you specify the plugin to run and the flow that you want to
+run on that plugin.
+
+.IP "Task Selection. -t PLUGIN TASK, --task PLUGIN TASK"
+Give a little more granularity in the execution of a given plugin.  It allows
+you to select the specific task to execute in a given plugin.
+
+.IP "Print Configuration. --print-config"
+Lists the resulting configuration.  Firstaidkit allows you to specify configuration
+elements in a lot of places.  This options just lests you see what firstaidkit
+ends up with after analyzing all the configuration elements.
+
+.IP "List Plugins. --list"
+Make a list of all the plugins.
+
+.IP "Individual Plugin Info. --info PLUGIN"
+Get information fro a specific plugin.
+
+.PP
+.SH "OPTIONS"
+.IP "-c PATH, --config=PATH"
+Location of configuration file.
+.IP "-r PATH, --root=PATH"
+Location of the root directory.
+.IP "-v, --verbose"
+Verbose mode.
+.IP "-l METHOD, --log=METHOD"
+Select METHOD as a log method.
+.IP "-x PLUGIN, --exclude=PLUGIN"
+Exclude PLUGIN from the run.
+.IP "-g GUI, --gui=GUI"
+Select GUI as front end to show results.
+.IP "-h, --help"
+Show help.
+.IP "-F FLAG, --flag=FLAG"
+Setup startup flags.
 
 .PP
 .SH "BUGS"
@@ -19,8 +103,13 @@ Joel Granados <jgranado@redhat.com>
 .fi
 
 .PP
+.SH "FILES"
+.nf
+/etc/firstaidkit.conf
+.fi
+
+.PP
 .SH "SEE ALSO"
 .nf
 http://fedorahosted.org/firstaidkit
 .fi
-
