@@ -20,6 +20,7 @@ from returns import *
 from errors import *
 from reporting import *
 from copy import copy,deepcopy
+from issue import *
 
 import FirstAidKit
 import logging
@@ -289,6 +290,50 @@ class Plugin(object):
          #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
             Logger.warning("Fix is an abstract method, it should be used as such.")
+
+class IssuesPlugin(Plugin):
+    """Simple plugin which uses Issue classes to test more small and INDEPENDENT issues in the system.
+Just fill the issue_tests list with classes describing the tests and let it run."""
+
+    issue_tests = [] #List of Issue classes to check
+    
+    def __init__(self, flow, reporting, dependencies, path = None):
+        Plugin.__init__(self, flow, reporting, dependencies, path)
+        self.tests = []
+
+    def prepare(self):
+        """Prepare the issues list"""
+        for i in self.issue_tests:
+            self._reporting.info(level = TASK, origin = self, message = "Preparing tests for '%s'" % (i.name,))
+            self.tests.append(i(plugin = self))
+        self._result=ReturnSuccess
+
+    def diagnose(self):
+        """Diagnose the situation."""
+
+        result = False
+        for i in self.tests:
+            self._reporting.info(level = TASK, origin = self, message = "Investigating '%s'" % (i.name,))
+            result = result or i.detect()
+
+        if result:
+            self._result=ReturnSuccess
+        else:
+            self._result=ReturnFailure
+
+    def fix(self):
+        """Try to fix whatever is wrong in the system."""
+
+        result = False
+        for i in self.tests:
+            self._reporting.info(level = TASK, origin = self, message = "Fixing '%s'" % (i.name,))
+            result = result or i.fix()
+
+        if result:
+            self._result=ReturnSuccess
+        else:
+            self._result=ReturnFailure
+
 
 class FlagTrackerPlugin(Plugin):
     """This kind of plugin monitores all the flags in the system and when certain flags
