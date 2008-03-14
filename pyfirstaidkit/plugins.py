@@ -408,7 +408,14 @@ class PluginSystem(object):
 
         self._reporting.start(level = PLUGIN, origin = self, message = plugin)
 
-        pklass = self._plugins[plugin].get_plugin() #get top level class of plugin
+        if plugin in self._plugins.keys():
+            pklass = self._plugins[plugin].get_plugin() #get top level class of plugin
+        else:
+            self._reporting.exception(message = "Plugin %s was not detected" % plugin,
+                    level = PLUGINSYSTEM, origin = self)
+            self._reporting.stop(level = PLUGIN, origin = self, message = plugin)
+            raise InvalidPluginNameException(plugin)
+
         plugindir = os.path.dirname(self._plugins[plugin].__file__)
         Logger.info("Plugin information...")
         Logger.info("name:%s , version:%s , author:%s " % pklass.info())
@@ -424,6 +431,7 @@ class PluginSystem(object):
         if flowName not in flows:
             self._reporting.exception(message = "Flow %s does not exist in plugin %s" % 
                     (flowName, plugin), level = PLUGINSYSTEM, origin = self)
+            self._reporting.stop(level = PLUGIN, origin = self, message = plugin)
             raise InvalidFlowNameException(flowName)
 
         if dependencies:

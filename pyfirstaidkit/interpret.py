@@ -120,7 +120,10 @@ class Tasker:
             except InvalidFlowNameException, e:
                 pass
         elif self._config.operation.mode == "plugin":
-            pluginSystem.autorun(self._config.operation.plugin, dependencies = False)
+            try:
+                pluginSystem.autorun(self._config.operation.plugin, dependencies = False)
+            except InvalidPluginNameException, e:
+                pass
         elif self._config.operation.mode == "task":
             pass
         elif self._config.operation.mode == "list":

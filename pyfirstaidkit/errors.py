@@ -27,3 +27,9 @@ class InvalidFlowNameException(Exception):
         self.message="There are no flows by the name of %s" % name
     def __str__(self):
         return self.message
+
+class InvalidPluginNameException(Exception):
+    def __init__(self, name):
+        self.message="There are no flows by the name of %s" % name
+    def __str__(self):
+        return self.message
