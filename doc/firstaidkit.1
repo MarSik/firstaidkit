@@ -7,8 +7,6 @@ firstaidkit [options] [-a | --auto] [fix | FLOW ]
 .br
 firstaidkit [options] [-f | --flow ] PLUGIN FLOW
 .br
-firstaidkit [options] [-t | --task ] PLUGIN TASK
-.br
 firstaidkit [options] --print-config
 .br
 firstaidkit [options] --list
@@ -54,10 +52,6 @@ the default behavior, the plugin is ignored when the flow is not there.
 .IP "Flow Selection. -f PLUGIN FLOW, --flow PLUGIN FLOW"
 Basically lets you specify the plugin to run and the flow that you want to
 run on that plugin.
-
-.IP "Task Selection. -t PLUGIN TASK, --task PLUGIN TASK"
-Give a little more granularity in the execution of a given plugin.  It allows
-you to select the specific task to execute in a given plugin.
 
 .IP "Print Configuration. --print-config"
 Lists the resulting configuration.  Firstaidkit allows you to specify configuration

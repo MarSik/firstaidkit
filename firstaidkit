@@ -86,7 +86,6 @@ def usage(name):
  %s [params] -a <flow>  - runs the automated mode with specified flow
  %s [params] -a fix     - automated fixing sequence [using the fix flows]
  %s [params] -f <plugin> <flow>
- %s [params] -t <plugin> <task>
  params is none or more items from:
   -c <config file> - location of the config file
   -r <root path>   - location of the root directory
@@ -101,7 +100,7 @@ def usage(name):
   --print-config   - print resulting config file
   --list           - list all plugins
   --info <plugin>  - get information about plugin
-""" % (name, name, name, name, name, name)
+""" % (name, name, name, name, name)
 
 if __name__=="__main__":
     try:
@@ -121,7 +120,7 @@ if __name__=="__main__":
         Flags.main_help = True
 
     for key,val in params:
-        if key in ("-t", "--task"):
+        if key in ("-t", "--task"): #currently not implemented and not documented!
             Config.operation.mode = "task"
             Flags.main_help = False
         elif key in ("-a", "--auto"):
