@@ -110,7 +110,7 @@ if __name__=="__main__":
                 "print-config", "help"])
     except Exception, e:
         print "\nError parsing the argument line: ",e,"\n"
-        usage(sys.argv)
+        usage(sys.argv[0])
         sys.exit(1)
 
     #
@@ -163,7 +163,7 @@ if __name__=="__main__":
     if Config.operation.mode == "flow":
         if len(rest) < 1:
             print "Error in the command arguments.\n"
-            usage(sys.argv)
+            usage(sys.argv[0])
             sys.exit(1)
 
         Config.operation.plugin = rest[0]
@@ -180,7 +180,7 @@ if __name__=="__main__":
         Config.operation.task = rest[1]
     elif Config.operation.mode == "":
         print "\nError in command arguments: no mode specified\n"
-        usage(sys.argv)
+        usage(sys.argv[0])
         sys.exit(1)
 
     if Flags.main_help:
