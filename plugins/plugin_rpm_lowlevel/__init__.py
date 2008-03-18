@@ -20,49 +20,42 @@ from pyfirstaidkit.returns import *
 from pyfirstaidkit.utils import *
 from pyfirstaidkit.reporting import PLUGIN,TASK
 from pyfirstaidkit import Config
-import rpm
 
-from issue_packages import RequiredPackages
+from issue_packages import Packages
 
-class RPMPlugin(IssuesPlugin):
-    """This plugin provides checks for RPM database."""
+class RPMLowlevelPlugin(IssuesPlugin):
+    """This plugin provides lowlevel checks for RPM database."""
     #
     # Additional flow defprepareion.
     #
     flows = Flow.init(IssuesPlugin)
 
-    name = "RPM plugin"
+    name = "RPM lowlevel structure plugin"
     version = "0.0.1"
     author = "Martin Sivak"
 
-    issue_tests = [RequiredPackages]
-    set_flags = ["rpm_consistent"]
+    issue_tests = [Packages]
+    set_flags = ["rpm_lowlevel"]
 
     @classmethod
     def getDeps(cls):
-        return set(["root", "experimental", "filesystem", "rpm_lowlevel"])
+        return set(["root", "experimental", "filesystem"])
 
     def __init__(self, *args, **kwargs):
         IssuesPlugin.__init__(self, *args, **kwargs)
         self.rpm = None
 
     def prepare(self):
-        self._reporting.info(self.name+" in Prepare task", origin = self, level = PLUGIN)
-        self.rpm = rpm.ts(Config.system.root)
         IssuesPlugin.prepare(self)
 
     def backup(self):
-        self._reporting.info(self.name+" in backup task", origin = self, level = PLUGIN)
         self._result=ReturnSuccess
 
     def restore(self):
-        self._reporting.info(self.name+" in Restore task", origin = self, level = PLUGIN)
         self._result=ReturnSuccess
 
     def clean(self):
-        self._reporting.info(self.name+" in Clean task", origin = self, level = PLUGIN)
-        del self.rpm
         self._result=ReturnSuccess
 
 def get_plugin():
-    return RPMPlugin
+    return RPMLowlevelPlugin
