@@ -56,3 +56,10 @@ network_dns
 network_firewall
   Part of network configuration was checked and appears OK
 
+rpm
+rpm_consistent
+  RPM database is in OK state and contains the right information
+rpm_lowlevel
+  RPM database has all required files and databases working
+
+

@@ -297,6 +297,7 @@ class IssuesPlugin(Plugin):
 Just fill the issue_tests list with classes describing the tests and let it run."""
 
     issue_tests = [] #List of Issue classes to check
+    set_flags = [] #flags to set when everything is OK
     
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
@@ -321,6 +322,8 @@ Just fill the issue_tests list with classes describing the tests and let it run.
 
         if result:
             self._result=ReturnSuccess
+            for flag in self.set_flags:
+                self._dependencies.provide(flag)
         else:
             self._result=ReturnFailure
 
@@ -328,9 +331,17 @@ Just fill the issue_tests list with classes describing the tests and let it run.
         """Try to fix whatever is wrong in the system."""
 
         result = False
+        fixed = True
         for i in self.tests:
             self._reporting.info(level = TASK, origin = self, message = "Fixing '%s'" % (i.name,))
             result = result or i.fix()
+            i.reset()
+            if not i.detect() or i.happened():
+                fixed = False
+
+        if fixed:
+            for flag in self.set_flags:
+                self._dependencies.provide(flag)
 
         if result:
             self._result=ReturnSuccess
