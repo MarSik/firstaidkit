@@ -41,6 +41,7 @@ Summary:        All firstaidkit plugins
 Requires:       %{name} = %{version}-%{release}
 Requires:       %{name}-plugin-undelete-partitions
 Requires:       %{name}-plugin-passwd
+Requires:       %{name}-plugin-xserver
 
 
 %description plugin-all
@@ -53,6 +54,7 @@ needed firstaidkit plugins.
 Group:          Applications/System
 Summary:        FirstAidKit plugin to recover erased partitions
 BuildRequires:  python-devel, parted-devel, pkgconfig
+Requires:       %{name} = %{version}-%{release}
 Requires:       parted
 
 %description plugin-undelete-partitions
@@ -62,10 +64,21 @@ This FirstAidKit plugin automates the recovery of erased partitions.
 %package plugin-passwd
 Group:          Applications/System
 Summary:        FirstAidKit plugin to manipulate passwd system
+Requires:       %{name} = %{version}-%{release}
 
 %description plugin-passwd
-This plugin provides operations for convenient manipulation
-with the password system.
+This FirstAidKit plugin automates the recovery of the root system
+password.
+
+
+%package plugin-xserver
+Group:          Applications/System
+Summary:        FirstAidKit plugin to recover xserver configuration files
+Requires:       %{name} = %{version}-%{release}
+
+%description plugin-xserver
+This FirstAidKit plugin automates the recovery of the xserver
+configuration file xorg.conf.
 
 
 %prep
@@ -93,6 +106,7 @@ with the password system.
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_undelete_partitions
 %{__cp} -f plugins/plugin_undelete_partitions/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_undelete_partitions/
 %{__cp} -f plugins/passwd.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/
+%{__cp} -f plugins/xserver.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/
 
 
 %clean
@@ -122,3 +136,5 @@ with the password system.
 %files plugin-passwd
 %{_libdir}/firstaidkit-plugins/passwd.py
 
+%files plugin-xserver
+%{_libdir}/firstaidkit-plugins/xserver.py

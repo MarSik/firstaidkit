@@ -6,8 +6,8 @@ setup(name='firstaidkit',
       author='Martin Sivak / Joel Andres Granados',
       author_email='msivak@redhat.com / jgranado@redhat.com',
       url='http://fedorahosted.org/firstaidkit',
-      license='GPLv2',
-      packages = ['pyfirstaidkit'],
+      license='GPLv2+',
+      packages = ['pyfirstaidkit', 'pyfirstaidkit/utils'],
       scripts = ['firstaidkit']
       )
 

@@ -17,16 +17,18 @@
 
 from pyfirstaidkit.plugins import Plugin,Flow
 from pyfirstaidkit.returns import *
+from pyfirstaidkit.utils import *
 from pyfirstaidkit.reporting import PLUGIN
 from pyfirstaidkit import Config
 
 import rhpxl.xserver
 import rhpl.keyboard
-import temp
+import tempfile
 import subprocess
 import time
 import signal
 import os
+import os.path
 import shutil
 
 class Xserver(Plugin):
@@ -40,7 +42,7 @@ class Xserver(Plugin):
         # Arbitrary test display
         self.display = ":10"
         # For when we need a temporary log.
-        (self.tmpLogfd, self.tmpLogPath) = temp.mktemp()
+        (self.tmpLogfd, self.tmpLogPath) = tempfile.mkstemp()
         self.confPath = "/etc/X11/xorg.conf"
 
     def prepare(self):
@@ -58,12 +60,17 @@ class Xserver(Plugin):
 
     # FIXME:Must change this when the backup utils is done.
     def backup(self):
-        if os.isfile(self.confPath):
+        if os.path.isfile(self.confPath):
             self._reporting.info("Making copy of %s"%self.confPath, level = PLUGIN , origin = self)
-            shutil.copyfile(self.confPath, "%s.FAK-backup"%self.confPath)
+            try:
+                shutil.copyfile(self.confPath, "%s.FAK-backup"%self.confPath)
+                self._result = ReturnSuccess
+            except:
+                self._result = ReturnFailure
         else:
             self._reporting.info("Expected path to configuration file seems to be nonexistent (%s)"%
                     self.confPath, level = PLUGIN, origin = self)
+            self._result = ReturnSuccess
 
     def fix(self):
         self._reporting.info("Starting the fix task.", level = PLUGIN, origin = self)
@@ -73,11 +80,11 @@ class Xserver(Plugin):
         xserver.setHWState()
         xserver.keyboard = rhpl.keyboard.Keyboard()
         self._reporting.info("Generating configuration file.", level = PLUGIN, origin = self)
-        xserver.generateCconfig()
+        xserver.generateConfig()
         self._reporting.info("Writing configuration file to %s."%self.confPath, level = PLUGIN, origin = self)
         xserver.writeConfig(self.confPath)
 
-        self._reporting.info("Testing created file", leve = PLUGIN, origin = self)
+        self._reporting.info("Testing created file", level = PLUGIN, origin = self)
         if self.serverStart():
             self._reporting.info("X server started successfully with new file.", level = PLUGIN, origin = self)
             self._result = ReturnSuccess
@@ -86,23 +93,23 @@ class Xserver(Plugin):
             self._result = ReturnFailure
 
     def restore(self):
-        if os.isfile("%.FAK-backup"%self.confPath):
+        if os.path.isfile("%s.FAK-backup"%self.confPath):
             self._reporting.info("Restoring original file.", level = PLUGIN , origin = self)
             shutil.copyfile("%s.FAK-backup"%self.confPath, self.confPath)
         else:
-            self._reporting.info("The backed up file was not present, something strange is going on."%
-                    self.confPath, level = PLUGIN, origin = self)
+            self._reporting.info("The backedup file was not present, something strange is going on.",
+                    level = PLUGIN, origin = self)
 
     def clean(self):
-        self._reporting.info("Cleaning the backed up file.", level = PLUGIN, origin = self)
-        if os.isfile("%.FAK-backup"%self.confPath):
-            os.rmfile("%.FAK-backup"%self.confPath)
+        self._reporting.info("Cleaning the backedup file.", level = PLUGIN, origin = self)
+        if os.path.isfile("%s.FAK-backup"%self.confPath):
+            os.remove("%s.FAK-backup"%self.confPath)
 
 
 
     def serverStart(self):
         self._reporting.info("Trying to start X server", level = PLUGIN, origin = self)
-        xorgargs = ["--logfile", self.tmpLogPath, self.display]
+        xorgargs = ["-logfile", self.tmpLogPath, self.display]
         try:
             proc = spawnvch(executable = "/usr/bin/Xorg", args = xorgargs, chroot = Config.system.root)
             self._reporting.info("Waiting for the X server to start...", level = PLUGIN, origin = self)
@@ -114,10 +121,10 @@ class Xserver(Plugin):
             self._reporting.info("The X server has failed to start", level = PLUGIN, origin = self)
             return False
         self._reporting.info("The X server has started successfully", level = PLUGIN, origin = self)
-        os.kill(proc.pid, signal.SIG_INT)
+        os.kill(proc.pid, signal.SIGINT)
         return True
 
 
 def get_plugin():
-    return Xserver()
+    return Xserver
 
