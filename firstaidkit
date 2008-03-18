@@ -164,12 +164,6 @@ if __name__=="__main__":
         usage(sys.argv[0])
         sys.exit(1)
 
-    if Flags.print_config:
-        print 76*"-"
-        Config.write(sys.stdout)
-        print 76*"-"
-        sys.exit(0)
-
     if Config.operation.mode == "flow":
         if len(rest) < 1:
             print "Error in the command arguments.\n"
@@ -191,6 +185,12 @@ if __name__=="__main__":
         print "\nError in command arguments: no mode specified\n"
         usage(sys.argv[0])
         sys.exit(1)
+
+    if Flags.print_config:
+        print 76*"-"
+        Config.write(sys.stdout)
+        print 76*"-"
+        sys.exit(0)
 
     Config.lock()
 
