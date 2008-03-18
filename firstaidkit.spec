@@ -75,6 +75,7 @@ password.
 Group:          Applications/System
 Summary:        FirstAidKit plugin to recover xserver configuration files
 Requires:       %{name} = %{version}-%{release}
+Requires:       rhpl, rhpxl
 
 %description plugin-xserver
 This FirstAidKit plugin automates the recovery of the xserver
