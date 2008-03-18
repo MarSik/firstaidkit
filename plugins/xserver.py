@@ -41,8 +41,6 @@ class Xserver(Plugin):
         Plugin.__init__(self, *args, **kwargs)
         # Arbitrary test display
         self.display = ":10"
-        # For when we need a temporary log.
-        (self.tmpLogfd, self.tmpLogPath) = tempfile.mkstemp()
         self.confPath = "/etc/X11/xorg.conf"
 
     def prepare(self):
@@ -109,7 +107,7 @@ class Xserver(Plugin):
 
     def serverStart(self):
         self._reporting.info("Trying to start X server", level = PLUGIN, origin = self)
-        xorgargs = ["-logfile", self.tmpLogPath, self.display]
+        xorgargs = [self.display]
         try:
             proc = spawnvch(executable = "/usr/bin/Xorg", args = xorgargs, chroot = Config.system.root)
             self._reporting.info("Waiting for the X server to start...", level = PLUGIN, origin = self)
