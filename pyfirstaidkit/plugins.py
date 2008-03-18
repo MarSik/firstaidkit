@@ -298,8 +298,8 @@ Just fill the issue_tests list with classes describing the tests and let it run.
 
     issue_tests = [] #List of Issue classes to check
     
-    def __init__(self, flow, reporting, dependencies, path = None):
-        Plugin.__init__(self, flow, reporting, dependencies, path)
+    def __init__(self, *args, **kwargs):
+        Plugin.__init__(self, *args, **kwargs)
         self.tests = []
 
     def prepare(self):
