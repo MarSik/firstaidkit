@@ -67,6 +67,18 @@ Return values:
         else:
             return self._happened
         
+    def fixed(self):
+        """Get the 'issue fixed' flag.
+Return values:
+    True - YES it is fixed
+    False - NO, it is still broken
+    None - I don't know"""
+        #if the issue was not detected, the detection si needed
+        if not self._detected:
+            return None
+        else:
+            #issue didn't happened or is fixed -> True
+            return not self._happened or self._fixed
 
     def reset(self):
         """Reset the object's state"""
