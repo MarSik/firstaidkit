@@ -80,18 +80,18 @@ class Plugin(object):
     #
     flows["diagnose"] = Flow({
             initial : {Return: "prepare"},
-            "prepare"    : {ReturnSuccess: "diagnose"},
-            "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "clean"},
-            "clean"      : {ReturnSuccess: final, ReturnFailure: final}
+            "prepare"    : {ReturnSuccess: "diagnose", None: "clean"},
+            "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "clean", None: "clean"},
+            "clean"      : {ReturnSuccess: final, ReturnFailure: final, None: final}
             }, description="The default, fully automated, diagnose sequence")
     flows["fix"] = Flow({
             initial : {Return: "prepare"},
-            "prepare"    : {ReturnSuccess: "diagnose"},
-            "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "backup"},
-            "backup"     : {ReturnSuccess: "fix", ReturnFailure: "clean"},
-            "fix"        : {ReturnSuccess: "clean", ReturnFailure: "restore"},
-            "restore"    : {ReturnSuccess: "clean", ReturnFailure: "clean"},
-            "clean"      : {ReturnSuccess: final, ReturnFailure: final}
+            "prepare"    : {ReturnSuccess: "diagnose", None: "clean"},
+            "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "backup", None: "clean"},
+            "backup"     : {ReturnSuccess: "fix", ReturnFailure: "clean", None: "clean"},
+            "fix"        : {ReturnSuccess: "clean", ReturnFailure: "restore", None: "restore"},
+            "restore"    : {ReturnSuccess: "clean", ReturnFailure: "clean", None: "clean"},
+            "clean"      : {ReturnSuccess: final, ReturnFailure: final, None: final}
             }, description="The default, fully automated, fixing sequence")
 
     # By default, when no other parameters are passed, we use the diagnose flow as
