@@ -22,6 +22,7 @@ from pyfirstaidkit.reporting import PLUGIN,TASK
 from pyfirstaidkit import Config
 
 from issue_packages import Packages
+from issue_locks import Locks
 
 class RPMLowlevelPlugin(IssuesPlugin):
     """This plugin provides lowlevel checks for RPM database."""
@@ -34,7 +35,7 @@ class RPMLowlevelPlugin(IssuesPlugin):
     version = "0.0.1"
     author = "Martin Sivak"
 
-    issue_tests = [Packages]
+    issue_tests = [Packages, Locks]
     set_flags = ["rpm_lowlevel"]
 
     @classmethod
@@ -46,15 +47,19 @@ class RPMLowlevelPlugin(IssuesPlugin):
         self.rpm = None
 
     def prepare(self):
+        self.backup = self._backups.getBackup(self.__class__.__name__+" -- "+self.name)
         IssuesPlugin.prepare(self)
 
     def backup(self):
+        self.backup.backupPath(path = Config.system.root+"/var/lib/rpm", name="rpm")
         self._result=ReturnSuccess
 
     def restore(self):
+        self.backup.restorePath(path = Config.system.root+"/var/lib/rpm", name="rpm")
         self._result=ReturnSuccess
 
     def clean(self):
+        self._backups.closeBackup(self.backup._id)
         self._result=ReturnSuccess
 
 def get_plugin():
