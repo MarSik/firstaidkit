@@ -314,18 +314,22 @@ Just fill the issue_tests list with classes describing the tests and let it run.
         """Diagnose the situation."""
 
         result = False
+        happened = False
         for i in self.tests:
             self._reporting.info(level = TASK, origin = self, message = "Investigating '%s'" % (i.name,))
             result = result or i.detect()
             if i.happened():
+                happened = True
                 self._reporting.info(level = TASK, origin = self, message = i.str())
 
-        if result:
+        if result and not happened:
             self._result=ReturnSuccess
             for flag in self.set_flags:
                 self._dependencies.provide(flag)
-        else:
+        elif result:
             self._result=ReturnFailure
+        else:
+            self._result = None
 
     def fix(self):
         """Try to fix whatever is wrong in the system."""
@@ -335,18 +339,22 @@ Just fill the issue_tests list with classes describing the tests and let it run.
         for i in self.tests:
             self._reporting.info(level = TASK, origin = self, message = "Fixing '%s'" % (i.name,))
             result = result or i.fix()
+            if not i.fixed():
+                fixed = False
+                continue
+
             i.reset()
             if not i.detect() or i.happened():
                 fixed = False
 
-        if fixed:
+        if result and fixed:
+            self._result=ReturnSuccess
             for flag in self.set_flags:
                 self._dependencies.provide(flag)
-
-        if result:
-            self._result=ReturnSuccess
-        else:
+        elif result:
             self._result=ReturnFailure
+        else:
+            self._result = None
 
 
 class FlagTrackerPlugin(Plugin):
