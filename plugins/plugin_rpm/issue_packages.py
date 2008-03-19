@@ -26,7 +26,7 @@ class RequiredPackages(Issue):
     name = "Required Packages"
     description = "There are some very important packages missing. It is likely your instalation could be damaged."
 
-    packages_list = ["filesystem", "initscripts"]
+    packages_list = ["filesystem", "initscripts", "glibc", "kernel", "bash", "module-init-tools"]
 
     def detect(self):
         result = Issue.detect(self)
@@ -60,5 +60,8 @@ class RequiredPackages(Issue):
         if result is not None:
             return result
 
-        self._fixed = False
+        yum = spawnvch(executable = "/usr/bin/yum", args = ["yum", "install"] + packages_list, chroot = Config.system.root).communicate("y\ny\n")
+        if yum.returncode==0:
+            self._fixed = True
+
         return True

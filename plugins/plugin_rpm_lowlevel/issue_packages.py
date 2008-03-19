@@ -50,7 +50,7 @@ class Packages(Issue):
         if result is not None:
             return result
 
-        rpm = spawnvch(executable = "/usr/bin/rpm", args = ["rpm", "--rebuilddb"], chroot = Config.system.root).wait()
+        rpm = spawnvch(executable = "/bin/rpm", args = ["rpm", "--rebuilddb"], chroot = Config.system.root).wait()
         if rpm.returncode==0:
             self._fixed = True
         return True
