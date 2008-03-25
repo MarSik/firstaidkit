@@ -34,7 +34,9 @@ class BackupStoreIterface(object):
         def backupValue(self, value, name):
             raise NotImplemented()
 
-        def restorePath(self, name, path = None):
+        def restoreName(self, name, path = None):
+            raise NotImplemented()
+        def restorePath(self, path, name = None):
             raise NotImplemented()
         def restoreValue(self, name):
             raise NotImplemented()
@@ -63,6 +65,74 @@ class FileBackupStore(BackupStoreIterface):
         def __init__(self, id, path):
             self._id = id
             self._path = path
+            self._data = {} # name -> (stored as, origin)
+            self._origin = {} # origin -> name
+            os.makedirs(self._path)
+
+        def backupPath(self, path, name = None):
+            if name is None:
+                name = path
+
+            if self._origin.has_key(path):
+                raise BackupException("Path %s already in the backup store %s!" % (path,self._id))
+            if self._data.has_key(name):
+                raise BackupException("Named backup %s already in the backup store %s!" % (name,self._id))
+
+            stored = name.encode("md5")+"_"+name.encode("sha1")
+
+            if os.path.isdir(path):
+                shutil.copytree(path, os.path.join(self._path, stored), symlinks = True)
+            else:
+                shutil.copy2(path, os.path.join(self._path, stored))
+
+            self._origin[path] = name
+            self._data[name] = (stored, path)
+            return True
+        
+        def restoreName(self, name, path = None):
+            stored, origin = self._data[name]
+            assert self._origin[name]==origin
+
+            if path is None:
+                path = origin
+
+            if os.path.exists(path):
+                if os.path.isdir(path):
+                    shutil.rmtree(path)
+                else:
+                    os.unlink(path)
+
+            stored = os.join(self._path, stored)
+            
+            if os.path.isdir(stored):
+                shutil.copytree(stored, path, symlinks = True)
+            else:
+                shutil.copy2(stored, path)
+            return True
+
+            
+        def restorePath(self, path, name = None):
+            assert self._data[self._origin[path]][1]==path
+
+            if name is None:
+                name = self._origin[path]
+
+            return self.restoreName(name, path)
+
+        def delete(self, name):
+            stored, origin = self._data[name]
+            stored = os.join(self._path, stored)
+
+            if os.path.isdir(stored):
+                shutil.rmtree(stored)
+            else:
+                os.unlink(stored)
+            return True
+
+        def cleanup(self):
+            for name,(stored,origin) in self._data.iteritems():
+                self.delete(name)
+            os.rmdir(self._path)
 
     def __init__(self, path):
         if self.__class__._singleton:
@@ -73,6 +143,7 @@ class FileBackupStore(BackupStoreIterface):
         self.__class__._singleton = self
         self._path = path
         self._backups = {}
+        os.makedirs(self._path)
 
     def getBackup(self, id):
         if not self._backups.has_key(id):
