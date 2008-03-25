@@ -21,6 +21,7 @@
 from errors import NotImplemented
 import os
 import shutil
+import hashlib
 
 class BackupException(Exception):
     pass
@@ -79,7 +80,7 @@ class FileBackupStore(BackupStoreIterface):
             if self._data.has_key(name):
                 raise BackupException("Named backup %s already in the backup store %s!" % (name,self._id))
 
-            stored = name.encode("md5")+"_"+name.encode("sha1")
+            stored = hashlib.sha224(name).hexdigest()
 
             if os.path.isdir(path):
                 shutil.copytree(path, os.path.join(self._path, stored), symlinks = True)
