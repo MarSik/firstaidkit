@@ -20,6 +20,7 @@
 # 02139, USA.
 from errors import NotImplemented
 import os
+import shutil
 
 class BackupException(Exception):
     pass
