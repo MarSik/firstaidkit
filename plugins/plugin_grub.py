@@ -36,10 +36,12 @@ class Sample1Plugin(Plugin):
 
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
-        self._partitions = []
-        self._grub_dir = []
-        self._grub = []
-        self._grub_map = {}
+        self._partitions = [] #partitions in the system
+        self._drives = [] #drives in the system
+        self._bootable = [] #partitions with boot flag
+        self._grub_dir = [] #directories with stage1, menu.lst and other needed files
+        self._grub = [] #devices with possible grub instalation
+        self._grub_map = {} #mapping from linux device names to grub device names
         self._grub_mask = re.compile("""\(hd[0-9]*,[0-9]*\)""")
 
     def prepare(self):
@@ -55,6 +57,25 @@ class Sample1Plugin(Plugin):
         #Find partitions
         self._reporting.debug(origin = self, level = PLUGIN, message = "Reading partition list")
         self._partitions = map(lambda l: l.split()[3], file("/proc/partitions").readlines()[2:])
+
+        #and select only partitions with minor number 0 -> drives
+        self._drives = map(lambda l: l.split(), file("/proc/partitions").readlines()[2:])
+        self._drives = filter(lambda l: l[1]=="0", self._drives)
+        self._drives = map(lambda l: l[3], self._drives)
+
+        #get boot flags
+        self._reporting.debug(origin = self, level = PLUGIN, message = "Locating bootable partitions")
+        for d in self._drives:
+            fdisk = spawnvch(executable = "/sbin/fdisk", args = ["fdisk", "-l", "/dev/%s" % (d,)], chroot = Config.system.root)
+            ret = fdisk.wait()
+            if ret==0:
+                for l in fdisk.stdout.readlines():
+                    if l.startswith("/dev/%s" % (d,)):
+                        data = l.split()
+                        if data[1]=="*": #boot flag
+                            self._reporting.info(origin = self, level = PLUGIN, message = "Bootable partition found: %s" % (data[0][5:],))
+                            self._bootable.append(data[0][5:]) #strip the "/dev/" beginning
+
 
         #Find grub directories
         self._reporting.debug(origin = self, level = PLUGIN, message = "Locating the grub directories")
@@ -79,13 +100,16 @@ class Sample1Plugin(Plugin):
         for p in self._partitions:
             self._reporting.debug(origin = self, level = PLUGIN, message = "Reading boot sector from %s" % (p,))
             bootsector = file(os.path.join("/dev", p), "r").read(512)
-            bootsectors[bootsector] = os.path.join("/dev", p)
+            bootsectors[bootsector] = p
 
         for k in difflib.get_close_matches(stage1mask, bootsectors.keys()):
-            self._reporting.info(origin = self, level = PLUGIN, message = "Installed Grub found at %s" % (bootsectors[k],))
-            self._grub.append(k)
+            self._reporting.info(origin = self, level = PLUGIN, message = "Installed Grub probably found at %s" % (bootsectors[k],))
+            self._grub.append(bootsectors[k])
 
-        self._result=ReturnSuccess
+        if len(self._grub_dir)>0 and len(self._grub)>0 and len(set(self._grub).intersection(set(self._bootable+self._drives)))>0:
+            self._result=ReturnSuccess
+        else:
+            self._result=ReturnFailure
 
     def fix(self):
         self._result=ReturnFailure
