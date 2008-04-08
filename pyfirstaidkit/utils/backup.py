@@ -22,6 +22,7 @@ from errors import NotImplemented
 import os
 import shutil
 import hashlib
+import weakref
 
 class BackupException(Exception):
     pass
@@ -142,10 +143,11 @@ class FileBackupStore(BackupStoreIterface):
 
         assert self.__class__._singleton==None
 
-        self.__class__._singleton = self
         self._path = path
         self._backups = {}
         os.makedirs(self._path)
+        self.__class__._singleton = weakref.proxy(self)
+        print "Backup system initialized"
 
     def getBackup(self, id):
         if not self._backups.has_key(id):
@@ -159,8 +161,13 @@ class FileBackupStore(BackupStoreIterface):
         del self._backups[id]
 
     def __del__(self):
-        for id,backup in self._backups[id].iteritems():
+        if self.__class__._singleton is None:
+            return
+
+        for id,backup in self._backups.iteritems():
             backup.cleanup()
+        os.rmdir(self._path)
+        print "Backup closed"
 
     @classmethod
     def get(cls, path):
