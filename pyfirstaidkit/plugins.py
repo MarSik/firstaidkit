@@ -237,11 +237,15 @@ class Plugin(object):
         Will return (self._state, self._result).  The function that was executed and the return value.
         """
         func = self.nextstate()
+
         if func == self.final:
             raise StopIteration()
         else:
-            # Execute the function.
-            getattr(self, func)()
+            try:
+                # Execute the function.
+                self.call(func)
+            except: #fallback, when there is some error in plugin
+                pass
         return (self._state, self._result)
 
     #
