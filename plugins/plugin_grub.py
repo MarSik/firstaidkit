@@ -39,6 +39,7 @@ class Sample1Plugin(Plugin):
         self._partitions = [] #partitions in the system
         self._drives = [] #drives in the system
         self._bootable = [] #partitions with boot flag
+        self._linux = [] #Linux type partitions (0x83 Linux)
         self._grub_dir = [] #directories with stage1, menu.lst and other needed files
         self._grub = [] #devices with possible grub instalation
         self._grub_map = {} #mapping from linux device names to grub device names
@@ -75,6 +76,13 @@ class Sample1Plugin(Plugin):
                         if data[1]=="*": #boot flag
                             self._reporting.info(origin = self, level = PLUGIN, message = "Bootable partition found: %s" % (data[0][5:],))
                             self._bootable.append(data[0][5:]) #strip the "/dev/" beginning
+                            if data[6]=="Linux":
+                                self._linux.append(data[0][5:])
+                                self._reporting.debug(origin = self, level = PLUGIN, message = "Linux partition found: %s" % (data[0][5:],))
+                        else:
+                            if data[5]=="Linux":
+                                self._linux.append(data[0][5:])
+                                self._reporting.debug(origin = self, level = PLUGIN, message = "Linux partition found: %s" % (data[0][5:],))
 
 
         #Find grub directories
@@ -106,8 +114,10 @@ class Sample1Plugin(Plugin):
             self._reporting.info(origin = self, level = PLUGIN, message = "Installed Grub probably found at %s" % (bootsectors[k],))
             self._grub.append(bootsectors[k])
 
+        #if there is the grub configuration dir and the grub appears installed into MBR or bootable partition, then we are probably OK
         if len(self._grub_dir)>0 and len(self._grub)>0 and len(set(self._grub).intersection(set(self._bootable+self._drives)))>0:
             self._result=ReturnSuccess
+            self._dependencies.provide("boot-grub")
         else:
             self._result=ReturnFailure
 
