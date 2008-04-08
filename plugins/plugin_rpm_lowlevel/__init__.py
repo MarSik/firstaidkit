@@ -51,15 +51,18 @@ class RPMLowlevelPlugin(IssuesPlugin):
         IssuesPlugin.prepare(self)
 
     def backup(self):
+        IssuesPlugin.backup(self)
         self.backup.backupPath(path = Config.system.root+"/var/lib/rpm", name="rpm")
         self._result=ReturnSuccess
 
     def restore(self):
         self.backup.restorePath(path = Config.system.root+"/var/lib/rpm", name="rpm")
+        IssuesPlugin.restore(self)
         self._result=ReturnSuccess
 
     def clean(self):
         self._backups.closeBackup(self.backup._id)
+        IssuesPlugin.clean(self)
         self._result=ReturnSuccess
 
 def get_plugin():

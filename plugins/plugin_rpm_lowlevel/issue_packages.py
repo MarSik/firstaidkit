@@ -23,12 +23,12 @@ from pyfirstaidkit.issue import Issue
 from pyfirstaidkit.reporting import TASK
 from pyfirstaidkit.utils import spawnvch
 from pyfirstaidkit.configuration import Config
-import os.path
+import os
 
 
 class Packages(Issue):
     name = "Required Packages database"
-    description = "The file containing the rpm database of packages is missing"
+    description = "The file containing the rpm database of packages is missing or corrupted"
 
     def detect(self):
         result = Issue.detect(self)
@@ -36,10 +36,23 @@ class Packages(Issue):
             return result
 
         dbname = Config.system.root+"/var/lib/rpm/Packages"
+        self._happened = False
 
-        if os.path.isfile(os.path.realpath(dbname)):
-            self._happened = False
-        else:
+        if not os.path.isfile(os.path.realpath(dbname)):
+            self._db_missing = True
+            self._happened = True
+            self._detected = True
+            return True
+        
+        #verify the Package database
+        rpm_verify = spawnvch(executable = "/usr/lib/rpm/rpmdb_verify", args = ["/usr/lib/rpm/rpmdb_verify", dbname], chroot = Config.system.root)
+        err = rpm_verify.wait()
+        if err!=0:
+            return False
+
+        if len(rpm_verify.stdout.read())>0:
+            self._happened = True
+        if len(rpm_verify.stderr.read())>0:
             self._happened = True
 
         self._detected = True
@@ -50,7 +63,19 @@ class Packages(Issue):
         if result is not None:
             return result
 
+        dbname = Config.system.root+"/var/lib/rpm/Packages"
+
+        if not self._db_missing:
+            #dump&load the database
+            os.rename(dbname, dbname+".orig")
+            err = spawnvch(executable = "/bin/sh", args = ["sh", "-c", "/usr/lib/rpm/rpmdb_dump /var/lib/rpm/Packages.orig | /usr/lib/rpm/rpmdb_load /var/lib/rpm/Packages"], chroot = Config.system.root).wait()
+            if rpm.returncode!=0:
+                os.rename(dbname+".orig", dbname)
+                return False
+
+        #rebuild the indexes
         rpm = spawnvch(executable = "/bin/rpm", args = ["rpm", "--rebuilddb"], chroot = Config.system.root).wait()
         if rpm.returncode==0:
             self._fixed = True
         return True
+

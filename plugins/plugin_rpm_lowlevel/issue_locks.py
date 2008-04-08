@@ -28,7 +28,7 @@ import re
 
 class Locks(Issue):
     name = "Staled RPM locks"
-    description = "The database is still lockes, but it shouldn't be. Probably a result of some unexpectedly aborted rpm operation."
+    description = "The database is still locked, but it shouldn't be. Probably a result of some unexpectedly aborted rpm operation."
 
     def __init__(self, *args, **kwargs):
         Issue.__init__(self, *args, **kwargs)
