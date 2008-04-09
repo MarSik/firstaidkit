@@ -23,7 +23,7 @@ from shlex import shlex
 if os.environ.has_key("FIRST_AID_KIT_CONF"):
     cfgfile = os.environ["FIRST_AID_KIT_CONF"].split(":")
 else:
-    cfgfile = ["/etc/firstaidkit.conf", os.environ["HOME"]+"/.firstaidkit.conf"]
+    cfgfile = ["/etc/firstaidkit/firstaidkit.conf", os.environ["HOME"]+"/.firstaidkit.conf"]
 
 
 def createDefaultConfig(config):
@@ -45,6 +45,9 @@ def createDefaultConfig(config):
         config.system.root = "/mnt/sysimage"
     else:
         config.system.root = "/"
+
+    # Set the directory containing cfg bits for different services/packages
+    config.system.configuration = "/etc/firstaidkit"
 
     #
     # There will be 4 default places where FAK will look for plugins,  these 4 names
@@ -123,4 +126,13 @@ Config = FAKConfig()
 createDefaultConfig(Config)
 Config.read(cfgfile)
 
+def getConfigBits(name, cfg = Config):
+    """returns configuration object loaded with bits from designated configuration file/service
+    
+       name - service you need info from
+       cfg - configuration object containing the system.configuration value, to specify, where to look for the service file"""
+    c = FAKConfig()
+    c.read(os.path.join(cfg.system.configuration, name))
+    c.lock()
+    return c
 

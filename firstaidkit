@@ -187,9 +187,7 @@ if __name__=="__main__":
         sys.exit(1)
 
     if Flags.print_config:
-        print 76*"-"
         Config.write(sys.stdout)
-        print 76*"-"
         sys.exit(0)
 
     Config.lock()
