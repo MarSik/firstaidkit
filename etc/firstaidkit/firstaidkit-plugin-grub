@@ -1,0 +1,6 @@
+[booty]
+path = /usr/lib/booty
+
+[anaconda]
+path = /usr/lib/anaconda
+

@@ -18,11 +18,17 @@
 from pyfirstaidkit.plugins import Plugin,Flow
 from pyfirstaidkit.reporting import PLUGIN
 from pyfirstaidkit.returns import *
-from pyfirstaidkit.configuration import Config
+from pyfirstaidkit.configuration import Config,getConfigBits
 from pyfirstaidkit.utils import spawnvch
 import os.path
 import difflib
 import re
+
+cfgBits = getConfigBits("firstaidkit-plugin-grub")
+import sys
+sys.path.append(cfgBits.anaconda.path)
+sys.path.append(cfgBits.booty.path)
+from bootloaderInfo import x86BootloaderInfo
 
 class Sample1Plugin(Plugin):
     """This plugin checks the GRUB bootloader."""
@@ -32,7 +38,7 @@ class Sample1Plugin(Plugin):
 
     @classmethod
     def getDeps(cls):
-        return set(["experimental", "root", "filesystem"])
+        return set(["experimental", "root", "filesystem", "arch-x86"])
 
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
@@ -44,6 +50,7 @@ class Sample1Plugin(Plugin):
         self._grub = [] #devices with possible grub instalation
         self._grub_map = {} #mapping from linux device names to grub device names
         self._grub_mask = re.compile("""\(hd[0-9]*,[0-9]*\)""")
+        self._bootloaderInfo = x86BootloaderInfo()
 
     def prepare(self):
         self._result=ReturnSuccess
@@ -108,7 +115,7 @@ class Sample1Plugin(Plugin):
         for p in self._partitions:
             self._reporting.debug(origin = self, level = PLUGIN, message = "Reading boot sector from %s" % (p,))
             bootsector = file(os.path.join("/dev", p), "r").read(512)
-            bootsectors[bootsector] = p
+            bootsectors[bootsector] = self._bootloaderInfo.grubbyPartitionName(p)
 
         for k in difflib.get_close_matches(stage1mask, bootsectors.keys()):
             self._reporting.info(origin = self, level = PLUGIN, message = "Installed Grub probably found at %s" % (bootsectors[k],))
