@@ -3,7 +3,7 @@
 %define _unpackaged_files_terminate_build 0
 
 Name:           firstaidkit
-Version:        0.1.1
+Version:        0.1.2
 Release:        1%{?dist}
 Summary:        System Rescue Tool
 
@@ -95,13 +95,14 @@ configuration file xorg.conf.
 %{__rm} -rf $RPM_BUILD_ROOT
 %{__python} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
 #docs
-%{__install} -d $RPM_BUILD_ROOT%{_mandir}/man1 $RPM_BUILD_ROOT%{_sysconfdir}
+%{__install} -d $RPM_BUILD_ROOT%{_mandir}/man1
 %{__install} -p doc/fakplugin.1 doc/firstaidkit.1 $RPM_BUILD_ROOT%{_mandir}/man1
 #examples
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/examples
 %{__mv} -f plugins/plugin_examples $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/examples
 #configuration
-%{__install} -p etc/firstaidkit.conf $RPM_BUILD_ROOT%{_sysconfdir}
+%{__install} -d $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
+%{__install} -p etc/firstaidkit/firstaidkit.conf $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
 
 #plugins
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_undelete_partitions
