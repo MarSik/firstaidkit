@@ -138,7 +138,9 @@ class Plugin(object):
         """call one step from plugin"""
         self._result = None #mark new unfinished step
         self._state = step
-        return getattr(self, step)()
+        self._reporting.start(level = TASK, origin = self, message = step)
+        r = getattr(self, step)()
+        self._reporting.stop(level = TASK, origin = self, message = step)
 
     @classmethod
     def info(cls):
@@ -244,8 +246,11 @@ class Plugin(object):
             try:
                 # Execute the function.
                 self.call(func)
-            except: #fallback, when there is some error in plugin
+            except Exception, e: #fallback, when there is some error in plugin
+                self._reporting.exception(level = TASK, origin = self, message = func+" raised "+str(e))
+                self._reporting.stop(level = TASK, origin = self, message = func)
                 pass
+
         return (self._state, self._result)
 
     #
@@ -526,10 +531,8 @@ class PluginSystem(object):
 
         p = pklass(flowName, reporting = self._reporting, dependencies = self._deps, backups = self._backups, path = plugindir)
         for (step, rv) in p: #autorun all the needed steps
-            self._reporting.start(level = TASK, origin = p, message = step)
             Logger.info("Running step %s in plugin %s ...", step, plugin)
             Logger.info("%s is current step and %s is result of that step." % (step, rv))
-            self._reporting.stop(level = TASK, origin = p, message = step)
 
         self._reporting.stop(level = PLUGIN, origin = self, message = plugin)
         return True
