@@ -13,6 +13,15 @@ unsafe
 root
   This plugin has to run in root environment. Dependency flag only!
 
+arch-x86 - I'm running on x86 machine. Dependency flag only!
+  There may be set also the subtype flags: arch-i?86, arch-x86_64
+
+arch-ppc - I'm running on ppc machine. Dependency flag only!
+  There may be set also the subtype flags: arch-ppc64
+
+arch-s390 - I'm running on ppc machine. Dependency flag only!
+  There may be set also the subtype flags: arch-s390x
+
 storage
   All storage related tests ran with Not applicable or OK results
 
