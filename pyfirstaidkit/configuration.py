@@ -71,7 +71,7 @@ class FAKConfigSection(object):
         self.__dict__["configuration"] = cfg
 
     def __getattr__(self, key):
-        if not self.__dict__["configuration"].has_section(self.__dict__["section_name"]):
+        if not self.__dict__["configuration"].has_section(self.__dict__["section_name"]) and self.__dict__["section_name"]!="DEFAULT":
             raise ConfigParser.NoSectionError(self.__dict__["section_name"])
 
         if not self.__dict__["configuration"].has_option(self.__dict__["section_name"], key):
@@ -83,7 +83,7 @@ class FAKConfigSection(object):
         if self.__dict__["configuration"].__dict__.has_key("_lock") and self.__dict__["configuration"].__dict__["_lock"]:
             raise LockedError(key)
 
-        if not self.__dict__["configuration"].has_section(self.__dict__["section_name"]):
+        if not self.__dict__["configuration"].has_section(self.__dict__["section_name"]) and self.__dict__["section_name"]!="DEFAULT":
             self.__dict__["configuration"].add_section(self.__dict__["section_name"])
         self.__dict__["configuration"].set(self.__dict__["section_name"], key, value)
 
@@ -98,7 +98,7 @@ class FAKConfigSection(object):
 
     def valueItems(self):
         """Usefull when you don't care about the name of the items."""
-        if not self.__dict__["configuration"].has_section(self.__dict__["section_name"]):
+        if not self.__dict__["configuration"].has_section(self.__dict__["section_name"]) and self.__dict__["section_name"]!="DEFAULT":
             raise ConfigParser.NoSectionError(self.__dict__["section_name"])
         tmpList = self.__dict__["configuration"].items(self.__dict__["section_name"])
         retVal = []
