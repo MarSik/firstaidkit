@@ -130,9 +130,9 @@ For example: corrupted database or important system packages missing.
 %{__cp} -f plugins/passwd.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/
 %{__cp} -f plugins/xserver.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm
-%{__cp} -f plugins/plugin_rpm/{*.py,*.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm/
+%{__cp} -f plugins/plugin_rpm/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm/
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm_lowlevel
-%{__cp} -f plugins/plugin_rpm_lowlevel/{*.py,*.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm_lowlevel/
+%{__cp} -f plugins/plugin_rpm_lowlevel/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm_lowlevel/
 %{__cp} -f plugins/plugin_grub.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/
 %{__install} -p etc/firstaidkit/firstaidkit-plugin-grub $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
 
