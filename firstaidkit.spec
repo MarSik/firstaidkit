@@ -129,8 +129,10 @@ For example: corrupted database or important system packages missing.
 %{__cp} -f plugins/plugin_undelete_partitions/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_undelete_partitions/
 %{__cp} -f plugins/passwd.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/
 %{__cp} -f plugins/xserver.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/
-%{__cp} -f plugins/plugin_rpm/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm/
-%{__cp} -f plugins/plugin_rpm_lowlevel/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm_lowlevel/
+%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm
+%{__cp} -f plugins/plugin_rpm/{*.py,*.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm/
+%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm_lowlevel
+%{__cp} -f plugins/plugin_rpm_lowlevel/{*.py,*.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm_lowlevel/
 %{__cp} -f plugins/plugin_grub.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/
 %{__install} -p etc/firstaidkit/firstaidkit-plugin-grub $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
 
