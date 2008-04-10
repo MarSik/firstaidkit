@@ -28,7 +28,6 @@ cfgBits = getConfigBits("firstaidkit-plugin-grub")
 import sys
 sys.path.append(cfgBits.anaconda.path)
 sys.path.append(cfgBits.booty.path)
-from bootloaderInfo import x86BootloaderInfo
 
 class Sample1Plugin(Plugin):
     """This plugin checks the GRUB bootloader."""
@@ -50,6 +49,7 @@ class Sample1Plugin(Plugin):
         self._grub = [] #devices with possible grub instalation
         self._grub_map = {} #mapping from linux device names to grub device names
         self._grub_mask = re.compile("""\(hd[0-9]*,[0-9]*\)""")
+        from bootloaderInfo import x86BootloaderInfo
         self._bootloaderInfo = x86BootloaderInfo()
 
     def prepare(self):
