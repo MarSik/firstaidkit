@@ -97,7 +97,7 @@ class Reports(object):
     def end(self):
         return self.put(None, FIRSTAIDKIT, None, END, importance = 1000)
 
-    def error(self, message, level, origin, action):
+    def error(self, message, level, origin, action = INFO):
         Logger.error(origin.name+": "+message)
         return self.put(message, level, origin, action, importance = logging.ERROR)
 

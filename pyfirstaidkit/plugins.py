@@ -465,12 +465,15 @@ class PluginSystem(object):
                             level = PLUGINSYSTEM, origin = self)
                     moduleinfo = imp.find_module(m, [path])
                     module = imp.load_module(".".join([FirstAidKit.__name__, m]), *moduleinfo)
+                    self._plugins[m] = module
+                    self._reporting.debug("Module %s successfully imported with basedir %s" % 
+                        (m, os.path.dirname(module.__file__)), level = PLUGINSYSTEM, origin = self)
+                except Exception, e:
+                    self._reporting.error(message = "Module %s was NOT imported, because of %s" % 
+                        (m, str(e)), level = PLUGINSYSTEM, origin = self)
                 finally:
                     imp.release_lock()
 
-                self._plugins[m] = module
-                self._reporting.debug("Module %s successfully imported with basedir %s" % 
-                        (m, os.path.dirname(module.__file__)), level = PLUGINSYSTEM, origin = self)
 
     def list(self):
         """Return the list of imported plugins"""
