@@ -3,7 +3,7 @@
 %define _unpackaged_files_terminate_build 0
 
 Name:           firstaidkit
-Version:        0.1.2
+Version:        0.1.1
 Release:        1%{?dist}
 Summary:        System Rescue Tool
 
@@ -42,6 +42,8 @@ Requires:       %{name} = %{version}-%{release}
 Requires:       %{name}-plugin-undelete-partitions
 Requires:       %{name}-plugin-passwd
 Requires:       %{name}-plugin-xserver
+Requires:       %{name}-plugin-grub
+Requires:       %{name}-plugin-rpm
 
 
 %description plugin-all
@@ -81,6 +83,24 @@ Requires:       rhpl, rhpxl
 This FirstAidKit plugin automates the recovery of the xserver
 configuration file xorg.conf.
 
+%package plugin-grub
+Group:          Applications/System
+Summary:        FirstAidKit plugin to diagnose or repair the GRUB instalation
+Requires:       %{name} = %{version}-%{release}
+Requires:       anaconda, booty
+
+%description plugin-grub
+This FirstAidKit plugin automates the recovery from the GRUB bootloader problems.
+
+%package plugin-rpm
+Group:          Applications/System
+Summary:        FirstAidKit plugin to diagnose or repair the RPM packaging system
+Requires:       %{name} = %{version}-%{release}
+Requires:       rpm, rpm-python
+
+%description plugin-rpm
+This FirstAidKit plugin automates the tasks related to RPM problems.
+For example: corrupted database or important system packages missing.
 
 %prep
 %setup -q
@@ -109,11 +129,14 @@ configuration file xorg.conf.
 %{__cp} -f plugins/plugin_undelete_partitions/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_undelete_partitions/
 %{__cp} -f plugins/passwd.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/
 %{__cp} -f plugins/xserver.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/
+%{__cp} -f plugins/plugin_rpm/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm/
+%{__cp} -f plugins/plugin_rpm_lowlevel/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm_lowlevel/
+%{__cp} -f plugins/plugin_grub.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/
+%{__install} -p etc/firstaidkit/firstaidkit-plugin-grub $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
 
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
-
 
 %files
 %defattr(-,root,root,-)
@@ -122,7 +145,7 @@ configuration file xorg.conf.
 %{python_sitelib}/pyfirstaidkit
 %{python_sitelib}/%{name}-%{version}-py2.5.egg-info
 %{_bindir}/firstaidkit
-%{_sysconfdir}/firstaidkit.conf
+%{_sysconfdir}/firstaidkit/firstaidkit.conf
 %attr(0644,root,root) %{_mandir}/man1/firstaidkit.1.gz
 
 %files devel
@@ -140,3 +163,13 @@ configuration file xorg.conf.
 
 %files plugin-xserver
 %{_libdir}/firstaidkit-plugins/xserver.py
+
+%files plugin-rpm
+%{_libdir}/firstaidkit-plugins/plugin_rpm_lowlevel/*.py
+%{_libdir}/firstaidkit-plugins/plugin_rpm/*.py
+
+%files plugin-grub
+%{_libdir}/firstaidkit-plugins/plugin_grub.py
+%{_sysconfdir}/firstaidkit/firstaidkit-plugin-grub
+
+
