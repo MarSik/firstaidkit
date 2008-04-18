@@ -69,14 +69,39 @@ class Reports(object):
     title - title of the message
     """
 
-    def __init__(self, maxsize=-1):
+    def __init__(self, maxsize=-1, round = False):
+        """round - is this a round buffer?
+        maxsize - size of the buffer"""
         self._queue = Queue.Queue(maxsize = maxsize)
+        self._round = round
         self._mailboxes = []
+        self._notify = []
+
+    def notify(self, cb, data):
+        """When putting anything new into the Queue, run notifications callbacks. Usefull for Gui and single-thread reporting.
+        The notification function has two parameters: data passed when registering callback, message recorded to the queue"""
+        return self._notify.append((cb, data))
 
     def put(self, message, level, origin, action, importance = logging.INFO, reply = None, title = "", destination = None):
-        if destination is None:
-            destination = self._queue
-        return destination.put({"level": level, "origin": origin, "action": action, "importance": importance, "message": message, "reply": reply, "title": title})
+        data = {"level": level, "origin": origin, "action": action, "importance": importance, "message": message, "reply": reply, "title": title}
+
+        if destination is not None:
+            return destination.put(data)
+
+        destination = self._queue
+        try:
+            ret=destination.put(data)
+        except Queue.Full, e:
+            if not self._round:
+                raise
+            destination.get() #Queue is full and it is a round buffer.. remove the oldest item and use the free space to put the new item
+            ret=destination.put(data)
+
+        #call all the notify callbacks
+        for func, regdata in self._notify:
+            func(regdata, data)
+
+        return ret
 
     def get(self, mailbox = None, *args, **kwargs):
         if mailbox is None:
