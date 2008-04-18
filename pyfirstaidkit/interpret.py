@@ -29,6 +29,7 @@ class RunDependencies(object):
     """Encapsulate flags used to control the dependencies between plugins"""
     def __init__(self):
         self._provide = set()
+        self._known = set()
 
     def provide(self, id, setactionflag = True):
         """Add flag"""
@@ -51,6 +52,18 @@ class RunDependencies(object):
     def require(self, id):
         """Return True if flag is present, otherwise false"""
         return id in self._provide
+
+    def introduce(self, s):
+        """Notifies the system about dependency names used in the plugins, so we can list them in help"""
+        self._known = self._known.union(s)
+
+    def known(self):
+        """Returns list of known flags"""
+        return list(self._known)
+    
+    def valid(self):
+        """Returns list of valid/provided flags"""
+        return list(self._provide)
 
 class Tasker:
     """The main interpret of tasks described in Config object"""

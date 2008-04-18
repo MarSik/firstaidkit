@@ -465,6 +465,8 @@ class PluginSystem(object):
                             level = PLUGINSYSTEM, origin = self)
                     moduleinfo = imp.find_module(m, [path])
                     module = imp.load_module(".".join([FirstAidKit.__name__, m]), *moduleinfo)
+                    self._deps.introduce(module.get_plugin().getDeps()) #notify the dependency system about all used dependencies
+                    self._deps.introduce(module.get_plugin().getConflicts()) #notify the dependency system about all used reverse-dependencies
                     self._plugins[m] = module
                     self._reporting.debug("Module %s successfully imported with basedir %s" % 
                         (m, os.path.dirname(module.__file__)), level = PLUGINSYSTEM, origin = self)
