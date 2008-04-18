@@ -25,7 +25,7 @@ from errors import *
 
 Logger=logging.getLogger("firstaidkit")
 
-class RunDependencies(object):
+class Dependencies(object):
     """Encapsulate flags used to control the dependencies between plugins"""
     def __init__(self):
         self._provide = set()

@@ -22,7 +22,7 @@ import logging
 import copy
 from errors import *
 from utils import FileBackupStore
-from dependency import RunDependencies
+from dependency import Dependencies
 
 Logger=logging.getLogger("firstaidkit")
 
@@ -32,7 +32,7 @@ class Tasker:
     name = "Task interpreter"
 
     def __init__(self, cfg):
-        self._provide = RunDependencies()
+        self._provide = Dependencies()
         self._config = cfg
         self._reporting = Reports()
         self._backups = FileBackupStore(cfg.backup.path)
@@ -102,6 +102,8 @@ class Tasker:
                 pass
         elif self._config.operation.mode == "task":
             pass
+        elif self._config.operation.mode == "flags":
+            self._reporting.table(self._provide.known(), level = TASKER, origin = self, title = "List of flags")
         elif self._config.operation.mode == "list":
             #get list of plugins
             rep = []

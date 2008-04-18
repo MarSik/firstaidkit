@@ -98,6 +98,7 @@ def usage(name):
   -g <gui>         - frontend to show results
   -h               - help
   --print-config   - print resulting config file
+  --flags          - list all known flags
   --list           - list all plugins
   --info <plugin>  - get information about plugin
 """ % (name, name, name, name, name)
@@ -107,7 +108,7 @@ if __name__=="__main__":
         params, rest = getopt.getopt(sys.argv[1:], "aftc:r:vl:x:F:g:P:h",
                 ["list", "info=", "auto", "flow", "task", "config=", "root=",
                 "verbose", "log=", "exclude=","flag=", "gui=", "plugin-path=",
-                "print-config", "help"])
+                "print-config", "help", "flags"])
     except Exception, e:
         print "\nError parsing the argument line: ",e,"\n"
         usage(sys.argv[0])
@@ -154,6 +155,8 @@ if __name__=="__main__":
         elif key in ("-h", "--help"):
             Config.operation.help = "True"
             Flags.main_help = True
+        elif key in ("--flags"):
+            Config.operation.mode = "flags"
         elif key in ("--list"):
             Config.operation.mode = "list"
         elif key in ("--info"):
