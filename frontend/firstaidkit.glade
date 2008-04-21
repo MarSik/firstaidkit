@@ -228,7 +228,7 @@
 		      <property name="use_underline">True</property>
 		      <property name="relief">GTK_RELIEF_NORMAL</property>
 		      <property name="focus_on_click">True</property>
-		      <signal name="activate" handler="on_b_StartSimple_activate" last_modification_time="Fri, 18 Apr 2008 13:26:36 GMT"/>
+		      <signal name="clicked" handler="on_b_StartSimple_activate" last_modification_time="Mon, 21 Apr 2008 11:56:42 GMT"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -370,7 +370,7 @@
 		      <property name="use_underline">True</property>
 		      <property name="relief">GTK_RELIEF_NORMAL</property>
 		      <property name="focus_on_click">True</property>
-		      <signal name="activate" handler="on_b_StartAdvanced_activate" last_modification_time="Fri, 18 Apr 2008 13:26:54 GMT"/>
+		      <signal name="clicked" handler="on_b_StartAdvanced_activate" last_modification_time="Mon, 21 Apr 2008 11:56:35 GMT"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -479,7 +479,7 @@
 		      <property name="use_underline">True</property>
 		      <property name="relief">GTK_RELIEF_NORMAL</property>
 		      <property name="focus_on_click">True</property>
-		      <signal name="activate" handler="on_b_FlagsExpert_activate" last_modification_time="Fri, 18 Apr 2008 13:27:34 GMT"/>
+		      <signal name="clicked" handler="on_b_FlagsExpert_activate" last_modification_time="Mon, 21 Apr 2008 11:56:01 GMT"/>
 		    </widget>
 		    <packing>
 		      <property name="padding">0</property>
@@ -496,7 +496,7 @@
 		      <property name="use_underline">True</property>
 		      <property name="relief">GTK_RELIEF_NORMAL</property>
 		      <property name="focus_on_click">True</property>
-		      <signal name="activate" handler="on_b_InfoExpert_activate" last_modification_time="Fri, 18 Apr 2008 13:27:48 GMT"/>
+		      <signal name="clicked" handler="on_b_InfoExpert_activate" last_modification_time="Mon, 21 Apr 2008 11:55:53 GMT"/>
 		    </widget>
 		    <packing>
 		      <property name="padding">0</property>
@@ -513,7 +513,7 @@
 		      <property name="use_underline">True</property>
 		      <property name="relief">GTK_RELIEF_NORMAL</property>
 		      <property name="focus_on_click">True</property>
-		      <signal name="activate" handler="on_b_StartExpert_activate" last_modification_time="Fri, 18 Apr 2008 13:27:11 GMT"/>
+		      <signal name="clicked" handler="on_b_StartExpert_activate" last_modification_time="Mon, 21 Apr 2008 11:56:09 GMT"/>
 		    </widget>
 		    <packing>
 		      <property name="padding">0</property>
@@ -632,7 +632,7 @@
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
 			      <property name="focus_on_click">True</property>
-			      <signal name="activate" handler="on_b_ResetResults_activate" last_modification_time="Fri, 18 Apr 2008 13:28:08 GMT"/>
+			      <signal name="clicked" handler="on_b_ResetResults_activate" last_modification_time="Mon, 21 Apr 2008 11:56:17 GMT"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -649,7 +649,7 @@
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
 			      <property name="focus_on_click">True</property>
-			      <signal name="activate" handler="on_b_StopResults_activate" last_modification_time="Fri, 18 Apr 2008 13:28:24 GMT"/>
+			      <signal name="clicked" handler="on_b_StopResults_activate" last_modification_time="Mon, 21 Apr 2008 11:56:25 GMT"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -792,21 +792,28 @@
 	  <property name="window_placement">GTK_CORNER_TOP_LEFT</property>
 
 	  <child>
-	    <widget class="GtkVBox" id="box_flags">
+	    <widget class="GtkViewport" id="viewport1">
 	      <property name="visible">True</property>
-	      <property name="homogeneous">False</property>
-	      <property name="spacing">0</property>
+	      <property name="shadow_type">GTK_SHADOW_NONE</property>
 
 	      <child>
-		<placeholder/>
-	      </child>
+		<widget class="GtkVBox" id="box_flags">
+		  <property name="visible">True</property>
+		  <property name="homogeneous">False</property>
+		  <property name="spacing">0</property>
 
-	      <child>
-		<placeholder/>
-	      </child>
+		  <child>
+		    <placeholder/>
+		  </child>
 
-	      <child>
-		<placeholder/>
+		  <child>
+		    <placeholder/>
+		  </child>
+
+		  <child>
+		    <placeholder/>
+		  </child>
+		</widget>
 	      </child>
 	    </widget>
 	  </child>
@@ -857,7 +864,24 @@
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
 		  <property name="focus_on_click">True</property>
-		  <signal name="activate" handler="on_b_AddFlag_activate" last_modification_time="Fri, 18 Apr 2008 13:46:33 GMT"/>
+		  <signal name="clicked" handler="on_b_AddFlag_activate" last_modification_time="Mon, 21 Apr 2008 12:26:18 GMT"/>
+		</widget>
+		<packing>
+		  <property name="padding">0</property>
+		  <property name="expand">False</property>
+		  <property name="fill">False</property>
+		</packing>
+	      </child>
+
+	      <child>
+		<widget class="GtkButton" id="b_Cancel">
+		  <property name="visible">True</property>
+		  <property name="can_focus">True</property>
+		  <property name="label" translatable="yes">Cancel</property>
+		  <property name="use_underline">True</property>
+		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
+		  <signal name="clicked" handler="on_b_Cancel_activate" last_modification_time="Mon, 21 Apr 2008 12:26:40 GMT"/>
 		</widget>
 		<packing>
 		  <property name="padding">0</property>
@@ -874,7 +898,7 @@
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
 		  <property name="focus_on_click">True</property>
-		  <signal name="activate" handler="on_b_OK_activate" last_modification_time="Fri, 18 Apr 2008 13:46:26 GMT"/>
+		  <signal name="clicked" handler="on_b_OK_activate" last_modification_time="Mon, 21 Apr 2008 12:26:45 GMT"/>
 		</widget>
 		<packing>
 		  <property name="padding">0</property>
