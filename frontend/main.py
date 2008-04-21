@@ -62,7 +62,16 @@ class CallbacksMainWindow(object):
         print "on_mainmenu_save_activate"
         d = gtk.FileChooserDialog(title="Save the configuration file", parent=self._dialog, action=gtk.FILE_CHOOSER_ACTION_SAVE,
                 buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
-        print d.run()
+        ret=d.run()
+
+        if ret==gtk.RESPONSE_ACCEPT:
+            try:
+                filename = d.get_filename()
+                fd = open(filename, "w")
+                self._cfg.write(fd)
+            except IOError, e:
+                pass
+
         d.destroy()
         return True
 
