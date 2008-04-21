@@ -52,13 +52,18 @@ class CallbacksMainWindow(object):
     #menu callbacks
     def on_mainmenu_open_activate(self, widget, *args):
         print "on_mainmenu_open_activate"
+        d = gtk.FileChooserDialog(title="Load the configuration file", parent=self._dialog, action=gtk.FILE_CHOOSER_ACTION_OPEN,
+                buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+        print d.run()
+        d.destroy()
         return True
 
     def on_mainmenu_save_activate(self, widget, *args):
         print "on_mainmenu_save_activate"
-        return True
-
-    def on_mainmenu_save_as_activate(self, widget, *args):
+        d = gtk.FileChooserDialog(title="Save the configuration file", parent=self._dialog, action=gtk.FILE_CHOOSER_ACTION_SAVE,
+                buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+        print d.run()
+        d.destroy()
         return True
 
     def on_quit_activate(self, widget, *args):
