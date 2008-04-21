@@ -28,8 +28,9 @@ Logger=logging.getLogger("firstaidkit")
 class Dependencies(object):
     """Encapsulate flags used to control the dependencies between plugins"""
     def __init__(self):
-        self._provide = set()
+        self._provide = None
         self._known = set()
+        self.reset()
 
     def provide(self, id, setactionflag = True):
         """Add flag"""
@@ -65,4 +66,6 @@ class Dependencies(object):
         """Returns list of valid/provided flags"""
         return list(self._provide)
 
+    def reset(self):
+        self._provide = set()
 
