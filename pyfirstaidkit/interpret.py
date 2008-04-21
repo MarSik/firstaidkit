@@ -31,12 +31,31 @@ class Tasker:
 
     name = "Task interpreter"
 
-    def __init__(self, cfg):
-        self._provide = Dependencies()
+    def __init__(self, cfg, reporting = None, dependencies = None, backups = None, pluginsystem = None):
         self._config = cfg
-        self._reporting = Reports()
-        self._backups = FileBackupStore(cfg.backup.path)
-        self.pluginSystem = PluginSystem(reporting = self._reporting, dependencies = self._provide, backups = self._backups)
+
+        if dependencies is None:
+            self._provide = Dependencies()
+        else:
+            self._provide = dependencies
+
+        if reporting is None:
+            self._reporting = Reports()
+        else:
+            self._reporting = reporting
+
+        if backups is None:
+            self._backups = FileBackupStore(cfg.backup.path)
+        else:
+            self._backups = backups
+
+        if pluginsystem is None:
+            self.pluginSystem = PluginSystem(reporting = self._reporting, dependencies = self._provide, backups = self._backups)
+        else:
+            self.pluginSystem = pluginsystem
+
+    def flags(self):
+        return self._provide
 
     def reporting(self):
         return self._reporting

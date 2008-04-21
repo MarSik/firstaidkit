@@ -77,10 +77,10 @@ class Reports(object):
         self._mailboxes = []
         self._notify = []
 
-    def notify(self, cb, data):
+    def notify(self, cb, *args, **kwargs):
         """When putting anything new into the Queue, run notifications callbacks. Usefull for Gui and single-thread reporting.
-        The notification function has two parameters: data passed when registering callback, message recorded to the queue"""
-        return self._notify.append((cb, data))
+        The notification function has parameters: message recorded to the queue, any parameters provided when registering"""
+        return self._notify.append((cb, args, kwargs))
 
     def put(self, message, level, origin, action, importance = logging.INFO, reply = None, title = "", destination = None):
         data = {"level": level, "origin": origin, "action": action, "importance": importance, "message": message, "reply": reply, "title": title}
@@ -98,8 +98,8 @@ class Reports(object):
             ret=destination.put(data)
 
         #call all the notify callbacks
-        for func, regdata in self._notify:
-            func(regdata, data)
+        for func, args, kwargs in self._notify:
+            func(data, *args, **kwargs)
 
         return ret
 
