@@ -23,6 +23,8 @@ from pyfirstaidkit import Config
 from pyfirstaidkit import reporting
 from pyfirstaidkit import initLogger
 
+from frontend.main import MainWindow
+
 class Flags:
     print_config = False
     main_help = False
@@ -33,29 +35,31 @@ class Output(Thread):
         self._running = True
         self._queue = queue
         self._importance = importance
+        self.levelstack = []
 
     def run(self):
-        levelstack = []
 
         while self._running:
             message = self._queue.get()
+            self.process_message(message)
 
+    def process_message(self, message):
             if message["action"]==reporting.END:
                 self._running = False
-                continue
+                return
             elif message["action"]==reporting.QUESTION:
                 print "FIXME: Questions not implemented yet"
             elif message["action"]==reporting.START:
                 if self._importance<=message["importance"]:
                     print "START: %s (%s)" % (message["origin"].name, message["message"])
-                levelstack.append(message["origin"].name)
+                self.levelstack.append(message["origin"].name)
             elif message["action"]==reporting.STOP:
                 if self._importance<=message["importance"]:
                     print "STOP: %s (%s)" % (message["origin"].name, message["message"])
-                if levelstack[-1]!=message["origin"].name:
-                    print "WARNING: START/STOP ordering mismatch in stack: "+" / ".join(levelstack)
+                if self.levelstack[-1]!=message["origin"].name:
+                    print "WARNING: START/STOP ordering mismatch in stack: "+" / ".join(self.levelstack)
                 else:
-                    levelstack.pop()
+                    self.levelstack.pop()
             elif message["action"]==reporting.PROGRESS:
                 if self._importance<=message["importance"]:
                     print "PROGRESS: %d of %d (%s)" % (message["message"][0], message["message"][1], message["origin"].name)
@@ -78,6 +82,15 @@ class Output(Thread):
             else:
                 print "FIXME: Unknown message action %d!!" % (message["action"],)
                 print message
+
+
+class GuiOutput(Thread):
+    def __init__(self, cfg, tasker, importance = logging.INFO, *args, **kwargs):
+        Thread.__init__(self, *args, **kwargs)
+        self.w = MainWindow(cfg, tasker, importance = importance, dir="frontend")
+
+    def run(self):
+        self.w.run()
 
 def usage(name):
     print """Usage:
@@ -193,25 +206,54 @@ if __name__=="__main__":
         Config.write(sys.stdout)
         sys.exit(0)
 
-    Config.lock()
-
-    # Now that the config is locked, initialize log for plugin system.
+    # initialize log for plugin system.
     initLogger(Config)
 
     singlerun = Tasker(Config)
-
+    
+    # TUI/GUI init
     if Config.operation.verbose=="False":
         outputThread = Output(singlerun.reporting())
+        if Config.operation.gui=="gui":
+            outputThreadGui = GuiOutput(Config, singlerun)
     else:
         outputThread = Output(singlerun.reporting(), importance = 0)
+        if Config.operation.gui=="gui":
+            outputThreadGui = GuiOutput(Config, singlerun, importance = 0)
 
-    outputThread.start()
+    if Config.operation.gui=="gui":
+        singlerun.reporting().notify(outputThreadGui.w.update)
+    singlerun.reporting().notify(outputThread.process_message)
 
-    try:
-        singlerun.run()
-    finally:
-        singlerun.end()
+    print "Starting the Threads"
+    #outputThread.start() #not needed, we use the callback method now
+    if Config.operation.gui=="gui":
+        outputThreadGui.start()
 
-    outputThread.join()
+    if Config.operation.gui=="console": #XXX change this to detection if GUI is not used (eg. noninteractive mode)
+        print "Do the work!"
 
+        # Lock the Configuration
+        Config.lock()
 
+        try:
+            singlerun.run()
+        except Exception, e:
+            print "!!! Impossible happened!! The First Aid Kit crashed in very unsafe way.\n!!! Please report this to the authors along with the following message.\n\n"
+            Config.write(sys.stdout)
+            print
+            print e
+        finally:
+            singlerun.end()
+
+    print "Waiting for the Threads"
+    #outputThread.join() #not needed, we use the callback method now
+    if Config.operation.gui=="gui":
+        outputThreadGui.join()
+
+    #make sure everything is deleted
+    if Config.operation.gui=="gui":
+        del outputThreadGui
+    del singlerun
+
+    print "Done."
