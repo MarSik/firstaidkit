@@ -26,13 +26,28 @@ import copy
 import logging
 from pyfirstaidkit import reporting
 import pprint
+import os.path
+import thread
 
 class CallbacksMainWindow(object):
-    def __init__(self, dialog, pluginsystem, flags, reporting):
+    def __init__(self, dialog, cfg, tasker, glade):
         self._dialog = dialog
-        self._pluginsystem = pluginsystem
-        self._flags = flags
-        self._reporting = reporting
+        self._tasker = tasker
+        self._glade = glade
+        self._cfg = cfg
+        self._running_lock = thread.allocate_lock()
+
+    def execute(self):
+        if not self._running_lock.acquire(0):
+            return
+
+        def worker():
+            self._cfg.lock()
+            self._tasker.run()
+            self._cfg.unlock()
+            self._running_lock.release()
+
+        thread.start_new_thread(worker, ())
 
     #menu callbacks
     def on_mainmenu_open_activate(self, widget, *args):
@@ -51,9 +66,12 @@ class CallbacksMainWindow(object):
         if True: #XXX destroy right now, but warn, in final code we have to wait until plugin finishes
             print "!!! You should wait until the running plugin finishes!!"
             self._dialog.destroy()
+            del self._tasker
+            del self._cfg
         return True
 
     def on_destroy(self, widget, *args):
+        print "on_destroy"
         gtk.main_quit()
 
     def on_mainmenu_about_activate(self, widget, *args):
@@ -63,17 +81,21 @@ class CallbacksMainWindow(object):
     #simple mode callbacks
     def on_b_StartSimple_activate(self, widget, *args):
         print "on_b_StartSimple_activate"
+
+        self.execute()
         return True
 
     #advanced mode callbacks
     def on_b_StartAdvanced_activate(self, widget, *args):
         print "on_b_StartAdvanced_activate"
+        
+        self.execute()
         return True
 
     #expert mode callbacks
     def on_b_FlagsExpert_activate(self, widget, *args):
         print "on_b_FlagsExpert_activate"
-        FlagList(self._flags)
+        FlagList(self._cfg, self._tasker.flags(), dir = os.path.dirname(self._glade.relative_file(".")))
         return True
 
     def on_b_InfoExpert_activate(self, widget, *args):
@@ -82,6 +104,8 @@ class CallbacksMainWindow(object):
 
     def on_b_StartExpert_activate(self, widget, *args):
         print "on_b_StartExpert_activate"
+
+        self.execute()
         return True
 
     #results callbacks
@@ -94,9 +118,10 @@ class CallbacksMainWindow(object):
         return True
 
 class CallbacksFlagList(object):
-    def __init__(self, dialog, flags):
+    def __init__(self, dialog, cfg, flags):
         self._dialog = dialog
         self._flags = flags
+        self._cfg = cfg
         self._working = copy.copy(self._flags)
 
     def on_b_AddFlag_activate(self, widget, *args):
@@ -118,11 +143,11 @@ class CallbacksFlagList(object):
         return True
 
 class MainWindow(object):
-    def __init__(self, pluginsystem, flags, reporting, importance = logging.INFO):
+    def __init__(self, cfg, tasker, importance = logging.INFO, dir=""):
         self._importance = importance
-        self._glade = gtk.glade.XML("frontend/firstaidkit.glade", "MainWindow")
+        self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"), "MainWindow")
         self._window = self._glade.get_widget("MainWindow")
-        self._cb = CallbacksMainWindow(self._window, pluginsystem, flags, reporting)
+        self._cb = CallbacksMainWindow(self._window, cfg, tasker, self._glade)
         self._glade.signal_autoconnect(self._cb)
         self._window.connect("destroy", self._cb.on_destroy)
 
@@ -130,38 +155,43 @@ class MainWindow(object):
         self.status_progress = self._glade.get_widget("status_progress")
 
     def update(self, message):
-        """Read the reporting system message and schedule a call to update stuff in the gui using gobject.idle_add"""
+        def _o(func, *args, **kwargs):
+            """Always return False -> remove from the idle queue after first execution"""
+            func(*args, **kwargs)
+            return False
+
+        """Read the reporting system message and schedule a call to update stuff in the gui using gobject.idle_add(_o, func, params...)"""
         if message["action"]==reporting.END:
-            gobject.idle_add(self._window.destroy)
+            gobject.idle_add(_o, self._window.destroy)
         elif message["action"]==reporting.QUESTION:
             print "FIXME: Questions not implemented yet"
         elif message["action"]==reporting.START:
             if self._importance<=message["importance"]:
                 ctx = self.status_text.get_context_id(message["origin"].name)
-                gobject.idle_add(self.status_text.push, ctx, "START: %s (%s)" % (message["origin"].name, message["message"]))
+                gobject.idle_add(_o, self.status_text.push, ctx, "START: %s (%s)" % (message["origin"].name, message["message"]))
         elif message["action"]==reporting.STOP:
             if self._importance<=message["importance"]:
                 ctx = self.status_text.get_context_id(message["origin"].name)
-                gobject.idle_add(self.status_text.push, ctx, "STOP: %s (%s)" % (message["origin"].name, message["message"]))
+                gobject.idle_add(_o, self.status_text.push, ctx, "STOP: %s (%s)" % (message["origin"].name, message["message"]))
         elif message["action"]==reporting.PROGRESS:
             if self._importance<=message["importance"]:
                 if message["message"] is None:
                   gobject.idle_add(self.status_progress.hide)
                 else:
-                  gobject.idle_add(self.status_progress.set_text, "%d/%d - %s" % (message["message"][0], message["message"][1], message["origin"].name))
-                  gobject.idle_add(self.status_progress.set_fraction, float(message["message"][0])/message["message"][1])
-                  gobject.idle_add(self.status_progress.show)
+                  gobject.idle_add(_o, self.status_progress.set_text, "%d/%d - %s" % (message["message"][0], message["message"][1], message["origin"].name))
+                  gobject.idle_add(_o, self.status_progress.set_fraction, float(message["message"][0])/message["message"][1])
+                  gobject.idle_add(_o, self.status_progress.show)
         elif message["action"]==reporting.INFO:
             if self._importance<=message["importance"]:
                 ctx = self.status_text.get_context_id(message["origin"].name)
-                gobject.idle_add(self.status_text.push, ctx, "INFO: %s (%s)" % (message["message"], message["origin"].name))
+                gobject.idle_add(_o, self.status_text.push, ctx, "INFO: %s (%s)" % (message["message"], message["origin"].name))
         elif message["action"]==reporting.ALERT:
             if self._importance<=message["importance"]:
                 ctx = self.status_text.get_context_id(message["origin"].name)
-                gobject.idle_add(self.status_text.push, ctx, "ALERT: %s (%s)" % (message["message"], message["origin"].name))
+                gobject.idle_add(_o, self.status_text.push, ctx, "ALERT: %s (%s)" % (message["message"], message["origin"].name))
         elif message["action"]==reporting.EXCEPTION:
             ctx = self.status_text.get_context_id(message["origin"].name)
-            gobject.idle_add(self.status_text.push, ctx, "EXCEPTION: %s (%s)" % (message["message"], message["origin"].name))
+            gobject.idle_add(_o, self.status_text.push, ctx, "EXCEPTION: %s (%s)" % (message["message"], message["origin"].name))
         elif message["action"]==reporting.TABLE:
             if self._importance<=message["importance"]:
                 print "TABLE %s FROM %s" % (message["title"], message["origin"].name,)
@@ -175,17 +205,18 @@ class MainWindow(object):
             print message
 
     def run(self):
+        gtk.gdk.threads_init()
         gtk.main()
 
 class FlagList(object):
-    def __init__(self, flags):
-        self._glade = gtk.glade.XML("frontend/firstaidkit.glade", "FlagList")
+    def __init__(self, cfg, flags, dir=""):
+        self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"), "FlagList")
         self._window = self._glade.get_widget("FlagList")
         self._window.set_modal(True)
-        self._cb = CallbacksFlagList(self._window, flags)
+        self._cb = CallbacksFlagList(self._window, cfg, flags)
         self._glade.signal_autoconnect(self._cb)
 
 if __name__=="__main__":
     w = MainWindow(None, None, None)
-    #w.run()
+    w.run()
 
