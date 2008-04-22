@@ -42,13 +42,23 @@ class CallbacksMainWindow(object):
         if not self._running_lock.acquire(0):
             return
 
-        def worker():
+        def _o(pages):
+            """Always return False -> remove from the idle queue after first execution"""
+            for i in range(pages.get_n_pages()):
+                pages.get_nth_page(i).set_sensitive(True)
+            return False
+
+        def worker(*args):
             self._cfg.lock()
             self._tasker.run()
             self._cfg.unlock()
+            gobject.idle_add(_o, *args)
             self._running_lock.release()
 
-        thread.start_new_thread(worker, ())
+        self._data.pages.set_current_page(-1)
+        for i in range(self._data.pages.get_n_pages())[:-1]:
+            self._data.pages.get_nth_page(i).set_sensitive(False)
+        thread.start_new_thread(worker, (self._data.pages,))
 
     #menu callbacks
     def on_mainmenu_open_activate(self, widget, *args):
@@ -175,6 +185,7 @@ class CallbacksMainWindow(object):
             self._cfg.operation.dependencies = "False"
 
         self._cfg.operation.flags = " ".join(map(lambda x: x.encode("string-escape"), flags))
+
         self.execute()
         return True
 
@@ -278,6 +289,7 @@ class MainWindow(object):
         self._glade.signal_autoconnect(self._cb)
         self._window.connect("destroy", self._cb.on_destroy)
 
+        self.pages = self._glade.get_widget("pages")
         self.status_text = self._glade.get_widget("status_text")
         self.status_progress = self._glade.get_widget("status_progress")
 
