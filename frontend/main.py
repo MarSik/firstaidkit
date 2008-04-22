@@ -30,11 +30,12 @@ import os.path
 import thread
 
 class CallbacksMainWindow(object):
-    def __init__(self, dialog, cfg, tasker, glade):
+    def __init__(self, dialog, cfg, tasker, glade, data):
         self._dialog = dialog
         self._tasker = tasker
         self._glade = glade
         self._cfg = cfg
+        self._data = data
         self._running_lock = thread.allocate_lock()
 
     def execute(self):
@@ -95,7 +96,39 @@ class CallbacksMainWindow(object):
     #simple mode callbacks
     def on_b_StartSimple_activate(self, widget, *args):
         print "on_b_StartSimple_activate"
+       
+        flags = set(self._cfg.operation._list("flags"))
 
+        #check fix
+        if self._glade.get_widget("check_Simple_Fix").get_active():
+            self._cfg.operation.mode = "auto-flow"
+            self._cfg.operation.flow = "fix"
+        else:
+            self._cfg.operation.mode = "auto-flow"
+            self._cfg.operation.flow = "diagnose"
+
+        #check interactive
+        if self._glade.get_widget("check_Simple_Interactive").get_active():
+            self._cfg.operation.interactive = "True"
+        else:
+            self._cfg.operation.interactive = "False"
+
+        #check verbose
+        if self._glade.get_widget("check_Simple_Verbose").get_active():
+            self._cfg.operation.verbose = "True"
+        else:
+            self._cfg.operation.verbose = "False"
+
+        #check experimental
+        if self._glade.get_widget("check_Simple_Experimental").get_active():
+            flags.add("experimental")
+        else:
+            try:
+                flags.remove("experimental")
+            except KeyError, e:
+                pass
+
+        self._cfg.operation.flags = '"'+'" "'.join(flags)+'"'
         self.execute()
         return True
 
@@ -103,6 +136,44 @@ class CallbacksMainWindow(object):
     def on_b_StartAdvanced_activate(self, widget, *args):
         print "on_b_StartAdvanced_activate"
         
+        flags = set(self._cfg.operation._list("flags"))
+        
+        #set the auto-flow
+        self._cfg.operation.mode = "auto-flow"
+
+        idx = self._data.flow_list.get_active_iter()
+        if idx is None:
+            return True
+        self._cfg.operation.flow = self._data.flow_list_store.get_value(idx,0)
+
+        #check verbose
+        if self._glade.get_widget("check_Advanced_Verbose").get_active():
+            self._cfg.operation.verbose = "True"
+        else:
+            self._cfg.operation.verbose = "False"
+
+        #check experimental
+        if self._glade.get_widget("check_Advanced_Experimental").get_active():
+            flags.add("experimental")
+        else:
+            try:
+                flags.remove("experimental")
+            except KeyError, e:
+                pass
+
+        #check interactive
+        if self._glade.get_widget("check_Advanced_Interactive").get_active():
+            self._cfg.operation.interactive = "True"
+        else:
+            self._cfg.operation.interactive = "False"
+
+        #check dependency
+        if self._glade.get_widget("check_Advanced_Dependency").get_active():
+            self._cfg.operation.dependencies = "True"
+        else:
+            self._cfg.operation.dependencies = "False"
+
+        self._cfg.operation.flags = '"'+'" "'.join(flags)+'"'
         self.execute()
         return True
 
@@ -163,7 +234,7 @@ class MainWindow(object):
         self._importance = importance
         self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"), "MainWindow")
         self._window = self._glade.get_widget("MainWindow")
-        self._cb = CallbacksMainWindow(self._window, cfg, tasker, self._glade)
+        self._cb = CallbacksMainWindow(self._window, cfg, tasker, self._glade, self)
         self._glade.signal_autoconnect(self._cb)
         self._window.connect("destroy", self._cb.on_destroy)
 
