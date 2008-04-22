@@ -31,6 +31,31 @@ class SimpleIssue(object):
         self._happened = False
         self._fixed = False
 
+    def happened(self):
+        """Get the 'issue happened' flag.
+Return values:
+    True - YES it happened
+    False - NO, it is OK
+    None - I don't know, there was an error"""
+        #if the issue was fixed or not detected, the detection si needed
+        if not self._detected or self._fixed:
+            return None
+        else:
+            return self._happened
+        
+    def fixed(self):
+        """Get the 'issue fixed' flag.
+Return values:
+    True - YES it is fixed
+    False - NO, it is still broken
+    None - I don't know"""
+        #if the issue was not detected, the detection si needed
+        if not self._detected:
+            return None
+        else:
+            #issue didn't happened or is fixed -> True
+            return not self._happened or self._fixed
+
     def __str__(self):
         s = []
         if self._fixed:
@@ -89,29 +114,4 @@ Return values:
             return self._fixed and self._detected
 
         return None #no fix error, please do the fix (so the child-class knows to actually do something)
-
-    def happened(self):
-        """Get the 'issue happened' flag.
-Return values:
-    True - YES it happened
-    False - NO, it is OK
-    None - I don't know, there was an error"""
-        #if the issue was fixed or not detected, the detection si needed
-        if not self._detected or self._fixed:
-            return None
-        else:
-            return self._happened
-        
-    def fixed(self):
-        """Get the 'issue fixed' flag.
-Return values:
-    True - YES it is fixed
-    False - NO, it is still broken
-    None - I don't know"""
-        #if the issue was not detected, the detection si needed
-        if not self._detected:
-            return None
-        else:
-            #issue didn't happened or is fixed -> True
-            return not self._happened or self._fixed
 
