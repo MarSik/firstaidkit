@@ -81,12 +81,13 @@ class CallbacksMainWindow(object):
         if True: #XXX destroy right now, but warn, in final code we have to wait until plugin finishes
             print "!!! You should wait until the running plugin finishes!!"
             self._dialog.destroy()
-            del self._tasker
-            del self._cfg
         return True
 
     def on_destroy(self, widget, *args):
         print "on_destroy"
+        self._tasker.end()
+        del self._tasker
+        del self._cfg
         gtk.main_quit()
 
     def on_mainmenu_about_activate(self, widget, *args):

@@ -17,6 +17,8 @@
 
 import Queue
 import logging
+import thread
+import weakref
 
 Logger = logging.getLogger("firstaidkit")
 
@@ -74,6 +76,7 @@ class Reports(object):
         """round - is this a round buffer?
         maxsize - size of the buffer"""
         self._queue = Queue.Queue(maxsize = maxsize)
+        self._queue_lock = thread.allocate_lock()
         self._round = round
         self._mailboxes = []
         self._notify = []
@@ -91,12 +94,15 @@ class Reports(object):
 
         destination = self._queue
         try:
-            ret=destination.put(data)
+            self._queue_lock.acquire()
+            ret=destination.put(data, block = False)
         except Queue.Full, e:
             if not self._round:
                 raise
             destination.get() #Queue is full and it is a round buffer.. remove the oldest item and use the free space to put the new item
             ret=destination.put(data)
+        finally:
+            self._queue_lock.release()
 
         #call all the notify callbacks
         for func, args, kwargs in self._notify:
@@ -107,7 +113,13 @@ class Reports(object):
     def get(self, mailbox = None, *args, **kwargs):
         if mailbox is None:
             mailbox = self._queue
-        return mailbox.get(*args, **kwargs)
+        try:
+            self._queue_lock.acquire()
+            ret = mailbox.get(*args, **kwargs)
+        finally:
+            self._queue_lock.release()
+
+        return ret
 
     def openMailbox(self, maxsize=-1):
         """Allocate new mailbox for replies"""

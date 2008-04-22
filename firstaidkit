@@ -212,7 +212,8 @@ if __name__=="__main__":
     # initialize log for plugin system.
     initLogger(Config)
 
-    singlerun = Tasker(Config)
+    report = reporting.Reports(maxsize = 1, round = True)
+    singlerun = Tasker(Config, reporting = report)
     
     # TUI/GUI init
     if Config.operation.verbose=="False":
