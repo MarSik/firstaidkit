@@ -97,6 +97,7 @@ class Tasker:
                 flows = len(pluginlist)*[self._config.operation.flow]
             elif self._config.operation.mode == "flow":
                 flows = self._config.operation._list("flow")
+                pluginlist = self._config.operation._list("plugin")
             else:
                 flows = len(pluginlist)*[None]
 
