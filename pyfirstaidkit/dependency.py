@@ -60,7 +60,7 @@ class Dependencies(object):
 
     def known(self):
         """Returns list of known flags"""
-        return list(self._known)
+        return list(self._known.union(self._provide))
     
     def valid(self):
         """Returns list of valid/provided flags"""
