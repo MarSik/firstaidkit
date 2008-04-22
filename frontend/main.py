@@ -232,6 +232,7 @@ class CallbacksFlagList(object):
 class MainWindow(object):
     def __init__(self, cfg, tasker, importance = logging.INFO, dir=""):
         self._importance = importance
+        self._cfg = cfg
         self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"), "MainWindow")
         self._window = self._glade.get_widget("MainWindow")
         self._cb = CallbacksMainWindow(self._window, cfg, tasker, self._glade, self)
@@ -332,6 +333,11 @@ class MainWindow(object):
             """Always return False -> remove from the idle queue after first execution"""
             func(*args, **kwargs)
             return False
+
+        if self._cfg.operation.verbose == "True":
+            self._importance = logging.DEBUG
+        else:
+            self._importance = logging.INFO
 
         """Read the reporting system message and schedule a call to update stuff in the gui using gobject.idle_add(_o, func, params...)"""
         if message["action"]==reporting.END:
