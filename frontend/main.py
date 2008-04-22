@@ -129,7 +129,7 @@ class CallbacksMainWindow(object):
             except KeyError, e:
                 pass
 
-        self._cfg.operation.flags = '"'+'" "'.join(flags)+'"'
+        self._cfg.operation.flags = " ".join(map(lambda x: x.encode("string-escape"), flags))
         self.execute()
         return True
 
@@ -174,7 +174,7 @@ class CallbacksMainWindow(object):
         else:
             self._cfg.operation.dependencies = "False"
 
-        self._cfg.operation.flags = '"'+'" "'.join(flags)+'"'
+        self._cfg.operation.flags = " ".join(map(lambda x: x.encode("string-escape"), flags))
         self.execute()
         return True
 
@@ -190,6 +190,44 @@ class CallbacksMainWindow(object):
 
     def on_b_StartExpert_activate(self, widget, *args):
         print "on_b_StartExpert_activate"
+
+        #check verbose
+        if self._glade.get_widget("check_Expert_Verbose").get_active():
+            self._cfg.operation.verbose = "True"
+        else:
+            self._cfg.operation.verbose = "False"
+
+        #check interactive
+        if self._glade.get_widget("check_Expert_Interactive").get_active():
+            self._cfg.operation.interactive = "True"
+        else:
+            self._cfg.operation.interactive = "False"
+
+        #check dependency
+        if self._glade.get_widget("check_Expert_Dependency").get_active():
+            self._cfg.operation.dependencies = "True"
+        else:
+            self._cfg.operation.dependencies = "False"
+
+        #get the plugin & flow list
+        plugins = []
+        flows = []
+
+        for pname,iter in self._data.plugin_iter.iteritems():
+            childiter = self._data.plugin_list_store.iter_children(iter)
+            while childiter is not None:
+                if self._data.plugin_list_store.get_value(childiter, 0): #checkbox is checked
+                    plugins.append(pname)
+                    flows.append(self._data.plugin_list_store.get_value(childiter, 1))
+                childiter = self._data.plugin_list_store.iter_next(childiter)
+
+        plugins = map(lambda x: x.encode("string-escape"), plugins)
+        flows = map(lambda x: x.encode("string-escape"), flows)
+
+        #set the flow mode
+        self._cfg.operation.mode = "flow"
+        self._cfg.operation.flow = " ".join(flows)
+        self._cfg.operation.plugin = " ".join(plugins)
 
         self.execute()
         return True
@@ -220,7 +258,7 @@ class CallbacksFlagList(object):
         if len(f)==0:
             self._cfg.operation.flags = ""
         else:
-            self._cfg.operation.flags = '"'+'" "'.join(f)+'"'
+            self._cfg.operation.flags = " ".join(map(lambda x: x.encode("string-escape"), f))
 
         self._dialog.destroy()
         return True
