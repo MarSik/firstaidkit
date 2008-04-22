@@ -170,6 +170,66 @@ class MainWindow(object):
         self.status_text = self._glade.get_widget("status_text")
         self.status_progress = self._glade.get_widget("status_progress")
 
+        self.plugin_list_store = gtk.TreeStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
+        self.plugin_list = self._glade.get_widget("tree_Expert")
+        self.plugin_list.set_model(self.plugin_list_store)
+
+        self.plugin_rend_text = gtk.CellRendererText()
+        self.plugin_rend_toggle = gtk.CellRendererToggle()
+        self.plugin_rend_toggle.set_radio(False)
+        self.plugin_rend_toggle.set_property("activatable", False)
+
+        def plugin_rend_text_func(column, cell_renderer, tree_model, iter, user_data):
+            if tree_model.iter_depth(iter)==0:
+                cell_renderer.set_property("cell-background-set", True)
+                cell_renderer.set_property("cell-background-gdk", gtk.gdk.Color(red=50000, green=50000, blue=50000))
+                cell_renderer.set_property("markup", "<b>" + tree_model.get_value(iter, user_data) + "</b>")
+            else:
+                cell_renderer.set_property("cell-background-set", False)
+                cell_renderer.set_property("text", tree_model.get_value(iter, user_data))
+            return
+
+        def plugin_rend_toggle_func(column, cell_renderer, tree_model, iter, user_data = None):
+            if tree_model.iter_depth(iter)==0:
+                cell_renderer.set_property("activatable", False)
+                cell_renderer.set_property("active", False)
+                cell_renderer.set_property("visible", False)
+                cell_renderer.set_property("cell-background-set", True)
+                cell_renderer.set_property("cell-background-gdk", gtk.gdk.Color(red=40000, green=40000, blue=40000))
+            else:
+                cell_renderer.set_property("activatable", True)
+                cell_renderer.set_property("active", tree_model.get_value(iter,0))
+                cell_renderer.set_property("visible", True)
+                cell_renderer.set_property("cell-background-set", False)
+            return
+
+        self.plugin_list_col_0 = gtk.TreeViewColumn('Use')
+        self.plugin_list_col_0.pack_start(self.plugin_rend_toggle, False)
+        self.plugin_list_col_0.add_attribute(self.plugin_rend_toggle, 'active', 0)
+        self.plugin_list_col_0.set_cell_data_func(self.plugin_rend_toggle, plugin_rend_toggle_func)
+
+        self.plugin_list_col_1 = gtk.TreeViewColumn('Name')
+        self.plugin_list_col_1.pack_start(self.plugin_rend_text, True)
+        self.plugin_list_col_1.set_cell_data_func(self.plugin_rend_text, plugin_rend_text_func, 1)
+
+        self.plugin_list_col_2 = gtk.TreeViewColumn('Description')
+        self.plugin_list_col_2.pack_start(self.plugin_rend_text, True)
+        self.plugin_list_col_2.set_cell_data_func(self.plugin_rend_text, plugin_rend_text_func, 2)
+
+        self.plugin_list.append_column(self.plugin_list_col_0)
+        self.plugin_list.append_column(self.plugin_list_col_1)
+        self.plugin_list.append_column(self.plugin_list_col_2)
+        self.plugin_list.set_search_column(1)
+
+        pluginsystem = tasker.pluginsystem()
+        self.plugin_iter = {}
+        for plname in pluginsystem.list():
+            p = pluginsystem.getplugin(plname)
+            piter = self.plugin_list_store.append(None, [False, p.name, p.description])
+            self.plugin_iter[plname] = piter
+            for n,d in [ (f, p.getFlow(f).description) for f in p.getFlows() ]:
+                self.plugin_list_store.append(piter, [False, n, d])
+
     def update(self, message):
         def _o(func, *args, **kwargs):
             """Always return False -> remove from the idle queue after first execution"""
