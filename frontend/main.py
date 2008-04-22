@@ -170,7 +170,7 @@ class MainWindow(object):
         self.status_text = self._glade.get_widget("status_text")
         self.status_progress = self._glade.get_widget("status_progress")
 
-        self.plugin_list_store = gtk.TreeStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
+        self.plugin_list_store = gtk.TreeStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_STRING)
         self.plugin_list = self._glade.get_widget("tree_Expert")
         self.plugin_list.set_model(self.plugin_list_store)
 
@@ -203,10 +203,15 @@ class MainWindow(object):
                 cell_renderer.set_property("cell-background-set", False)
             return
 
+        def plugin_rend_toggle_cb(cell, path, data):
+            model, col = data
+            model[path][0] = not model[path][col]
+            return
+
         self.plugin_list_col_0 = gtk.TreeViewColumn('Use')
         self.plugin_list_col_0.pack_start(self.plugin_rend_toggle, False)
-        self.plugin_list_col_0.add_attribute(self.plugin_rend_toggle, 'active', 0)
         self.plugin_list_col_0.set_cell_data_func(self.plugin_rend_toggle, plugin_rend_toggle_func)
+        self.plugin_rend_toggle.connect("toggled", plugin_rend_toggle_cb, (self.plugin_list_store, 0))
 
         self.plugin_list_col_1 = gtk.TreeViewColumn('Name')
         self.plugin_list_col_1.pack_start(self.plugin_rend_text, True)
@@ -216,19 +221,24 @@ class MainWindow(object):
         self.plugin_list_col_2.pack_start(self.plugin_rend_text, True)
         self.plugin_list_col_2.set_cell_data_func(self.plugin_rend_text, plugin_rend_text_func, 2)
 
+        self.plugin_list_col_3 = gtk.TreeViewColumn('Parameters')
+        self.plugin_list_col_3.pack_start(self.plugin_rend_text, True)
+        self.plugin_list_col_3.set_cell_data_func(self.plugin_rend_text, plugin_rend_text_func, 3)
+
         self.plugin_list.append_column(self.plugin_list_col_0)
         self.plugin_list.append_column(self.plugin_list_col_1)
         self.plugin_list.append_column(self.plugin_list_col_2)
+        self.plugin_list.append_column(self.plugin_list_col_3)
         self.plugin_list.set_search_column(1)
 
         pluginsystem = tasker.pluginsystem()
         self.plugin_iter = {}
         for plname in pluginsystem.list():
             p = pluginsystem.getplugin(plname)
-            piter = self.plugin_list_store.append(None, [False, p.name, p.description])
+            piter = self.plugin_list_store.append(None, [False, "%s (%s)" % (p.name, p.version), p.description, ""])
             self.plugin_iter[plname] = piter
             for n,d in [ (f, p.getFlow(f).description) for f in p.getFlows() ]:
-                self.plugin_list_store.append(piter, [False, n, d])
+                self.plugin_list_store.append(piter, [False, n, d, ""])
 
     def update(self, message):
         def _o(func, *args, **kwargs):
