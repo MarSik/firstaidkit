@@ -233,12 +233,28 @@ class MainWindow(object):
 
         pluginsystem = tasker.pluginsystem()
         self.plugin_iter = {}
+        self.flow_list_data = set()
+
         for plname in pluginsystem.list():
             p = pluginsystem.getplugin(plname)
             piter = self.plugin_list_store.append(None, [False, "%s (%s)" % (p.name, p.version), p.description, ""])
             self.plugin_iter[plname] = piter
             for n,d in [ (f, p.getFlow(f).description) for f in p.getFlows() ]:
                 self.plugin_list_store.append(piter, [False, n, d, ""])
+                self.flow_list_data.add(n)
+
+        self.flow_list_rend_text = gtk.CellRendererText()
+        self.flow_list_store = gtk.ListStore(gobject.TYPE_STRING)
+        self.flow_list_store_diagnose = -1
+        for idx,n in enumerate(sorted(self.flow_list_data)):
+            self.flow_list_store.append([n])
+            if n=="diagnose":
+                self.flow_list_store_diagnose = idx
+        self.flow_list = self._glade.get_widget("combo_Advanced_Flows")
+        self.flow_list.set_model(self.flow_list_store)
+        self.flow_list.pack_start(self.flow_list_rend_text, True)
+        self.flow_list.add_attribute(self.flow_list_rend_text, 'text', 0)
+        self.flow_list.set_active(self.flow_list_store_diagnose)
 
     def update(self, message):
         def _o(func, *args, **kwargs):
