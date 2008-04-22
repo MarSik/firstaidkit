@@ -86,16 +86,27 @@ class Tasker:
         for flag in self._config.operation._list("flags"):
             self._provide.provide(flag)
 
-        if self._config.operation.mode in ("auto", "auto-flow"):
-            flow = None
+        if self._config.operation.mode in ("auto", "auto-flow", "plugin", "flow"):
+
+            if self._config.operation.mode == "plugin":
+                pluginlist = self._config.operation._list("plugin")
+            else:
+                pluginlist = set(pluginSystem.list())
+            
             if self._config.operation.mode == "auto-flow":
-                flow = self._config.operation.flow
-            oldlist = set()
-            actlist = set(pluginSystem.list())
+                flows = len(pluginlist)*[self._config.operation.flow]
+            elif self._config.operation.mode == "flow":
+                flows = self._config.operation._list("flow")
+            else:
+                flows = len(pluginlist)*[None]
+
             #iterate through plugins until there is no plugin left or no action performed during whole iteration
+            oldlist = set()
+            actlist = set(zip(pluginlist, flows))
+
             while len(actlist)>0 and oldlist!=actlist:
                 oldlist = copy.copy(actlist)
-                for plugin in oldlist:
+                for plugin,flow in oldlist:
                     #If plugin does not contain the automated flow or if it ran correctly, remove it from list
                     if ((flow and not flow in pluginSystem.getplugin(plugin).getFlows()) or
                                 (not flow and not pluginSystem.getplugin(plugin).default_flow in
@@ -103,25 +114,14 @@ class Tasker:
                         self._reporting.info("Plugin %s does not contain flow %s"%
                                 (plugin, flow or pluginSystem.getplugin(plugin).default_flow,), 
                                 level = TASKER, origin = self)
-                        actlist.remove(plugin)
-                    elif pluginSystem.autorun(plugin, flow = flow):
-                        actlist.remove(plugin)
-            for plugin in actlist:
+                        actlist.remove((plugin, flow))
+                    elif pluginSystem.autorun(plugin, flow = flow, dependencies = self._config.operation.dependencies != "False"):
+                        actlist.remove((plugin, flow))
+
+            #some plugins may not be called because of unfavorable flags
+            for plugin in set(map(lambda x: x[0], actlist)):
                 self._reporting.info("Plugin %s was not called because of unsatisfied dependencies"%
                         (plugin,), level = TASKER, origin = self, importance = logging.WARNING)
-        elif self._config.operation.mode == "flow":
-            try:
-                pluginSystem.autorun(self._config.operation.plugin, 
-                        flow = self._config.operation.flow, dependencies = False)
-            except InvalidFlowNameException, e:
-                pass
-        elif self._config.operation.mode == "plugin":
-            try:
-                pluginSystem.autorun(self._config.operation.plugin, dependencies = False)
-            except (InvalidPluginNameException, InvalidFlowNameException),  e:
-                pass
-        elif self._config.operation.mode == "task":
-            pass
         elif self._config.operation.mode == "flags":
             self._reporting.table(self._provide.known(), level = TASKER, origin = self, title = "List of flags")
         elif self._config.operation.mode == "list":

@@ -114,6 +114,7 @@ def usage(name):
   --flags          - list all known flags
   --list           - list all plugins
   --info <plugin>  - get information about plugin
+  --nodeps         - do not use plugin dependencies
 """ % (name, name, name, name, name)
 
 if __name__=="__main__":
@@ -121,7 +122,7 @@ if __name__=="__main__":
         params, rest = getopt.getopt(sys.argv[1:], "aftc:r:vl:x:F:g:P:h",
                 ["list", "info=", "auto", "flow", "task", "config=", "root=",
                 "verbose", "log=", "exclude=","flag=", "gui=", "plugin-path=",
-                "print-config", "help", "flags"])
+                "print-config", "help", "flags", "nodeps"])
     except Exception, e:
         print "\nError parsing the argument line: ",e,"\n"
         usage(sys.argv[0])
@@ -175,6 +176,8 @@ if __name__=="__main__":
         elif key in ("--info"):
             Config.operation.mode = "info"
             Config.operation.params = val
+        elif key in ("--nodeps"):
+            Config.operation.dependencies = "False"
 
     if Flags.main_help:
         usage(sys.argv[0])
@@ -185,15 +188,15 @@ if __name__=="__main__":
             print "Error in the command arguments.\n"
             usage(sys.argv[0])
             sys.exit(1)
-        Config.operation.plugin = rest[0]
+        Config.operation.plugin = rest[0].encode("string-escape")
         if len(rest)<=1:
             Config.operation.mode = "plugin"
         else:
-            Config.operation.flow = rest[1]
+            Config.operation.flow = rest[1].encode("string-escape")
     elif Config.operation.mode == "auto":
         if len(rest)>0:
             Config.operation.mode = "auto-flow"
-            Config.operation.flow = rest[0]
+            Config.operation.flow = rest[0].encode("string-escape")
     elif Config.operation.mode == "task":
         Config.operation.plugin = rest[0]
         Config.operation.task = rest[1]
