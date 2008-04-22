@@ -750,8 +750,7 @@
       <child>
 	<widget class="GtkLabel" id="label6">
 	  <property name="visible">True</property>
-	  <property name="label" translatable="yes">Flags to set before any operation takes place:
-(clicking on flag deletes it)</property>
+	  <property name="label" translatable="yes">Flags to set before any operation takes place:</property>
 	  <property name="use_underline">False</property>
 	  <property name="use_markup">False</property>
 	  <property name="justify">GTK_JUSTIFY_LEFT</property>
@@ -767,14 +766,26 @@
 	  <property name="angle">0</property>
 	</widget>
 	<packing>
-	  <property name="padding">0</property>
+	  <property name="padding">5</property>
 	  <property name="expand">False</property>
 	  <property name="fill">False</property>
 	</packing>
       </child>
 
       <child>
+	<widget class="GtkHSeparator" id="hseparator1">
+	  <property name="visible">True</property>
+	</widget>
+	<packing>
+	  <property name="padding">0</property>
+	  <property name="expand">False</property>
+	  <property name="fill">True</property>
+	</packing>
+      </child>
+
+      <child>
 	<widget class="GtkScrolledWindow" id="scrolledwindow3">
+	  <property name="border_width">3</property>
 	  <property name="visible">True</property>
 	  <property name="can_focus">True</property>
 	  <property name="hscrollbar_policy">GTK_POLICY_NEVER</property>
@@ -810,8 +821,19 @@
 	  </child>
 	</widget>
 	<packing>
-	  <property name="padding">0</property>
+	  <property name="padding">1</property>
 	  <property name="expand">True</property>
+	  <property name="fill">True</property>
+	</packing>
+      </child>
+
+      <child>
+	<widget class="GtkHSeparator" id="hseparator2">
+	  <property name="visible">True</property>
+	</widget>
+	<packing>
+	  <property name="padding">0</property>
+	  <property name="expand">False</property>
 	  <property name="fill">True</property>
 	</packing>
       </child>
@@ -819,9 +841,9 @@
       <child>
 	<widget class="GtkAlignment" id="alignment5">
 	  <property name="visible">True</property>
-	  <property name="xalign">0.5</property>
+	  <property name="xalign">1</property>
 	  <property name="yalign">1</property>
-	  <property name="xscale">1</property>
+	  <property name="xscale">0</property>
 	  <property name="yscale">0</property>
 	  <property name="top_padding">0</property>
 	  <property name="bottom_padding">0</property>
@@ -833,36 +855,6 @@
 	      <property name="visible">True</property>
 	      <property name="homogeneous">False</property>
 	      <property name="spacing">0</property>
-
-	      <child>
-		<widget class="GtkComboBox" id="combo_AvailableFlags">
-		  <property name="visible">True</property>
-		  <property name="add_tearoffs">False</property>
-		  <property name="focus_on_click">True</property>
-		</widget>
-		<packing>
-		  <property name="padding">0</property>
-		  <property name="expand">True</property>
-		  <property name="fill">True</property>
-		</packing>
-	      </child>
-
-	      <child>
-		<widget class="GtkButton" id="b_AddFlag">
-		  <property name="visible">True</property>
-		  <property name="can_focus">True</property>
-		  <property name="label" translatable="yes">Add</property>
-		  <property name="use_underline">True</property>
-		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
-		  <signal name="clicked" handler="on_b_AddFlag_activate" last_modification_time="Mon, 21 Apr 2008 12:26:18 GMT"/>
-		</widget>
-		<packing>
-		  <property name="padding">0</property>
-		  <property name="expand">False</property>
-		  <property name="fill">False</property>
-		</packing>
-	      </child>
 
 	      <child>
 		<widget class="GtkButton" id="b_Cancel">

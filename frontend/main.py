@@ -136,24 +136,26 @@ class CallbacksFlagList(object):
         self._dialog = dialog
         self._flags = flags
         self._cfg = cfg
-        self._working = copy.copy(self._flags)
-
-    def on_b_AddFlag_activate(self, widget, *args):
-        print "on_b_AddFlag_activate"
-        return True
 
     def on_b_OK_activate(self, widget, *args):
         print "on_b_OK_activate"
+
+        f = set()
+        for k,w in self._flags.iteritems():
+            if w.get_active():
+                f.add(k)
+
+        if len(f)==0:
+            self._cfg.operation.flags = ""
+        else:
+            self._cfg.operation.flags = '"'+'" "'.join(f)+'"'
+
         self._dialog.destroy()
         return True
 
     def on_b_Cancel_activate(self, widget, *args):
         print "on_b_Cancel_activate"
         self._dialog.destroy()
-        return True
-
-    def on_b_Flag_activate(self, widget, *args):
-        print "on_b_Flag_activate"
         return True
 
 class MainWindow(object):
@@ -227,8 +229,21 @@ class FlagList(object):
         self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"), "FlagList")
         self._window = self._glade.get_widget("FlagList")
         self._window.set_modal(True)
-        self._cb = CallbacksFlagList(self._window, cfg, flags)
+        self.flags = {}
+        self._cb = CallbacksFlagList(self._window, cfg, self.flags)
         self._glade.signal_autoconnect(self._cb)
+        fl_gui = self._glade.get_widget("box_flags")
+        flags_set = cfg.operation._list("flags")
+        for f in sorted(flags.known()):
+            b = gtk.CheckButton(label=f)
+            self.flags[f] = b
+            b.set_active(f in flags_set)
+            b.show()
+            fl_gui.pack_start(b, expand=False, fill=True)
+        l = gtk.Label("")
+        l.show()
+
+        fl_gui.pack_end(l, expand=True, fill=True)
 
 if __name__=="__main__":
     w = MainWindow(None, None, None)
