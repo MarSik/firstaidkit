@@ -316,7 +316,9 @@ Just fill the issue_tests list with classes describing the tests and let it run.
         """Prepare the issues list"""
         for i in self.issue_tests:
             self._reporting.info(level = TASK, origin = self, message = "Preparing tests for '%s'" % (i.name,))
-            self.tests.append(i(plugin = self))
+            issue = i(plugin = self)
+            self.tests.append(issue)
+            self._reporting.issue(level = TASK, origin = self, issue = issue)
         self._result=ReturnSuccess
 
     def diagnose(self):
@@ -327,6 +329,7 @@ Just fill the issue_tests list with classes describing the tests and let it run.
         for i in self.tests:
             self._reporting.info(level = TASK, origin = self, message = "Investigating '%s'" % (i.name,))
             result = result or i.detect()
+            self._reporting.issue(level = TASK, origin = self, issue = i)
             if i.happened():
                 happened = True
                 self._reporting.info(level = TASK, origin = self, message = i.str())
@@ -348,12 +351,14 @@ Just fill the issue_tests list with classes describing the tests and let it run.
         for i in self.tests:
             self._reporting.info(level = TASK, origin = self, message = "Fixing '%s'" % (i.name,))
             result = result or i.fix()
+            self._reporting.issue(level = TASK, origin = self, issue = i)
             if not i.fixed():
                 fixed = False
                 continue
 
             i.reset()
             if not i.detect() or i.happened():
+                self._reporting.issue(level = TASK, origin = self, issue = i)
                 fixed = False
 
         if result and fixed:

@@ -38,6 +38,7 @@ ALERT = 4
 EXCEPTION = 5
 TABLE = 6 #types for arbitrary table-like organized iterables
 TREE = 7  #nested iterables organized as tree
+ISSUE = 8  #New issue object was created or changed
 QUESTION = 999 #type of message which contains respond-to field
 END = 1000 #End of operations, final message
 
@@ -133,6 +134,10 @@ class Reports(object):
 
     def progress(self, position, maximum, level, origin, importance = logging.INFO):
         return self.put((position, maximum), level, origin, PROGRESS, importance = importance)
+
+    def issue(self, issue, level, origin, importance = logging.INFO):
+        Logger.debug(origin.name+": issue changed state to "+str(issue))
+        return self.put(issue, level, origin, INFO, importance = importance)
 
     def info(self, message, level, origin, importance = logging.INFO):
         Logger.info(origin.name+": "+message)

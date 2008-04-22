@@ -19,13 +19,48 @@
 # the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA
 # 02139, USA.
 
-class Issue(object):
+class SimpleIssue(object):
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
+        self.reset()
+
+    def reset(self):
+        """Reset the object's state"""
+        self._detected = False
+        self._happened = False
+        self._fixed = False
+
+    def __str__(self):
+        s = []
+        if self._fixed:
+            s.append("Fixed")
+        elif self._happened and self._detected:
+            s.append("Detected")
+        elif self._detected:
+            s.append("No problem with")
+        else:
+            s.append("Waiting for check on")
+
+        s.append(self.name)
+
+        if self._happened and self._detected:
+            s.append("--")
+            s.append(self.description)
+
+        return " ".join(s)
+
+    def str(self):
+        return self.__str__()
+
+class Issue(SimpleIssue):
     name = "Parent issue"
     description = "This happens when you use the wrong object in the issues list"
 
-    def __init__(self, plugin):
+    def __init__(self, plugin, reporting = None):
+        SimpleIssue.__init__(self, self.name, self.description)
         self._plugin = plugin
-        self.reset()
+        self._reporting = reporting
 
     def detect(self):
         """Detect if this situation happened and store some information about it, so we can fix it
@@ -79,32 +114,4 @@ Return values:
         else:
             #issue didn't happened or is fixed -> True
             return not self._happened or self._fixed
-
-    def reset(self):
-        """Reset the object's state"""
-        self._detected = False
-        self._happened = False
-        self._fixed = False
-
-    def __str__(self):
-        s = []
-        if self._fixed:
-            s.append("Fixed")
-        elif self._happened and self._detected:
-            s.append("Detected")
-        elif self._detected:
-            s.append("No problem with")
-        else:
-            s.append("Waiting for check on")
-
-        s.append(self.name)
-
-        if self._happened and self._detected:
-            s.append("--")
-            s.append(self.description)
-
-        return " ".join(s)
-
-    def str(self):
-        return self.__str__()
 
