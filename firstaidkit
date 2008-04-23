@@ -79,6 +79,9 @@ class Output(Thread):
                 if self._importance<=message["importance"]:
                     print "TREE %s FROM %s" % (message["title"], message["origin"].name,)
                     pprint.pprint(message["message"])
+            elif message["action"]==reporting.ISSUE:
+                print "ISSUE FROM %s" % (message["origin"].name,)
+                pprint.pprint(str(message["message"]))
             else:
                 print "FIXME: Unknown message action %d!!" % (message["action"],)
                 print message

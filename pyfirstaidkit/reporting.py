@@ -149,7 +149,7 @@ class Reports(object):
 
     def issue(self, issue, level, origin, importance = logging.INFO):
         Logger.debug(origin.name+": issue changed state to "+str(issue))
-        return self.put(issue, level, origin, INFO, importance = importance)
+        return self.put(issue, level, origin, ISSUE, importance = importance)
 
     def info(self, message, level, origin, importance = logging.INFO):
         Logger.info(origin.name+": "+message)

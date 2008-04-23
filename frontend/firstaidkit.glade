@@ -711,6 +711,7 @@
 			  <child>
 			    <widget class="GtkButton" id="b_StopResults">
 			      <property name="visible">True</property>
+			      <property name="sensitive">False</property>
 			      <property name="can_focus">True</property>
 			      <property name="label" translatable="yes">Stop</property>
 			      <property name="use_underline">True</property>

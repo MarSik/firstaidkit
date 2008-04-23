@@ -33,6 +33,7 @@ class Tasker:
 
     def __init__(self, cfg, reporting = None, dependencies = None, backups = None, pluginsystem = None):
         self._config = cfg
+        self._running = True
 
         if dependencies is None:
             self._provide = Dependencies()
@@ -53,6 +54,10 @@ class Tasker:
             self.pluginSystem = PluginSystem(reporting = self._reporting, dependencies = self._provide, backups = self._backups)
         else:
             self.pluginSystem = pluginsystem
+
+    def interrupt(self):
+        self._running = False
+        self._reporting.info("You sent an interrupt signal to Tasker! This is not recommended.", level = TASKER, origin = self, importance = logging.WARNING)
 
     def flags(self):
         return self._provide
@@ -105,7 +110,8 @@ class Tasker:
             oldlist = set()
             actlist = set(zip(pluginlist, flows))
 
-            while len(actlist)>0 and oldlist!=actlist:
+            self._running = True
+            while self._running and len(actlist)>0 and oldlist!=actlist:
                 oldlist = copy.copy(actlist)
                 for plugin,flow in oldlist:
                     #If plugin does not contain the automated flow or if it ran correctly, remove it from list

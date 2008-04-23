@@ -42,10 +42,11 @@ class CallbacksMainWindow(object):
         if not self._running_lock.acquire(0):
             return
 
-        def _o(pages):
+        def _o(pages, stopbutton):
             """Always return False -> remove from the idle queue after first execution"""
             for i in range(pages.get_n_pages()):
                 pages.get_nth_page(i).set_sensitive(True)
+            stopbutton.set_sensitive(False)
             return False
 
         def worker(*args):
@@ -58,7 +59,11 @@ class CallbacksMainWindow(object):
         self._data.pages.set_current_page(-1)
         for i in range(self._data.pages.get_n_pages())[:-1]:
             self._data.pages.get_nth_page(i).set_sensitive(False)
-        thread.start_new_thread(worker, (self._data.pages,))
+        self.on_b_ResetResults_activate(None)
+
+        stopbutton = self._glade.get_widget("b_StopResults")
+        stopbutton.set_sensitive(True)
+        thread.start_new_thread(worker, (self._data.pages, stopbutton))
 
     #menu callbacks
     def on_mainmenu_open_activate(self, widget, *args):
@@ -98,6 +103,7 @@ class CallbacksMainWindow(object):
         self._tasker.end()
         del self._tasker
         del self._cfg
+        del self._data.result_list_iter
         gtk.main_quit()
 
     def on_mainmenu_about_activate(self, widget, *args):
@@ -246,10 +252,14 @@ class CallbacksMainWindow(object):
     #results callbacks
     def on_b_ResetResults_activate(self, widget, *args):
         print "on_b_ResetResults_activate"
+        self._data.result_list_store.clear()
+        del self._data.result_list_iter
+        self._data.result_list_iter = dict()
         return True
 
     def on_b_StopResults_activate(self, widget, *args):
         print "on_b_StopResults_activate"
+        self._tasker.interrupt()
         return True
 
 class CallbacksFlagList(object):
@@ -358,6 +368,7 @@ class MainWindow(object):
         self.plugin_iter = {}
         self.flow_list_data = set()
 
+        #flow combobox
         for plname in pluginsystem.list():
             p = pluginsystem.getplugin(plname)
             piter = self.plugin_list_store.append(None, [False, "%s (%s)" % (p.name, p.version), p.description, ""])
@@ -379,11 +390,74 @@ class MainWindow(object):
         self.flow_list.add_attribute(self.flow_list_rend_text, 'text', 0)
         self.flow_list.set_active(self.flow_list_store_diagnose)
 
+        # results
+        self.result_list_store = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_INT)
+        self.result_list = self._glade.get_widget("tree_Results")
+        self.result_list.set_model(self.result_list_store)
+        self.result_list_iter = {}
+        
+        def result_rend_text_func(column, cell_renderer, tree_model, iter, user_data):
+            colors = [
+                    gtk.gdk.Color(red=50000, green=50000, blue=50000),
+                    gtk.gdk.Color(red=10000, green=50000, blue=10000),
+                    gtk.gdk.Color(red=50000, green=10000, blue=10000),
+                    gtk.gdk.Color(red=10000, green=10000, blue=50000)
+                    ]
+            state = tree_model.get_value(iter, 3)
+
+            cell_renderer.set_property("cell-background-set", True)
+            cell_renderer.set_property("cell-background-gdk", colors[state])
+
+            if user_data==2 and state!=2:
+                cell_renderer.set_property("foreground-set", True)
+                cell_renderer.set_property("foreground-gdk", gtk.gdk.Color(red=40000, green=40000, blue=40000))
+            else:
+                cell_renderer.set_property("foreground-set", False)
+
+            cell_renderer.set_property("text", tree_model.get_value(iter, user_data))
+            return
+        
+        self.result_rend_text = gtk.CellRendererText()
+        
+        self.result_list_col_0 = gtk.TreeViewColumn('Name')
+        self.result_list_col_0.pack_start(self.result_rend_text, True)
+        self.result_list_col_0.set_cell_data_func(self.result_rend_text, result_rend_text_func, 0)
+
+        self.result_list_col_1 = gtk.TreeViewColumn('Status')
+        self.result_list_col_1.pack_start(self.result_rend_text, True)
+        self.result_list_col_1.set_cell_data_func(self.result_rend_text, result_rend_text_func, 1)
+
+        self.result_list_col_2 = gtk.TreeViewColumn('Description')
+        self.result_list_col_2.pack_start(self.result_rend_text, True)
+        self.result_list_col_2.set_cell_data_func(self.result_rend_text, result_rend_text_func, 2)
+
+        self.result_list_col_3 = gtk.TreeViewColumn('Status ID')
+        self.result_list_col_3.pack_start(self.result_rend_text, True)
+        self.result_list_col_3.add_attribute(self.result_rend_text, 'text', 3)
+        self.result_list_col_3.set_property("visible", False)
+
+        self.result_list.append_column(self.result_list_col_0)
+        self.result_list.append_column(self.result_list_col_1)
+        self.result_list.append_column(self.result_list_col_2)
+        self.result_list.append_column(self.result_list_col_3)
+        self.result_list.set_search_column(0)
+
     def update(self, message):
         def _o(func, *args, **kwargs):
             """Always return False -> remove from the idle queue after first execution"""
             func(*args, **kwargs)
             return False
+
+        def issue_state(self):
+            if self._fixed:
+                return ("Fixed", 3)
+            elif self._happened and self._detected:
+                return ("Detected", 2)
+            elif self._detected:
+                return ("No problem", 1)
+            else:
+                return ("Waiting for check", 0)
+
 
         if self._cfg.operation.verbose == "True":
             self._importance = logging.DEBUG
@@ -430,6 +504,14 @@ class MainWindow(object):
             if self._importance<=message["importance"]:
                 print "TREE %s FROM %s" % (message["title"], message["origin"].name,)
                 pprint.pprint(message["message"])
+        elif message["action"]==reporting.ISSUE:
+                i = message["message"]
+                t,ids = issue_state(i)
+                if not self.result_list_iter.has_key(i):
+                    self.result_list_iter[i] = self.result_list_store.append([i.name, t, i.description, ids])
+                else:
+                    for idx,val in enumerate([i.name, t, i.description, ids]):
+                        gobject.idle_add(_o, self.result_list_store.set, self.result_list_iter[i], idx, val)
         else:
             print "FIXME: Unknown message action %d!!" % (message["action"],)
             print message
