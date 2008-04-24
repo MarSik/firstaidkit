@@ -44,6 +44,7 @@ Requires:       %{name}-plugin-passwd
 Requires:       %{name}-plugin-xserver
 Requires:       %{name}-plugin-grub
 Requires:       %{name}-plugin-rpm
+Requires:       %{name}-gui
 
 
 %description plugin-all
@@ -102,6 +103,15 @@ Requires:       rpm, rpm-python
 This FirstAidKit plugin automates the tasks related to RPM problems.
 For example: corrupted database or important system packages missing.
 
+%package gui
+Group:          Applications/System
+Summary:        FirstAidKit GUI
+Requires:       %{name} = %{version}-%{release}
+Requires:       pygtk2>=2.6
+
+%description gui
+This package contains the Gtk based FirstAidKit GUI
+
 %prep
 %setup -q
 
@@ -118,22 +128,27 @@ For example: corrupted database or important system packages missing.
 %{__install} -d $RPM_BUILD_ROOT%{_mandir}/man1
 %{__install} -p doc/fakplugin.1 doc/firstaidkit.1 $RPM_BUILD_ROOT%{_mandir}/man1
 #examples
-%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/examples
-%{__mv} -f plugins/plugin_examples $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/examples
+%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/examples
+%{__mv} -f plugins/plugin_examples $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/examples
 #configuration
 %{__install} -d $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
 %{__install} -p etc/firstaidkit/firstaidkit.conf $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
+#gui
+%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend
+%{__install} -p frontend/*.py  $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend/
+%{__install} -p frontend/*.glade  $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend/
+%{__install} -p frontend/*.gladep  $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend/
 
 #plugins
-%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_undelete_partitions
-%{__cp} -f plugins/plugin_undelete_partitions/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_undelete_partitions/
-%{__cp} -f plugins/passwd.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/
-%{__cp} -f plugins/xserver.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/
-%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm
-%{__cp} -f plugins/plugin_rpm/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm/
-%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm_lowlevel
-%{__cp} -f plugins/plugin_rpm_lowlevel/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/plugin_rpm_lowlevel/
-%{__cp} -f plugins/plugin_grub.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit-plugins/
+%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/plugin_undelete_partitions
+%{__cp} -f plugins/plugin_undelete_partitions/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/plugin_undelete_partitions/
+%{__cp} -f plugins/passwd.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
+%{__cp} -f plugins/xserver.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
+%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/plugin_rpm
+%{__cp} -f plugins/plugin_rpm/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/plugin_rpm/
+%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/plugin_rpm_lowlevel
+%{__cp} -f plugins/plugin_rpm_lowlevel/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/plugin_rpm_lowlevel/
+%{__cp} -f plugins/plugin_grub.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
 %{__install} -p etc/firstaidkit/firstaidkit-plugin-grub $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
 
 
@@ -150,28 +165,33 @@ For example: corrupted database or important system packages missing.
 %{_sysconfdir}/firstaidkit/firstaidkit.conf
 %attr(0644,root,root) %{_mandir}/man1/firstaidkit.1.gz
 
+%files gui
+%{_libdir}/firstaidkit/frontend/*.py
+%{_libdir}/firstaidkit/frontend/*.glade
+%{_libdir}/firstaidkit/frontend/*.gladep
+
 %files devel
-%{_libdir}/firstaidkit-plugins/examples
+%{_libdir}/firstaidkit/plugins/examples
 %attr(0644,root,root) %{_mandir}/man1/fakplugin.1.gz
 
 %files plugin-all
 
 %files plugin-undelete-partitions
-%{_libdir}/firstaidkit-plugins/plugin_undelete_partitions/*.py
-%{_libdir}/firstaidkit-plugins/plugin_undelete_partitions/*.so
+%{_libdir}/firstaidkit/plugins/plugin_undelete_partitions/*.py
+%{_libdir}/firstaidkit/plugins/plugin_undelete_partitions/*.so
 
 %files plugin-passwd
-%{_libdir}/firstaidkit-plugins/passwd.py
+%{_libdir}/firstaidkit/plugins/passwd.py
 
 %files plugin-xserver
-%{_libdir}/firstaidkit-plugins/xserver.py
+%{_libdir}/firstaidkit/plugins/xserver.py
 
 %files plugin-rpm
-%{_libdir}/firstaidkit-plugins/plugin_rpm_lowlevel/*.py
-%{_libdir}/firstaidkit-plugins/plugin_rpm/*.py
+%{_libdir}/firstaidkit/plugins/plugin_rpm_lowlevel/*.py
+%{_libdir}/firstaidkit/plugins/plugin_rpm/*.py
 
 %files plugin-grub
-%{_libdir}/firstaidkit-plugins/plugin_grub.py
+%{_libdir}/firstaidkit/plugins/plugin_grub.py
 %{_sysconfdir}/firstaidkit/firstaidkit-plugin-grub
 
 

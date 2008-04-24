@@ -51,12 +51,15 @@ def createDefaultConfig(config):
     # Set the directory containing cfg bits for different services/packages
     config.system.configuration = "/etc/firstaidkit"
 
+    # Frontend modules are in specified directory
+    config.system.frontend = "/usr/lib/firstaidkit/frontend"
+
     #
     # There will be 4 default places where FAK will look for plugins,  these 4 names
     # will be reserved in the configuration.  lib{,64}-firstaidkit-{,examples}
     #
     config.add_section("paths")
-    for dir in ["firstaidkit-plugins", "firstaidkit-plugins/examples"]:
+    for dir in ["firstaidkit/plugins", "firstaidkit/plugins/examples"]:
         for root in [ "usr/lib64", "usr/lib"]:
             if os.path.exists( "/%s/%s" % (root,dir)):
                 config.set( "paths",  "%s/%s"%(dir[5:], root),"/%s/%s" %(root, dir) )

@@ -28,13 +28,6 @@ class Flags:
     main_help = False
     gui_available = False
 
-try:
-    import frontend.main
-    MainWindow = frontend.main.MainWindow
-    Flags.gui_available = True
-except:
-    Flags.gui_available = False
-
 
 class Output(Thread):
     def __init__(self, queue, importance = logging.INFO, *args, **kwargs):
@@ -97,7 +90,7 @@ class Output(Thread):
 class GuiOutput(Thread):
     def __init__(self, cfg, tasker, importance = logging.INFO, *args, **kwargs):
         Thread.__init__(self, *args, **kwargs)
-        self.w = MainWindow(cfg, tasker, importance = importance, dir="frontend")
+        self.w = MainWindow(cfg, tasker, importance = importance, dir=cfg.system.frontend)
 
     def run(self):
         self.w.run()
@@ -218,6 +211,16 @@ if __name__=="__main__":
     if Flags.print_config:
         Config.write(sys.stdout)
         sys.exit(0)
+
+    #Add the frontend path to sys.path
+    sys.path.insert(1, Config.system.frontend)
+
+    try:
+        import frontend_gtk
+        MainWindow = frontend_gtk.MainWindow
+        Flags.gui_available = True
+    except:
+        Flags.gui_available = False
 
     # initialize log for plugin system.
     initLogger(Config)
