@@ -88,9 +88,9 @@ class Output(Thread):
 
 
 class GuiOutput(Thread):
-    def __init__(self, cfg, tasker, importance = logging.INFO, *args, **kwargs):
+    def __init__(self, cfg, tasker, dir, importance = logging.INFO, *args, **kwargs):
         Thread.__init__(self, *args, **kwargs)
-        self.w = MainWindow(cfg, tasker, importance = importance, dir=cfg.system.frontend)
+        self.w = MainWindow(cfg, tasker, importance = importance, dir=dir)
 
     def run(self):
         self.w.run()
@@ -237,11 +237,11 @@ if __name__=="__main__":
     if Config.operation.verbose=="False":
         outputThread = Output(singlerun.reporting())
         if Config.operation.gui=="gui":
-            outputThreadGui = GuiOutput(Config, singlerun)
+            outputThreadGui = GuiOutput(Config, singlerun, dir = os.path.dirname(frontend_gtk.__file__))
     else:
         outputThread = Output(singlerun.reporting(), importance = 0)
         if Config.operation.gui=="gui":
-            outputThreadGui = GuiOutput(Config, singlerun, importance = 0)
+            outputThreadGui = GuiOutput(Config, singlerun, importance = 0,  dir = os.path.dirname(frontend_gtk.__file__))
 
     if Config.operation.gui=="gui":
         singlerun.reporting().notify(outputThreadGui.w.update)
