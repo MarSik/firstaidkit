@@ -27,7 +27,7 @@ import weakref
 class BackupException(Exception):
     pass
 
-class BackupStoreIterface(object):
+class BackupStoreInterface(object):
     class Backup:
         def __init__(self, id):
             raise NotImplemented()
@@ -61,10 +61,10 @@ class BackupStoreIterface(object):
     def __del__(self):
         raise NotImplemented()
 
-class FileBackupStore(BackupStoreIterface):
+class FileBackupStore(BackupStoreInterface):
     _singleton = None
 
-    class Backup(BackupStoreIterface.Backup):
+    class Backup(BackupStoreInterface.Backup):
         def __init__(self, id, path):
             self._id = id
             self._path = path
