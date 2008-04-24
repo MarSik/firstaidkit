@@ -213,7 +213,8 @@ if __name__=="__main__":
         sys.exit(0)
 
     #Add the frontend path to sys.path
-    sys.path.insert(1, Config.system.frontend)
+    for idx,p in enumerate(Config.system._list("frontend")):
+        sys.path.insert(1+idx, p)
 
     try:
         import frontend_gtk
