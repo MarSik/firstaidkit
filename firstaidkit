@@ -23,11 +23,18 @@ from pyfirstaidkit import Config
 from pyfirstaidkit import reporting
 from pyfirstaidkit import initLogger
 
-from frontend.main import MainWindow
-
 class Flags:
     print_config = False
     main_help = False
+    gui_available = False
+
+try:
+    import frontend.main
+    MainWindow = frontend.main.MainWindow
+    Flags.gui_available = True
+except:
+    Flags.gui_available = False
+
 
 class Output(Thread):
     def __init__(self, queue, importance = logging.INFO, *args, **kwargs):
@@ -219,6 +226,10 @@ if __name__=="__main__":
     singlerun = Tasker(Config, reporting = report)
     
     # TUI/GUI init
+    if not Flags.gui_available and Config.operation.gui=="gui":
+        print "GUI mode not available"
+        Config.operation.gui="console"
+
     if Config.operation.verbose=="False":
         outputThread = Output(singlerun.reporting())
         if Config.operation.gui=="gui":
