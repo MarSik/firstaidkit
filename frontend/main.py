@@ -203,6 +203,17 @@ class CallbacksMainWindow(object):
 
     def on_b_InfoExpert_activate(self, widget, *args):
         print "on_b_InfoExpert_activate"
+        
+        path,focus = self._data.plugin_list.get_cursor()
+        if path is None:
+            return True
+
+        iter = self._data.plugin_list_store.get_iter(path)
+        pluginname = self._data.plugin_list_store.get_value(iter, 4)
+        print "Selected: ", pluginname
+
+        PluginInfo(self._tasker.pluginsystem().getplugin(pluginname), dir = os.path.dirname(self._glade.relative_file(".")))
+
         return True
 
     def on_b_StartExpert_activate(self, widget, *args):
@@ -303,7 +314,7 @@ class MainWindow(object):
         self.status_text = self._glade.get_widget("status_text")
         self.status_progress = self._glade.get_widget("status_progress")
 
-        self.plugin_list_store = gtk.TreeStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_STRING)
+        self.plugin_list_store = gtk.TreeStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_STRING)
         self.plugin_list = self._glade.get_widget("tree_Expert")
         self.plugin_list.set_model(self.plugin_list_store)
 
@@ -371,10 +382,10 @@ class MainWindow(object):
         #flow combobox
         for plname in pluginsystem.list():
             p = pluginsystem.getplugin(plname)
-            piter = self.plugin_list_store.append(None, [False, "%s (%s)" % (p.name, p.version), p.description, ""])
+            piter = self.plugin_list_store.append(None, [False, "%s (%s)" % (p.name, p.version), p.description, "", plname])
             self.plugin_iter[plname] = piter
             for n,d in [ (f, p.getFlow(f).description) for f in p.getFlows() ]:
-                self.plugin_list_store.append(piter, [False, n, d, ""])
+                self.plugin_list_store.append(piter, [False, n, d, "", plname])
                 self.flow_list_data.add(n)
 
         self.flow_list_rend_text = gtk.CellRendererText()
@@ -540,6 +551,54 @@ class FlagList(object):
         l.show()
 
         fl_gui.pack_end(l, expand=True, fill=True)
+
+class PluginInfo(object):
+    def close(self, widget):
+        self._window.destroy()
+
+    def __init__(self, plugin, dir=""):
+        self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"), "PluginInfo")
+        self._window = self._glade.get_widget("PluginInfo")
+        self._window.set_modal(True)
+        self._window.set_title(self._window.get_title()+plugin.name)
+
+        self._close = self._glade.get_widget("CloseButton")
+        self._close.connect("clicked", self.close)
+        
+        self._name = self._glade.get_widget("Info_name")
+        self._name.set_label(plugin.name)
+
+        self._version = self._glade.get_widget("Info_version")
+        self._version.set_label(plugin.version)
+
+        self._author = self._glade.get_widget("Info_author")
+        self._author.set_label(plugin.author)
+
+        self._description = self._glade.get_widget("Info_description")
+        self._description.set_label(plugin.description)
+        
+        self._table = self._glade.get_widget("Table")
+
+        for n,d in [ (f, plugin.getFlow(f).description) for f in plugin.getFlows() ]:
+            if n==plugin.default_flow:
+                lname = gtk.Label("<b>"+n+"</b>")
+                lname.set_property("use-markup", True)
+            else:
+                lname = gtk.Label(n)
+            lname.show()
+            ldesc = gtk.Label(d)
+            ldesc.show()
+            ldesc.set_line_wrap(True)
+
+            sy = self._table.get_property("n-rows")
+            sx = self._table.get_property("n-columns")
+            sy += 1
+            self._table.resize(sy, sx)
+            self._table.attach(lname, 0, 1, sy-1, sy, yoptions = gtk.FILL, xoptions = gtk.FILL)
+            lname.set_alignment(0, 0)
+            self._table.attach(ldesc, 1, 2, sy-1, sy, yoptions = gtk.FILL, xoptions = gtk.FILL)
+            ldesc.set_alignment(0, 0)
+
 
 if __name__=="__main__":
     w = MainWindow(None, None, None)
