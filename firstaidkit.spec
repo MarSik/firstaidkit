@@ -114,25 +114,30 @@ This package contains the Gtk based FirstAidKit GUI
 
 %prep
 %setup -q
-
+#generate the about file with version and license path
+echo "version=%{version}-%{release}" >> etc/firstaidkit/about
+echo "copying=%{_docdir}/COPYING" >> etc/firstaidkit/about
 
 %build
 %{__python} setup.py build
 %{__make} subdirs
 
-
 %install
 %{__rm} -rf $RPM_BUILD_ROOT
 %{__python} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
+
 #docs
 %{__install} -d $RPM_BUILD_ROOT%{_mandir}/man1
 %{__install} -p doc/fakplugin.1 doc/firstaidkit.1 $RPM_BUILD_ROOT%{_mandir}/man1
 #examples
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/examples
 %{__mv} -f plugins/plugin_examples $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/examples
+
 #configuration
 %{__install} -d $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
 %{__install} -p etc/firstaidkit/firstaidkit.conf $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
+%{__install} -p etc/firstaidkit/about $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
+
 #gui
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend
 %{__install} -p frontend/*.py  $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend/
@@ -157,12 +162,13 @@ This package contains the Gtk based FirstAidKit GUI
 
 %files
 %defattr(-,root,root,-)
-%doc AUTHORS COPYING doc/README
+%doc AUTHORS COPYING doc/README doc/FLAGS
 # For noarch packages: sitelib
 %{python_sitelib}/pyfirstaidkit
 %{python_sitelib}/%{name}-%{version}-py2.5.egg-info
 %{_bindir}/firstaidkit
 %{_sysconfdir}/firstaidkit/firstaidkit.conf
+%{_sysconfdir}/firstaidkit/about
 %attr(0644,root,root) %{_mandir}/man1/firstaidkit.1.gz
 
 %files gui
