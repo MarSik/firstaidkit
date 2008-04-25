@@ -115,7 +115,7 @@ This package contains the Gtk based FirstAidKit GUI
 %prep
 %setup -q
 #generate the about file with version and license path
-echo "version=%{version}-%{release}" >> etc/firstaidkit/about
+echo "version=%{version}" >> etc/firstaidkit/about
 echo "copying=%{_docdir}/COPYING" >> etc/firstaidkit/about
 
 %build
