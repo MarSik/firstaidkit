@@ -1396,4 +1396,18 @@
   </child>
 </widget>
 
+<widget class="GtkAboutDialog" id="AboutDialog">
+  <property name="border_width">5</property>
+  <property name="visible">True</property>
+  <property name="destroy_with_parent">True</property>
+  <property name="name" translatable="yes">FirstAidKit</property>
+  <property name="copyright" translatable="yes">(c) Red Hat 2008</property>
+  <property name="license" translatable="yes"></property>
+  <property name="wrap_license">False</property>
+  <property name="website">http://fedorahosted.org/firstaidkit</property>
+  <property name="authors">Martin Sivak &lt;msivak@redhat.com&gt;
+Joel Andres Granados &lt;jgranado@redhat.com&gt;</property>
+  <property name="translator_credits" translatable="yes" comments="TRANSLATORS: Replace this string with your names, one name per line.">translator-credits</property>
+</widget>
+
 </glade-interface>

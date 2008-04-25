@@ -108,6 +108,7 @@ class CallbacksMainWindow(object):
 
     def on_mainmenu_about_activate(self, widget, *args):
         print "on_mainmenu_about_activate"
+        AboutDialog(self._cfg, dir = os.path.dirname(self._glade.relative_file(".")))
         return True
 
     #simple mode callbacks
@@ -551,6 +552,29 @@ class FlagList(object):
         l.show()
 
         fl_gui.pack_end(l, expand=True, fill=True)
+
+class AboutDialog(object):
+    def close(self, widget, *args):
+        self._window.destroy()
+
+    def __init__(self, cfg, dir=""):
+        self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"), "AboutDialog")
+        self._window = self._glade.get_widget("AboutDialog")
+        self._window.connect("response", self.close)
+
+        try:
+            cfg = cfg.getConfigBits("about")
+            version = cfg.DEFAULT.version
+            license = cfg.DEFAULT.copying
+        except:
+            version = "development"
+            license = os.path.join(os.path.dirname(dir), "COPYING")
+
+        self._window.set_version(version)
+        try:
+            self._window.set_license(open(license, "r").read())
+        except IOError:
+            self._window.set_license(None)
 
 class PluginInfo(object):
     def close(self, widget):
