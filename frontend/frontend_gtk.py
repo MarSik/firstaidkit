@@ -564,8 +564,8 @@ class AboutDialog(object):
 
         try:
             cfg = cfg.getConfigBits("about")
-            version = cfg.DEFAULT.version
-            license = cfg.DEFAULT.copying
+            version = cfg.about.version
+            license = cfg.about.copying
         except:
             version = "development"
             license = os.path.join(os.path.dirname(dir), "COPYING")
