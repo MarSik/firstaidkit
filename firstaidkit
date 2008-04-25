@@ -203,10 +203,6 @@ if __name__=="__main__":
     elif Config.operation.mode == "task":
         Config.operation.plugin = rest[0]
         Config.operation.task = rest[1]
-    elif Config.operation.mode == "":
-        print "\nError in command arguments: no mode specified\n"
-        usage(sys.argv[0])
-        sys.exit(1)
 
     if Flags.print_config:
         Config.write(sys.stdout)
@@ -223,17 +219,23 @@ if __name__=="__main__":
     except:
         Flags.gui_available = False
 
+    # TUI/GUI detection
+    if not Flags.gui_available and Config.operation.gui=="gui":
+        print "GUI mode not available"
+        Config.operation.gui="console"
+
+    # TUI has to have operation specified
+    if Config.operation.mode == "" and Config.operation.gui!="gui":
+        print "\nError in command arguments: no mode specified\n"
+        usage(sys.argv[0])
+        sys.exit(1)
+
     # initialize log for plugin system.
     initLogger(Config)
 
     report = reporting.Reports(maxsize = 1, round = True)
     singlerun = Tasker(Config, reporting = report)
     
-    # TUI/GUI init
-    if not Flags.gui_available and Config.operation.gui=="gui":
-        print "GUI mode not available"
-        Config.operation.gui="console"
-
     if Config.operation.verbose=="False":
         outputThread = Output(singlerun.reporting())
         if Config.operation.gui=="gui":
