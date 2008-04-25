@@ -125,7 +125,8 @@ class FAKConfigMixIn(object):
         self.__dict__["_lock"] = False
 
 class FAKConfig(ConfigParser.SafeConfigParser, FAKConfigMixIn):
-    pass
+    def getConfigBits(self, name):
+        return getConfigBits(name, cfg = self)
 
 Config = FAKConfig()
 createDefaultConfig(Config)
