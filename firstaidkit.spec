@@ -114,6 +114,9 @@ This package contains the Gtk based FirstAidKit GUI
 
 %prep
 %setup -q
+#generate the about file with version and license path
+echo "version=%{version}" >> etc/firstaidkit/about
+echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 
 %build
 %{__python} setup.py build
@@ -133,10 +136,7 @@ This package contains the Gtk based FirstAidKit GUI
 #configuration
 %{__install} -d $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
 %{__install} -p etc/firstaidkit/firstaidkit.conf $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
-
-#generate the about file with version and license path
-echo "version=%{version}" >> $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit/about
-echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit/about
+%{__install} -p etc/firstaidkit/about $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
 
 #gui
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend
