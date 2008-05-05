@@ -413,7 +413,7 @@ class MainWindow(object):
                     gtk.gdk.Color(red=50000, green=50000, blue=50000),
                     gtk.gdk.Color(red=10000, green=50000, blue=10000),
                     gtk.gdk.Color(red=50000, green=10000, blue=10000),
-                    gtk.gdk.Color(red=10000, green=10000, blue=50000)
+                    gtk.gdk.Color(red=30000, green=45000, blue=65500)
                     ]
             state = tree_model.get_value(iter, 3)
 
