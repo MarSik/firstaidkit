@@ -31,6 +31,17 @@ class SimpleIssue(object):
         self._happened = False
         self._fixed = False
 
+    def set(self, happened = None, fixed = None, detected = None, reporting = None, **kwreportingargs):
+        """Set the state of this issue and send a report (if reporting is not None)"""
+        if happened:
+            self._happened = happened
+        if fixed:
+            self._fixed = fixed
+        if detected:
+            self._detected = detected
+        if reporting:
+            reporting.issue(issue = self, **kwreportingargs)
+
     def happened(self):
         """Get the 'issue happened' flag.
 Return values:
