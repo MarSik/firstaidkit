@@ -17,6 +17,8 @@
 
 from pyfirstaidkit.plugins import Plugin,Flow
 from pyfirstaidkit.returns import *
+from pyfirstaidkit.reporting import PLUGIN
+from pyfirstaidkit.issue import SimpleIssue
 
 class Sample1Plugin(Plugin):
     """This plugin uses the predefined flow in the Plugin abstract class."""
@@ -25,9 +27,11 @@ class Sample1Plugin(Plugin):
     author = "Joel Andres Granados"
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
+        self._issue = SimpleIssue(self.name, self.description)
 
     def prepare(self):
         self._result=ReturnSuccess
+        self._issue.set(detected = False, reporting = self._reporting, origin = self, level = PLUGIN)
 
     def backup(self):
         self._result=ReturnSuccess
@@ -38,9 +42,11 @@ class Sample1Plugin(Plugin):
     def diagnose(self):
         self._result=ReturnSuccess
         self.provide("sample_dependency")
+        self._issue.set(detected = True, happened = False, reporting = self._reporting, origin = self, level = PLUGIN)
 
     def fix(self):
         self._result=ReturnFailure
+        self._issue.set(fixed = False, reporting = self._reporting, origin = self, level = PLUGIN)
 
     def clean(self):
         self._result=ReturnSuccess

@@ -19,6 +19,7 @@ from pyfirstaidkit.plugins import Plugin,Flow
 from pyfirstaidkit.returns import *
 from pyfirstaidkit.utils import *
 from pyfirstaidkit.reporting import PLUGIN
+from pyfirstaidkit.issue import SimpleIssue
 from pyfirstaidkit import Config
 
 import rhpxl.xserver
@@ -42,10 +43,12 @@ class Xserver(Plugin):
         # Arbitrary test display
         self.display = ":10"
         self.confPath = "/etc/X11/xorg.conf"
+        self._issue = SimpleIssue(self.name, "X server didn't start")
 
     def prepare(self):
         # Nothing to prepare really.
         self._result = ReturnSuccess
+        self._issue.set(reporting = self._reporting, level = PLUGIN, origin = self)
 
     # If we cant start the server 
     def diagnose(self):
@@ -55,6 +58,7 @@ class Xserver(Plugin):
         else:
             self._reporting.info("X server is missconfigured.", level = PLUGIN, origin = self)
             self._result = ReturnFailure
+        self._issue.set(detected = True, happened = (self._result == ReturnFailure), reporting = self._reporting, level = PLUGIN, origin = self)
 
     # FIXME:Must change this when the backup utils is done.
     def backup(self):
@@ -89,6 +93,7 @@ class Xserver(Plugin):
         else:
             self._reporting.info("X server is still missconfigured with new file.", level = PLUGIN, origin = self)
             self._result = ReturnFailure
+        self._issue.set(fixed = (self._result == ReturnSuccess), reporting = self._reporting, level = PLUGIN, origin = self)
 
     def restore(self):
         if os.path.isfile("%s.FAK-backup"%self.confPath):

@@ -17,6 +17,8 @@
 
 from pyfirstaidkit.plugins import Plugin,Flow
 from pyfirstaidkit.returns import *
+from pyfirstaidkit.issue import SimpleIssue
+from pyfirstaidkit.reporting import PLUGIN
 
 class Sample2Plugin(Plugin):
     """This plugin will defin one more function and use it in a newly defined fix flow."""
@@ -41,8 +43,10 @@ class Sample2Plugin(Plugin):
 
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
+        self._issue = SimpleIssue(self.name, self.description)
 
     def prepare(self):
+        self._issue.set(reporting  = self._reporting, origin = self, level = PLUGIN)
         self._result=ReturnSuccess
 
     def clean(self):
@@ -55,9 +59,11 @@ class Sample2Plugin(Plugin):
         self._result=ReturnSuccess
 
     def diagnose(self):
+        self._issue.set(detected = True, happened = True, reporting  = self._reporting, origin = self, level = PLUGIN)
         self._result=ReturnFailure
 
     def fix(self):
+        self._issue.set(fixed = True, reporting  = self._reporting, origin = self, level = PLUGIN)
         self._result=ReturnSuccess
 
     def extraStep(self):

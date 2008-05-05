@@ -18,6 +18,8 @@
 from pyfirstaidkit.returns import *
 from pyfirstaidkit.plugins import Plugin,Flow
 from pyfirstaidkit import Config
+from pyfirstaidkit.issue import SimpleIssue
+from pyfirstaidkit.reporting import PLUGIN
 import subprocess
 
 class Sample3Plugin(Plugin):
@@ -28,9 +30,11 @@ class Sample3Plugin(Plugin):
 
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self,  *args, **kwargs)
+        self._issue = SimpleIssue(self.name, self.description)
 
     def prepare(self):
         # Prepare command line.
+        self._issue.set(detected = False, reporting  = self._reporting, origin = self, level = PLUGIN)
         prepare = [self._path + "/plugin", "--task", "prepare"]
         proc = subprocess.Popen(prepare, stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
@@ -79,6 +83,7 @@ class Sample3Plugin(Plugin):
             self._result=ReturnFailure
         elif out[-4:] == "true":
             self._result=ReturnSuccess
+        self._issue.set(detected = True, happened = (self._result==ReturnFailure), reporting  = self._reporting, origin = self, level = PLUGIN)
 
     def fix(self):
         fix = [self._path+"/plugin", "--task", "fix"]
@@ -89,3 +94,5 @@ class Sample3Plugin(Plugin):
             self._result=ReturnFailure
         elif out[-4:] == "true":
             self._result=ReturnSuccess
+        self._issue.set(fixed = (self._result==ReturnSuccess), reporting  = self._reporting, origin = self, level = PLUGIN)
+
