@@ -1,6 +1,6 @@
 This file describes all flags you can use as dependencies in plugins.
 The general structure of flag name is category_subsystem_part_lowerpart_...
-For every level of the hierarchy should exist FlagTrackerPlugin which byl set the master flags, when everything is OK.
+For every level of the hierarchy should exist FlagTrackerPlugin which will set the master flags, when everything is OK.
 
 experimental
   Flag denoting plugin as experimental and not to be run except in testing environment and by advanced users.
