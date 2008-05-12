@@ -34,7 +34,7 @@ class Sample3Plugin(Plugin):
 
     def prepare(self):
         # Prepare command line.
-        self._issue.set(detected = False, reporting  = self._reporting, origin = self, level = PLUGIN)
+        self._issue.set(checked = False, reporting  = self._reporting, origin = self, level = PLUGIN)
         prepare = [self._path + "/plugin", "--task", "prepare"]
         proc = subprocess.Popen(prepare, stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
@@ -83,7 +83,7 @@ class Sample3Plugin(Plugin):
             self._result=ReturnFailure
         elif out[-4:] == "true":
             self._result=ReturnSuccess
-        self._issue.set(detected = True, happened = (self._result==ReturnFailure), reporting  = self._reporting, origin = self, level = PLUGIN)
+        self._issue.set(checked = True, happened = (self._result==ReturnFailure), reporting  = self._reporting, origin = self, level = PLUGIN)
 
     def fix(self):
         fix = [self._path+"/plugin", "--task", "fix"]

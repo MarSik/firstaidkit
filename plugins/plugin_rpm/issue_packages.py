@@ -52,7 +52,7 @@ class RequiredPackages(Issue):
         else:
             self._happened = False
 
-        self._detected = True
+        self._checked = True
         return True
 
     def fix(self):

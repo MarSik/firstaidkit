@@ -498,7 +498,7 @@ class PluginSystem(object):
         if plugin in self._plugins.keys():
             pklass = self._plugins[plugin].get_plugin() #get top level class of plugin
         else:
-            self._reporting.exception(message = "Plugin %s was not detected" % plugin,
+            self._reporting.exception(message = "Plugin %s was not checked" % plugin,
                     level = PLUGINSYSTEM, origin = self)
             self._reporting.stop(level = PLUGIN, origin = self, message = plugin)
             raise InvalidPluginNameException(plugin)

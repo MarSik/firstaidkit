@@ -81,7 +81,7 @@ class Xserver(Plugin):
         else:
             self._reporting.info("X server is missconfigured.", level = PLUGIN, origin = self)
             self._result = ReturnFailure
-        self._issue.set(detected = True, happened = (self._result == ReturnFailure), reporting = self._reporting, level = PLUGIN, origin = self)
+        self._issue.set(checked = True, happened = (self._result == ReturnFailure), reporting = self._reporting, level = PLUGIN, origin = self)
 
     def diagnose2(self):
         """Just a diagnose without the lock check"""
@@ -99,7 +99,7 @@ class Xserver(Plugin):
         else:
             self._reporting.info("X server is missconfigured.", level = PLUGIN, origin = self)
             self._result = ReturnFailure
-        self._issue.set(detected = True, happened = (self._result == ReturnFailure), reporting = self._reporting, level = PLUGIN, origin = self)
+        self._issue.set(checked = True, happened = (self._result == ReturnFailure), reporting = self._reporting, level = PLUGIN, origin = self)
 
 
 

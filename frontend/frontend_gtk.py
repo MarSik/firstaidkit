@@ -463,9 +463,9 @@ class MainWindow(object):
         def issue_state(self):
             if self._fixed:
                 return ("Fixed", 3)
-            elif self._happened and self._detected:
+            elif self._happened and self._checked:
                 return ("Detected", 2)
-            elif self._detected:
+            elif self._checked:
                 return ("No problem", 1)
             else:
                 return ("Waiting for check", 0)

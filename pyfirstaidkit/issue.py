@@ -27,18 +27,18 @@ class SimpleIssue(object):
 
     def reset(self):
         """Reset the object's state"""
-        self._detected = False
+        self._checked = False
         self._happened = False
         self._fixed = False
 
-    def set(self, happened = None, fixed = None, detected = None, reporting = None, **kwreportingargs):
+    def set(self, happened = None, fixed = None, checked = None, reporting = None, **kwreportingargs):
         """Set the state of this issue and send a report (if reporting is not None)"""
         if happened:
             self._happened = happened
         if fixed:
             self._fixed = fixed
-        if detected:
-            self._detected = detected
+        if checked:
+            self._checked = checked
         if reporting:
             reporting.issue(issue = self, **kwreportingargs)
 
@@ -48,8 +48,8 @@ Return values:
     True - YES it happened
     False - NO, it is OK
     None - I don't know, there was an error"""
-        #if the issue was fixed or not detected, the detection si needed
-        if not self._detected or self._fixed:
+        #if the issue was fixed or not checked, the check si needed
+        if not self._checked or self._fixed:
             return None
         else:
             return self._happened
@@ -60,8 +60,8 @@ Return values:
     True - YES it is fixed
     False - NO, it is still broken
     None - I don't know"""
-        #if the issue was not detected, the detection si needed
-        if not self._detected:
+        #if the issue was not checked, the check si needed
+        if not self._checked:
             return None
         else:
             #issue didn't happened or is fixed -> True
@@ -71,16 +71,16 @@ Return values:
         s = []
         if self._fixed:
             s.append("Fixed")
-        elif self._happened and self._detected:
+        elif self._happened and self._checked:
             s.append("Detected")
-        elif self._detected:
+        elif self._checked:
             s.append("No problem with")
         else:
             s.append("Waiting for check on")
 
         s.append(self.name)
 
-        if self._happened and self._detected:
+        if self._happened and self._checked:
             s.append("--")
             s.append(self.description)
 
@@ -101,16 +101,16 @@ class Issue(SimpleIssue):
     def detect(self):
         """Detect if this situation happened and store some information about it, so we can fix it
 Return values:
-    True - detection OK
-    False - detection Failed
+    True - check OK
+    False - check Failed
     None - no result, please continue with the operation"""
 
-        #if the issue was fixed. the detection is worthless
-        #if it was detected, no need to do the detection again
-        if self._detected or self._fixed:
-            return not self._fixed and self._detected
+        #if the issue was fixed. the check is worthless
+        #if it was checked, no need to do the check again
+        if self._checked or self._fixed:
+            return not self._fixed and self._checked
 
-        return None #no error, please do the detection (so the child-class knows to actually do something)
+        return None #no error, please do the check (so the child-class knows to actually do something)
 
     def fix(self):
         """Fix the situation if needed
@@ -120,9 +120,9 @@ Return values:
     None - no result, please continue with the operation"""
 
         #if the issue was fixed. no need to do the fix again
-        #if it was not detected, the detection si needed too
-        if not self._detected or self._fixed:
-            return self._fixed and self._detected
+        #if it was not checked, the check si needed too
+        if not self._checked or self._fixed:
+            return self._fixed and self._checked
 
         return None #no fix error, please do the fix (so the child-class knows to actually do something)
 

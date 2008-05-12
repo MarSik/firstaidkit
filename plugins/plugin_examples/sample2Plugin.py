@@ -59,7 +59,7 @@ class Sample2Plugin(Plugin):
         self._result=ReturnSuccess
 
     def diagnose(self):
-        self._issue.set(detected = True, happened = True, reporting  = self._reporting, origin = self, level = PLUGIN)
+        self._issue.set(checked = True, happened = True, reporting  = self._reporting, origin = self, level = PLUGIN)
         self._result=ReturnFailure
 
     def fix(self):

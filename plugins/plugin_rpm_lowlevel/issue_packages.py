@@ -41,7 +41,7 @@ class Packages(Issue):
         if not os.path.isfile(os.path.realpath(dbname)):
             self._db_missing = True
             self._happened = True
-            self._detected = True
+            self._checked = True
             return True
         
         #verify the Package database
@@ -55,7 +55,7 @@ class Packages(Issue):
         if len(rpm_verify.stderr.read())>0:
             self._happened = True
 
-        self._detected = True
+        self._checked = True
         return True
 
     def fix(self):

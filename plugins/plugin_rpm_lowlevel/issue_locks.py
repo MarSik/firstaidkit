@@ -53,7 +53,7 @@ class Locks(Issue):
         else:
             self._happened = True
 
-        self._detected = True
+        self._checked = True
         return True
 
     def fix(self):

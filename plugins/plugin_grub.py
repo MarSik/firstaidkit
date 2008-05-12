@@ -113,7 +113,7 @@ class Sample1Plugin(Plugin):
                                 self._reporting.debug(origin = self, level = PLUGIN, message = "Linux partition found: %s" % (data[0][5:],))
 
         if len(self._bootable) == 0:
-            self._issue_boot_flag.set(detected = True, happened = True, reporting = self._reporting, origin = self, level = PLUGIN)
+            self._issue_boot_flag.set(checked = True, happened = True, reporting = self._reporting, origin = self, level = PLUGIN)
 
 
         #Find grub directories
@@ -126,7 +126,7 @@ class Sample1Plugin(Plugin):
                 self._grub_dir.add(l.strip())
         
         if len(self._grub_dir) == 0:
-            self._issue_grub_dir.set(detected = True, happened = True, reporting = self._reporting, origin = self, level = PLUGIN)
+            self._issue_grub_dir.set(checked = True, happened = True, reporting = self._reporting, origin = self, level = PLUGIN)
 
         #TODO Mount the required partitions from self._grub_dir and read the important files from there
         for gdrive in self._grub_dir:
@@ -165,11 +165,11 @@ class Sample1Plugin(Plugin):
         #if there is the grub configuration dir and the grub appears installed into MBR or bootable partition, then we are probably OK
         if len(self._grub_dir)>0 and len(self._grub)>0 and len(set(self._grub).intersection(set(self._bootable+self._drives)))>0:
             self._result=ReturnSuccess
-            self._issue_grub_installed.set(detected = True, happened = False, reporting = self._reporting, origin = self, level = PLUGIN)
-            self._issue_boot_flag.set(detected = True, happened = False, reporting = self._reporting, origin = self, level = PLUGIN) #if we can find bootable, than it didn't happen
+            self._issue_grub_installed.set(checked = True, happened = False, reporting = self._reporting, origin = self, level = PLUGIN)
+            self._issue_boot_flag.set(checked = True, happened = False, reporting = self._reporting, origin = self, level = PLUGIN) #if we can find bootable, than it didn't happen
             self._dependencies.provide("boot-grub")
         else:
-            self._issue_grub_installed.set(detected = True, happened = True, reporting = self._reporting, origin = self, level = PLUGIN)
+            self._issue_grub_installed.set(checked = True, happened = True, reporting = self._reporting, origin = self, level = PLUGIN)
             self._result=ReturnFailure
 
     def fix(self):

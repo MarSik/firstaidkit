@@ -35,7 +35,7 @@ class Sample1Plugin(Plugin):
 
     def prepare(self):
         self._result=ReturnSuccess
-        self._issue.set(detected = False, reporting = self._reporting, origin = self, level = PLUGIN)
+        self._issue.set(checked = False, reporting = self._reporting, origin = self, level = PLUGIN)
 
     def backup(self):
         self._result=ReturnSuccess
@@ -45,7 +45,7 @@ class Sample1Plugin(Plugin):
 
     def diagnose(self):
         self._result=ReturnSuccess
-        self._issue.set(detected = True, happened = False, reporting = self._reporting, origin = self, level = PLUGIN)
+        self._issue.set(checked = True, happened = False, reporting = self._reporting, origin = self, level = PLUGIN)
 
     def fix(self):
         self._result=ReturnFailure

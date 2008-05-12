@@ -44,7 +44,7 @@ class Sample1Plugin(Plugin):
 
     def diagnose(self):
         self._result=ReturnSuccess
-        self._issue.set(detected = True, happened = False, reporting  = self._reporting, origin = self, level = PLUGIN)
+        self._issue.set(checked = True, happened = False, reporting  = self._reporting, origin = self, level = PLUGIN)
         self._reporting.info("Sample1Plugin in diagnose task", origin = self, level = PLUGIN)
 
     def fix(self):
