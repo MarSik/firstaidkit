@@ -1,0 +1,42 @@
+.TH "FirstAidKit Reporting" "1" 
+.SH "NAME" firstaidkit-reporting
+.BR
+.SH "DESCRIPTION"
+
+To abstract the plugin developer from logfile and GUI related stuff, the
+plugins utilize reporting object named self._reporting. Developer can use
+it to send messages to whatever frontend the user is using.
+
+The reporting system si also thread safe, so the developer does not have
+to care about locks and synchronization.
+
+.SH "Basic concepts"
+
+.IP "Origin"
+.IP "Semantics"
+.IP "Level"
+.IP "Message"
+.IP "Issue"
+.IP "Importance"
+.PP
+
+.SH "Message types"
+
+.SH "Issues and Results reporting"
+
+.SH "Developing another frontend"
+
+.IP "Two ways of hooking the frontend into the FirstAidKit"
+.PP
+
+.SH "SEE ALSO"
+firstaidkit-plugin
+firstaidkit-backup
+http://fedorahosted.org/firstaidkit
+
+.SH "AUTHORS"
+Martin Sivak <msivak@redhat.com>
+Joel Granados <jgranado@redhat.com>
+
+.SH "BUGS"
+Please search/report bugs at http://fedorahosted.org/firstaidkit/newticket

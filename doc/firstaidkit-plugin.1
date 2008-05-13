@@ -49,6 +49,10 @@ You can also specify flags, which are required to be satisfied before the automa
 use this plugin. The requirements should be returned as python set of strings by the getDeps() 
 class method.  Setting flags is also easy. Just use the provide() method common to all plugins.
 
+There is also getConflicts() method, with the very same behaviour as getDeps(), but with the
+opposite meaning. Meaning, it is a set of flags, which have to NOT be satisfied for the plugin
+to be processed.
+
 .IP "3. Default functions:"
 See section "Common stuff for plugins"
 
@@ -59,24 +63,27 @@ user information of the state of the system that the plugin is analysing.  This 
 intended to give general information and needs to be very fast.  If the plugin needs to do
 some more detailed diagnose analysis, we suggest to create another flow called 'detailedAnalysis'.
 When coding the diagnose flow, remember that it will be executed when the user asks for the
-information of *all* the plugins.  The diagnose flow calls only the diagnose task.  
-The seconf flow is called fix:  the intention with this flow is to actually fix whatever 
+information of *all* the plugins.  The diagnose flow calls only the prepare, diagnose and clean tasks.
+The second flow is called fix:  the intention with this flow is to actually fix whatever 
 is wrong with the system.  We suggest this flow to be as thorough as it needs to be.  If there
 is more than one way to fix the problem, this flow would be the easiest one (the plugin
 developer can create other flow for the more complex ones).  For this flow to be successfull
 the prepare, diagnose, backup, fix, restore and clean tasks must be present in the plugin.  
 for more info see section "Common stuff for plugins".  Finally, to add a custom flow the
-plugin developer must define a dictionary named flows (flows = {}) and fill it with the custom
-flows.  For more info on adding flows see the "Examples" section.
+plugin developer must initialize a dictionary named flows using flows = Flow.init(parent class)
+and fill it with the custom flows.  For more info on adding flows see the "Examples" section.
 
 .IP "5. self._result and self._state
 These are the two variables that define the location of the plugin inside the flow dictionary.  
 In each function, after it has done its intended action, the self._result variable must be 
-changed to a correct value.  Think of the self._result as the return value of each task.  The
-self._result usually takes a firstaidkit return value (classes that define the return value).
-firstaidkit comes with predifined return value classes but the plugin developer may define his
+changed to a correct value.  Think of the self._result as the return value of each task.  Before
+any task is executed, the self._result is set to None, so we can handle exceptions as special
+direction in flows. The self._result usually takes a firstaidkit return value (classes that
+define the return value).
+
+Firstaidkit comes with predifined return value classes but the plugin developer may define his
 own return classes.  One reason to define a custom return class is to have actual values be
-passed between tasks (this is not implemente as the tasks are in the same class and can interchange
+passed between tasks (this is not yet implemented as the tasks are in the same class and can interchange
 values using the class variable).  The self._state is the name of the task where the plugin is
 at a certain moment.  The self._state variable is of no real use to the plugin developer as he
 must know in what task the plugin is in.
@@ -97,7 +104,7 @@ Each plugin, by default, should exports some steps. The mandatory ones are:
 .IP "prepare" 
 Initialize plugin, get environment.
 .IP "backup" 
-Backup everything we could touch in this plugin.
+Backup everything we could touch in this plugin. (Also see the firstaidkit-backup manpage)
 .IP "diagnose"
 Get info about the investigated system and determine where the problems are.
 .IP "fix" 
@@ -123,19 +130,19 @@ backend.
 This is how the diagnose and fix flows are coded in the backend plugin system.
  flows["diagnose"] = Flow({
    initial      : {Return: "prepare"},
-   "prepare"    : {ReturnSuccess: "diagnose"},
-   "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "clean"},
-   "clean"      : {ReturnSuccess: final, ReturnFailure: final}
+   "prepare"    : {ReturnSuccess: "diagnose", None: "clean"},
+   "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "clean", None: "clean"},
+   "clean"      : {ReturnSuccess: final, ReturnFailure: final, None: final}
    }, description="The default, fully automated, diagnose sequence")
 
  flows["fix"] = Flow({
    initial      : {Return: "prepare"},
-   "prepare"    : {ReturnSuccess: "diagnose"},
-   "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "backup"},
-   "backup"     : {ReturnSuccess: "fix", ReturnFailure: "clean"},
-   "fix"        : {ReturnSuccess: "clean", ReturnFailure: "restore"},
-   "restore"    : {ReturnSuccess: "clean", ReturnFailure: "clean"},
-   "clean"      : {ReturnSuccess: final, ReturnFailure: final}
+   "prepare"    : {ReturnSuccess: "diagnose", None: "clean"},
+   "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "backup", None: "clean"},
+   "backup"     : {ReturnSuccess: "fix", ReturnFailure: "clean", None: "clean"},
+   "fix"        : {ReturnSuccess: "clean", ReturnFailure: "restore", None: "restore"},
+   "restore"    : {ReturnSuccess: "clean", ReturnFailure: "clean", None: "clean"},
+   "clean"      : {ReturnSuccess: final, ReturnFailure: final, None: final}
    }, description="The default, fully automated, fixing sequence")
 
 Other important class attributes are: name, version, author and description.  They are selfexplanatory.
@@ -196,10 +203,12 @@ returned.
 
 .IP "Adding a flow (Example 3):"
 class MyPlugin(Plugin):
-    flows = {}
+    flows = Flow.init(Plugin)
     flows["myflow"] = Flow({flow rules}, description="")
 
 .SH "SEE ALSO"
+firstaidkit-reporting manpage
+firstaidkit-backup manpage
 http://fedorahosted.org/firstaidkit
 
 .SH "AUTHORS"
