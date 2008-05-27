@@ -26,27 +26,27 @@ self._backups.getBackup.closeBackup(someuniquename)
 
 The instance of backup space then gives the plugin access to several methods:
 
-.IP backupPath(self, path, name = None)
+.IP "backupPath(self, path, name = None)"
 Copy the file or directory specified by path do the backup storage and give it the specified name.
 The name equals to the path by default.
 
-.IP backupValue(self, value, name)
+.IP "backupValue(self, value, name)"
 This method makes possible to save arbitrary chunk of data under specified name.
 
-.IP restoreName(self, name, path = None)
+.IP "restoreName(self, name, path = None)"
 Restore backup object specified by it's name to it's original location or to the path if specified.
 
-.IP restorePath(self, path, name = None)
+.IP "restorePath(self, path, name = None)"
 Restore backup object which resided at specified path to it's own original location. If the name is specified,
 use the object with that name and restore it to the path.
 
-.IP restoreValue(self, name)
+.IP "restoreValue(self, name)"
 Get the data saved under the name from backup storage.
 
-.IP delete(self, name)
+.IP "delete(self, name)"
 Delete backup object with specified name.
 
-.IP cleanup(self)
+.IP "cleanup(self)"
 Cleanup the backup storage space. You shouldn't use this method, the backup system takes care about it.
 
 .PP
