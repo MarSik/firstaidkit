@@ -30,5 +30,6 @@ for file in $CHANGE_FILES ; do
         -e "s/^\.PP.*//" \
         -e "s/^\.nf.*//" \
         -e "s/^\.fi.*//" \
+        -e "s/^\.TH.*//" \
         < $file > $file-wiki
 done
