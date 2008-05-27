@@ -6,9 +6,13 @@
 # intented to help rather than create complete wiki pages.  The work
 # needed for the resulting page is very little.
 #
-DEFAULT_CHANGE_FILES="  firstaidkit.1
+DEFAULT_CHANGE_FILES="
+                firstaidkit.1
                 firstaidkit-flags.1
-                firstaidkit-plugin.1"
+                firstaidkit-plugin.1
+                firstaidkit-reporting.1
+                firstaidkit-backup.1
+                "
 
 #
 # Aside from the default files you can add your oun files.
@@ -17,6 +21,7 @@ CHANGE_FILES="$DEFAULT_CHANGE_FILES $*"
 
 for file in $CHANGE_FILES ; do
     sed \
+        -e "s/\.\\\".*\.\\\"//" \
         -e "s/\(^\.SH[ \t]*\"\)\([ \t^\"]*NAME[ \t^\"]*\)\(\"[ \t]*\)\(.*\)/= \4 =/" \
         -e "s/\(^\.SH[ \t]*\"\)\([^\"]*\)\(\"[ \t]*\)\(.*\)/= \2 \4 =/" \
         -e "s/\(^\.IP[ \t]*\"\)\([^\"]*\)\(\".*\)/[[BR]]'''\2'''[[BR]]/" \
