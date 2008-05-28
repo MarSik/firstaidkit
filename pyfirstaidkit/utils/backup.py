@@ -23,6 +23,7 @@ import os
 import shutil
 import hashlib
 import weakref
+import cPickle as pickle
 
 class BackupException(Exception):
     pass
@@ -92,8 +93,36 @@ class FileBackupStore(BackupStoreInterface):
             self._data[name] = (stored, path)
             return True
         
+        def backupValue(self, value, name):
+            if self._data.has_key(name):
+                raise BackupException("Named backup %s already in the backup store %s!" % (name,self._id))
+            stored = hashlib.sha224(name).hexdigest()
+
+            f = open(os.path.join(self._path, stored), "wb")
+            pickle.dump(value, f, pickle.HIGHEST_PROTOCOL)
+            f.close()
+
+            self._data[name] = (stored, None)
+
+            return True
+            
+        def restoreValue(self, name):
+            stored, origin = self._data[name]
+            if origin is not None:
+                raise BackupException("Named backup %s is not a value object!" % (name,))
+
+
+            f = open(os.path.join(self._path, stored), "rb")
+            val = pickle.load(f)
+            f.close()
+            
+            return val
+        
         def restoreName(self, name, path = None):
             stored, origin = self._data[name]
+            if origin is None:
+                raise BackupException("Named backup %s is not a filesystem object!" % (name,))
+
             assert self._origin[name]==origin
 
             if path is None:
@@ -130,6 +159,11 @@ class FileBackupStore(BackupStoreInterface):
                 shutil.rmtree(stored)
             else:
                 os.unlink(stored)
+
+            del self._data[name]
+            if origin is not None:
+                del self._origin[origin]
+
             return True
 
         def cleanup(self):
