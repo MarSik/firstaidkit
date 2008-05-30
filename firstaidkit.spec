@@ -129,7 +129,7 @@ echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 
 #docs
 %{__install} -d $RPM_BUILD_ROOT%{_mandir}/man1
-%{__install} -p doc/fakplugin.1 doc/firstaidkit.1 $RPM_BUILD_ROOT%{_mandir}/man1
+%{__install} -p doc/firstaidkit-plugin.1 doc/firstaidkit.1 $RPM_BUILD_ROOT%{_mandir}/man1
 #examples
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/examples
 %{__mv} -f plugins/plugin_examples $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/examples
@@ -179,7 +179,7 @@ echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 
 %files devel
 %{_libdir}/firstaidkit/plugins/examples
-%attr(0644,root,root) %{_mandir}/man1/fakplugin.1.gz
+%attr(0644,root,root) %{_mandir}/man1/firstaidkit-plugin.1.gz
 
 %files plugin-all
 
