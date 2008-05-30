@@ -231,7 +231,17 @@ if __name__=="__main__":
         sys.exit(1)
 
     # initialize log for plugin system.
-    initLogger(Config)
+    try:
+        initLogger(Config)
+    except IOError, ioe:
+        if ioe[0] == 13:
+            #This is probably because the user is not root.
+            Config.log.filename = "firstaidkit-" + "%s" % os.getpid()
+            initLogger(Config)
+        else:
+            print ioe
+            usage(sys.argv[0])
+            sys.exit(1)
 
     report = reporting.Reports(maxsize = 1, round = True)
     singlerun = Tasker(Config, reporting = report)
