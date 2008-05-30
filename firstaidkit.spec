@@ -163,7 +163,6 @@ echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 
 %files
 %defattr(-,root,root,-)
-%doc AUTHORS COPYING doc/README doc/FLAGS
 # For noarch packages: sitelib
 %{python_sitelib}/pyfirstaidkit
 %{python_sitelib}/%{name}-%{version}-py2.5.egg-info
