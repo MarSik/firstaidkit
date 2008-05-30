@@ -179,7 +179,10 @@ class FileBackupStore(BackupStoreInterface):
 
         self._path = path
         self._backups = {}
-        os.makedirs(self._path)
+        if os.path.isdir(self._path):
+            raise BackupException("Backupdir %s already exists. Erase dir or change backup dir." % self._path)
+        else:
+            os.makedirs(self._path)
         self.__class__._singleton = weakref.proxy(self)
         print "Backup system initialized"
 
