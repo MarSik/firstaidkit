@@ -441,6 +441,9 @@ class PluginSystem(object):
         self._plugins = {}
 
         for path in self._paths:
+            if not os.path.isdir(path):
+                self._reporting.debug("The path %s does not exist" % path, level = PLUGINSYSTEM, origin = self)
+                continue
             #create list of potential modules in the path
             importlist = set()
             for f in os.listdir(path):
