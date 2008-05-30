@@ -236,7 +236,7 @@ if __name__=="__main__":
     except IOError, ioe:
         if ioe[0] == 13:
             #This is probably because the user is not root.
-            Config.log.filename = "firstaidkit-" + "%s" % os.getpid()
+            Config.log.filename = "firstaidkit.log"
             initLogger(Config)
         else:
             print ioe
