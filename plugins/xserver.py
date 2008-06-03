@@ -66,7 +66,7 @@ class Xserver(Plugin):
 
     def diagnose(self):
         # Lets see if there is a server active.
-        if os.path.exists("/tmp/.X0-lock")
+        if os.path.exists("/tmp/.X0-lock"):
             self._reporting.info("An X server is already running.", level = PLUGIN, origin = self)
             self._resulting.info("You can run the \"force\" flow to avoud this check. In some cases it works.",
                     level = PLUGIN, origin = self)
@@ -76,7 +76,7 @@ class Xserver(Plugin):
             self._reporting.info("Everything seems ok with the X server.", level = PLUGIN, origin = self)
             self._result = ReturnSuccess
 
-        elif !os.path.exists(self.confPath)
+        elif not os.path.exists(self.confPath):
             # If the configuration is not there dont even bother to try fixing it.
             # This will go through the proces of trying to fix it.  at least we told the user.
             self._reporting.info("The error is in the xservers autodetection mechanism, this does not have an automated solution yet.",
@@ -94,7 +94,7 @@ class Xserver(Plugin):
             self._reporting.info("Everything seems ok with the X server.", level = PLUGIN, origin = self)
             self._result = ReturnSuccess
 
-        elif !os.path.exists(self.confPath)
+        elif not os.path.exists(self.confPath):
             # If the configuration is not there dont even bother to try fixing it.
             # This will go through the proces of trying to fix it.  at least we told the user.
             self._reporting.info("The error is in the xservers autodetection mechanism, this does not have an automated solution yet.",
@@ -125,7 +125,7 @@ class Xserver(Plugin):
     def fix(self):
         self._reporting.info("Starting the fix task.", level = PLUGIN, origin = self)
         # With the current xorg server the only thing that we need to do is to erase the conf file.
-        if os.path.exists(self.confPath)
+        if os.path.exists(self.confPath):
             os.remove(self.confPath)
 
         self._reporting.info("Testing modified environment", level = PLUGIN, origin = self)
