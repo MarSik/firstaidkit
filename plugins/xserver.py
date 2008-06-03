@@ -68,7 +68,7 @@ class Xserver(Plugin):
         # Lets see if there is a server active.
         if os.path.exists("/tmp/.X0-lock"):
             self._reporting.info("An X server is already running.", level = PLUGIN, origin = self)
-            self._resulting.info("You can run the \"force\" flow to avoud this check. In some cases it works.",
+            self._reporting.info("You can run the \"force\" flow to avoud this check. In some cases it works.",
                     level = PLUGIN, origin = self)
             serl._result = ReturnSuccess
 
