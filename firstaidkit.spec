@@ -175,7 +175,7 @@ echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 %attr(0644,root,root) %{_mandir}/man1/firstaidkit.1.gz
 
 %files gui
-%{_libdir}/firstaidkit/frontend/*.py
+%{_libdir}/firstaidkit/frontend/*.py*
 %{_libdir}/firstaidkit/frontend/*.glade
 %{_libdir}/firstaidkit/frontend/*.gladep
 
@@ -186,21 +186,19 @@ echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 %files plugin-all
 
 %files plugin-undelete-partitions
-%{_libdir}/firstaidkit/plugins/plugin_undelete_partitions/*.py
+%{_libdir}/firstaidkit/plugins/plugin_undelete_partitions/*.py*
 %{_libdir}/firstaidkit/plugins/plugin_undelete_partitions/*.so
 
 %files plugin-passwd
-%{_libdir}/firstaidkit/plugins/passwd.py
+%{_libdir}/firstaidkit/plugins/passwd.py*
 
 %files plugin-xserver
-%{_libdir}/firstaidkit/plugins/xserver.py
+%{_libdir}/firstaidkit/plugins/xserver.py*
 
 %files plugin-rpm
-%{_libdir}/firstaidkit/plugins/plugin_rpm_lowlevel/*.py
-%{_libdir}/firstaidkit/plugins/plugin_rpm/*.py
+%{_libdir}/firstaidkit/plugins/plugin_rpm_lowlevel/*
+%{_libdir}/firstaidkit/plugins/plugin_rpm/*
 
 %files plugin-grub
-%{_libdir}/firstaidkit/plugins/plugin_grub.py
+%{_libdir}/firstaidkit/plugins/plugin_grub.py*
 %{_sysconfdir}/firstaidkit/firstaidkit-plugin-grub
-
-
