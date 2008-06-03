@@ -107,7 +107,7 @@ For example: corrupted database or important system packages missing.
 Group:          Applications/System
 Summary:        FirstAidKit GUI
 Requires:       %{name} = %{version}-%{release}
-Requires:       pygtk2
+Requires:       pygtk2, pygtk2-libglade
 
 %description gui
 This package contains the Gtk based FirstAidKit GUI
