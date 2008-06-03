@@ -34,7 +34,7 @@ import shutil
 
 class Xserver(Plugin):
     """ Plugin to detect an rescue faulty xserver configurations. """
-    flows = {}
+    flows = Flow.init(Plugin)
     flows["force"] = Flow({
                     Plugin.initial: {Return: "prepare"},
                     "prepare"     : {ReturnSuccess: "diagnose2"},
