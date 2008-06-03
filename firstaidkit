@@ -113,6 +113,8 @@ def usage(name):
   -x <plugin>      - exclude plugin from run
   -F <flag>        - set startup flag
   -g <gui>         - frontend to show results
+                     -g console  - run the cli frontend
+                     -g gtk      - run the gtk frontend
   -h               - help
   --print-config   - print resulting config file
   --flags          - list all known flags
@@ -221,12 +223,12 @@ if __name__=="__main__":
         Flags.gui_available = False
 
     # TUI/GUI detection
-    if not Flags.gui_available and Config.operation.gui=="gui":
+    if not Flags.gui_available and Config.operation.gui=="gtk":
         print "GUI mode not available"
         Config.operation.gui="console"
 
     # TUI has to have operation specified
-    if Config.operation.mode == "" and Config.operation.gui!="gui":
+    if Config.operation.mode == "" and Config.operation.gui!="gtk":
         print "\nError in command arguments: no mode specified\n"
         usage(sys.argv[0])
         sys.exit(1)
@@ -257,20 +259,20 @@ if __name__=="__main__":
 
     if Config.operation.verbose=="False":
         outputThread = Output(singlerun.reporting())
-        if Config.operation.gui=="gui":
+        if Config.operation.gui=="gtk":
             outputThreadGui = GuiOutput(Config, singlerun, dir = os.path.dirname(frontend_gtk.__file__))
     else:
         outputThread = Output(singlerun.reporting(), importance = 0)
-        if Config.operation.gui=="gui":
+        if Config.operation.gui=="gtk":
             outputThreadGui = GuiOutput(Config, singlerun, importance = 0,  dir = os.path.dirname(frontend_gtk.__file__))
 
-    if Config.operation.gui=="gui":
+    if Config.operation.gui=="gtk":
         singlerun.reporting().notify(outputThreadGui.w.update)
     singlerun.reporting().notify(outputThread.process_message)
 
     print "Starting the Threads"
     #outputThread.start() #not needed, we use the callback method now
-    if Config.operation.gui=="gui":
+    if Config.operation.gui=="gtk":
         outputThreadGui.start()
 
     if Config.operation.gui=="console": #XXX change this to detection if GUI is not used (eg. noninteractive mode)
@@ -291,11 +293,11 @@ if __name__=="__main__":
 
     print "Waiting for the Threads"
     #outputThread.join() #not needed, we use the callback method now
-    if Config.operation.gui=="gui":
+    if Config.operation.gui=="gtk":
         outputThreadGui.join()
 
     #make sure everything is deleted
-    if Config.operation.gui=="gui":
+    if Config.operation.gui=="gtk":
         del outputThreadGui
     del singlerun
 
