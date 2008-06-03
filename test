@@ -37,11 +37,15 @@ for modname in modnames:
     else:
         flawless = False
         if len(result.failures) > 0:
+            print "-"*20 + " Failures " + "-"*20
             for failure in result.failures:
-                print failure
+                print "\n%s" % failure[1]
+                print "-"*50
         if len(result.errors) > 0:
+            print "-"*20 + " Errors " + "-"*20
             for error in result.errors:
-                print error
+                print "\n%s" % errors[1]
+                print "-"*48
 
 if flawless:
     sys.exit(0)
