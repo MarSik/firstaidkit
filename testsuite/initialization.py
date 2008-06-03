@@ -16,7 +16,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
-import unittest, imp
+import unittest, imp, py_compile
 from pyfirstaidkit import Config
 from pyfirstaidkit import initLogger
 from pyfirstaidkit.plugins import PluginSystem
@@ -25,12 +25,13 @@ from pyfirstaidkit.dependency import Dependencies
 
 class Initialization(unittest.TestCase):
     def setUp(self):
-        self.confPath = "testsuite/initialization/initialization.conf"
+        self.contentdir = "testsuite/initialization"
+        self.confPath = self.contentdir+"/initialization.conf"
         Config.read(self.confPath)
         initLogger(Config)
         self.pluginSystem = PluginSystem(reporting=Reports(), dependencies=Dependencies())
         self.plugin = self.pluginSystem.getplugin("pluginInfo")
-
+        py_compile.compile("%s/pycFile" % self.contentdir, cfile="%s/pycFile.pyc" % self.contentdir)
 
 class Imports(Initialization):
     """Tests the capability of importing 3 typs of files."""
