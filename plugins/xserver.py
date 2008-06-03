@@ -70,7 +70,7 @@ class Xserver(Plugin):
             self._reporting.info("An X server is already running.", level = PLUGIN, origin = self)
             self._reporting.info("You can run the \"force\" flow to avoud this check. In some cases it works.",
                     level = PLUGIN, origin = self)
-            serl._result = ReturnSuccess
+            self._result = ReturnSuccess
 
         elif self.serverStart():
             self._reporting.info("Everything seems ok with the X server.", level = PLUGIN, origin = self)
