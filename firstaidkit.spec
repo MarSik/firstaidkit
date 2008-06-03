@@ -37,7 +37,7 @@ Provides the examples and requires firstaidkit without plugins.
 
 %package plugin-all
 Group:          Applications/System
-Summary:        All firstaidkit plugins
+Summary:        All firstaidkit plugins, and the gui
 Requires:       %{name} = %{version}-%{release}
 Requires:       %{name}-plugin-undelete-partitions
 Requires:       %{name}-plugin-passwd
