@@ -47,6 +47,11 @@ class Xserver(Plugin):
     name = "X server"
     version = "0.0.1"
     author = "Joel Andres Granados"
+
+    @classmethod
+    def getDeps(cls):
+        return set(["root", "experimental", "filesystem"])
+
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
         # Arbitrary test display
