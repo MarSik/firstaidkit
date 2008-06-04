@@ -33,3 +33,14 @@ class InvalidPluginNameException(Exception):
         self.message="There are no flows by the name of %s" % name
     def __str__(self):
         return self.message
+
+class GeneralPluginException(Exception):
+    """General exception
+
+    This exception should be used for all exceptions that come from the plugins and
+    have no specific exception class yet.
+    """
+    def __init__(self, plugin, message):
+        self.message="There was an exception in plugin %s with message %s"%(plugin,message)
+    def __str__(self):
+        return self.message
