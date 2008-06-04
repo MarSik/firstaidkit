@@ -16,7 +16,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
-import unittest, imp, py_compile
+import unittest, imp, py_compile, os, os.path
 from pyfirstaidkit import Config
 from pyfirstaidkit import initLogger
 from pyfirstaidkit.plugins import PluginSystem
@@ -32,6 +32,10 @@ class Initialization(unittest.TestCase):
         self.pluginSystem = PluginSystem(reporting=Reports(), dependencies=Dependencies())
         self.plugin = self.pluginSystem.getplugin("pluginInfo")
         py_compile.compile("%s/pycFile" % self.contentdir, cfile="%s/pycFile.pyc" % self.contentdir)
+
+    def tearDown(self):
+        if(os.path.isfile(Config.log.filename)):
+            os.remove(Config.log.filename)
 
 class Imports(Initialization):
     """Tests the capability of importing 3 typs of files."""
