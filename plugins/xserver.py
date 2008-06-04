@@ -21,6 +21,7 @@ from pyfirstaidkit.utils import *
 from pyfirstaidkit.reporting import PLUGIN
 from pyfirstaidkit.issue import SimpleIssue
 from pyfirstaidkit import Config
+from pyfirstaidkit.errors import *
 
 import rhpxl.xserver
 import rhpl.keyboard
@@ -57,6 +58,7 @@ class Xserver(Plugin):
         # Arbitrary test display
         self.display = ":10"
         self.confPath = "/etc/X11/xorg.conf"
+        self.backupName = None
         self._issue = SimpleIssue(self.name, "X server didn't start")
 
     def prepare(self):
@@ -107,19 +109,17 @@ class Xserver(Plugin):
         self._issue.set(checked = True, happened = (self._result == ReturnFailure), reporting = self._reporting, level = PLUGIN, origin = self)
 
 
-
-    # FIXME:Must change this when the backup utils is done.
     def backup(self):
         if os.path.isfile(self.confPath):
-            self._reporting.info("Making copy of %s"%self.confPath, level = PLUGIN , origin = self)
             try:
-                shutil.copyfile(self.confPath, "%s.FAK-backup"%self.confPath)
-                self._result = ReturnSuccess
-            except:
-                self._result = ReturnFailure
+                self.backupName = "Xconfig"
+                self._backups.backupPath(self.confPath, self.backupName)
+            except BackupException:
+                self.backupName = "Xconfig"+os.getpid()
+                self._backups.backupPath(self.confPath, self.backupName)
+            self._result = ReturnSuccess
         else:
-            self._reporting.info("Expected path to configuration file seems to be nonexistent (%s)"%
-                    self.confPath, level = PLUGIN, origin = self)
+            self._reporting.info("%s does not exist." % self.confPath, level = PLUGIN, origin = self)
             self._result = ReturnSuccess
 
     def fix(self):
@@ -138,12 +138,19 @@ class Xserver(Plugin):
         self._issue.set(fixed = (self._result == ReturnSuccess), reporting = self._reporting, level = PLUGIN, origin = self)
 
     def restore(self):
-        if os.path.isfile("%s.FAK-backup"%self.confPath):
+        if self.backupName is None:
+            # This is the case where there is no config file.
+            self._reporting.info("The backedup file was not present. Assuming that xorg did not have a config file to begin with.")
+            self._result = ReturnSuccess
+            return
+
+        try:
             self._reporting.info("Restoring original file.", level = PLUGIN , origin = self)
-            shutil.copyfile("%s.FAK-backup"%self.confPath, self.confPath)
-        else:
-            self._reporting.info("The backedup file was not present, something strange is going on.",
-                    level = PLUGIN, origin = self)
+            self._backups.restoreName(self.backupName)
+            self._result = ReturnSuccess
+        except BackupException:
+            # This means that the backed up file was lost somewhere.
+            raise GeneralPluginException(self, "Very ugly inconsistency with the backup files.")
 
     def clean(self):
         self._reporting.info("Cleaning the backedup file.", level = PLUGIN, origin = self)
