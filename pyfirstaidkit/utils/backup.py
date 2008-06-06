@@ -50,6 +50,9 @@ class BackupStoreInterface(object):
         def cleanup(self):
             raise NotImplemented()
 
+        def exists(self, name = None, path = None):
+            raise NotImplemented()
+
     def __init__(self):
         raise NotImplemented()
 
@@ -134,7 +137,7 @@ class FileBackupStore(BackupStoreInterface):
                 else:
                     os.unlink(path)
 
-            stored = os.join(self._path, stored)
+            stored = os.path.join(self._path, stored)
             
             if os.path.isdir(stored):
                 shutil.copytree(stored, path, symlinks = True)
@@ -153,7 +156,7 @@ class FileBackupStore(BackupStoreInterface):
 
         def delete(self, name):
             stored, origin = self._data[name]
-            stored = os.join(self._path, stored)
+            stored = os.path.join(self._path, stored)
 
             if os.path.isdir(stored):
                 shutil.rmtree(stored)
@@ -170,6 +173,27 @@ class FileBackupStore(BackupStoreInterface):
             for name,(stored,origin) in self._data.iteritems():
                 self.delete(name)
             os.rmdir(self._path)
+
+        def exists(self, name=None, path=None):
+            if name == None and path == None:
+                raise BackupException("Cannot call the exists method with both the arguments equal to None")
+
+            if name != None and path != None:
+                try:
+                    if self._data[name] == path:
+                        return True
+                    else:
+                        return False
+                except KeyError:
+                    return False
+
+            if name != None and self._data.has_key(name):
+                return True
+
+            if path != None and self._origin.has_key[path]:
+                return True
+
+            return False
 
     def __init__(self, path):
         if self.__class__._singleton:
