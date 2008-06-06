@@ -154,10 +154,7 @@ class Xserver(Plugin):
             raise GeneralPluginException(self, "Very ugly inconsistency with the backup files.")
 
     def clean(self):
-        self._reporting.info("Cleaning the backedup file.", level = PLUGIN, origin = self)
-        if os.path.isfile("%s.FAK-backup"%self.confPath):
-            os.remove("%s.FAK-backup"%self.confPath)
-
+        self._result = ReturnSuccess
 
 
     def serverStart(self):
