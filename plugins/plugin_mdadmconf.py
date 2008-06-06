@@ -42,7 +42,7 @@ class MdadmConfig(Plugin):
         self.scannedFileDict = {} #what `mdadm --misc --detail --scan`
         self.scannedFile = None # what `mdadm --misc --detail --scan` returns
         self.configFile = os.path.join(Config.system.root,"/etc/mdadm.conf")
-        self.backupName = None
+        self.backupSpace = self._backups.getBackup(self)
         self._issue = SimpleIssue(self.name, "mdadm.con misconfigured")
 
     def prepare(self):
@@ -108,9 +108,8 @@ class MdadmConfig(Plugin):
 
     def backup(self):
         if os.path.isfile(self.configFile):
-            self.backupName = "mdadmconf"+os.getpid()
             self._reporting.info("Making a backup of %s."%self.configFile, level = PLUGIN, origin = self)
-            self._backups.backupPath(self.configFile, self.backupName)
+            self.backupSpace.backupPath(self.configFile)
         else:
             self._reporting.info("It appears that the file %s does not exist.  No backup attempt will be made."%self.configFile,
                     level = PLUGIN, origin = self)
@@ -125,9 +124,9 @@ class MdadmConfig(Plugin):
             fd.close()
             self._reporting.info("Configuration file writen.", level = PLUGIN, origin = self)
             # The original mdadm.conf will be restore to mdadm.conf.firstaidkit, just in case.
-            self._reporting.info("Will put the old mdadm.conf in %s."%os.path.join(Config.system.root,"etc/mdamd.conf"),
+            self._reporting.info("Will put the old mdadm.conf in %s."%os.path.join(Config.system.root,"etc/mdamd.conf.firstaidkit"),
                     level = PLUGIN, origin = self)
-            self._backups.restoreName(self.backupName, os.path.join(Config.system.root,"/etc/mdamd.conf"))
+            self.backupSpace.restoreName(self.configFile, path = self.configFile+".firstaidkit"))
             self.result = ReturnSuccess
         except IOError:
             fd.close()
@@ -136,20 +135,13 @@ class MdadmConfig(Plugin):
         self._issue.set(fixed = (self._result == ReturnSuccess), reporting = self._reporting, level = PLUGIN, origin = self)
 
     def restore(self):
-        if self.backupName is None:
+        if not self.backupSpace.exists(self.configFile):
             # This is the case where there is no config file.
             self._reporting.info("The backedup file was not present. Assuming that %s was ont present to begin with."%
                     self.configFile, level = PLUGIN, original = self)
-            self._result = ReturnSuccess
-            return
-
-        try:
+        else:
             self._reporting.info("Restoring original file.", level = PLUGIN , origin = self)
-            self._backups.restoreName(self.backupName)
-            self._result = ReturnSuccess
-        except BackupException:
-            # This means that the backed up file was lost somewhere.
-            raise GeneralPluginException(self, "Very ugly inconsistency with the backup files.")
+            self.backupSpace.restoreName(self.configFile)
         self._result = ReturnSuccess
 
     def clean(self):
