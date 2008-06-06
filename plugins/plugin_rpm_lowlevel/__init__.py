@@ -24,6 +24,8 @@ from pyfirstaidkit import Config
 from issue_packages import Packages
 from issue_locks import Locks
 
+import os.path
+
 class RPMLowlevelPlugin(IssuesPlugin):
     """This plugin provides lowlevel checks for RPM database."""
     #
@@ -52,11 +54,11 @@ class RPMLowlevelPlugin(IssuesPlugin):
 
     def backup(self):
         IssuesPlugin.backup(self)
-        self.backup.backupPath(path = Config.system.root+"/var/lib/rpm", name="rpm")
+        self.backup.backupPath(path = os.path.join(Config.system.root,"/var/lib/rpm"), name="rpm")
         self._result=ReturnSuccess
 
     def restore(self):
-        self.backup.restorePath(path = Config.system.root+"/var/lib/rpm", name="rpm")
+        self.backup.restorePath(path = os.path.join(Config.system.root,"/var/lib/rpm"), name="rpm")
         IssuesPlugin.restore(self)
         self._result=ReturnSuccess
 

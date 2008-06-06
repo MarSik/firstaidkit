@@ -38,7 +38,7 @@ class Locks(Issue):
         if result is not None:
             return result
 
-        path = Config.system.root+"/var/lib/rpm/"
+        path = os.path.join(Config.system.root,"/var/lib/rpm/")
         self.locks = []
 
         def walkfunc(arg, dirname, fnames):

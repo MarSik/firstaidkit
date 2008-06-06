@@ -23,7 +23,7 @@ from pyfirstaidkit.issue import Issue
 from pyfirstaidkit.reporting import TASK
 from pyfirstaidkit.utils import spawnvch
 from pyfirstaidkit.configuration import Config
-import os
+import os, os.path
 
 
 class Packages(Issue):
@@ -35,7 +35,7 @@ class Packages(Issue):
         if result is not None:
             return result
 
-        dbname = Config.system.root+"/var/lib/rpm/Packages"
+        dbname = os.path.join(Config.system.root, "/var/lib/rpm/Packages")
         self._happened = False
 
         if not os.path.isfile(os.path.realpath(dbname)):
@@ -63,7 +63,7 @@ class Packages(Issue):
         if result is not None:
             return result
 
-        dbname = Config.system.root+"/var/lib/rpm/Packages"
+        dbname = os.path.join(Config.system.root,"/var/lib/rpm/Packages")
 
         if not self._db_missing:
             #dump&load the database
