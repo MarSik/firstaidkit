@@ -45,6 +45,7 @@ Requires:       %{name}-plugin-xserver
 Requires:       %{name}-plugin-grub
 Requires:       %{name}-plugin-rpm
 Requires:       %{name}-gui
+Requires:       %{name}-mdadmconf
 
 
 %description plugin-all
@@ -98,6 +99,16 @@ Group:          Applications/System
 Summary:        FirstAidKit plugin to diagnose or repair the RPM packaging system
 Requires:       %{name} = %{version}-%{release}
 Requires:       rpm, rpm-python
+
+%package plugin-mdadmconf
+Group:          Applications/System
+Summary:        Firstaidkit plugin to diagnose software raid configuration file
+Requires:       %{name} = %{version}-%{release}
+Requires:       mdadm
+
+%description plugin-mdadmconf
+This plugin will assess the validity and existence of the mdadm.conf file.
+The file will get replaced if any inconsistencies are found.
 
 %description plugin-rpm
 This FirstAidKit plugin automates the tasks related to RPM problems.
@@ -159,6 +170,7 @@ echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 %{__cp} -f plugins/plugin_rpm_lowlevel/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/plugin_rpm_lowlevel/
 %{__cp} -f plugins/plugin_grub.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
 %{__install} -p etc/firstaidkit/firstaidkit-plugin-grub $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
+%{__cp} -f plugins/plugin_mdadmconf.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
 
 
 %clean
@@ -202,3 +214,6 @@ echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 %files plugin-grub
 %{_libdir}/firstaidkit/plugins/plugin_grub.py*
 %{_sysconfdir}/firstaidkit/firstaidkit-plugin-grub
+
+%files plugin-mdadmconf
+%{_libdir}/firstaidkit/plugins/plugin_mdadmconf.py*
