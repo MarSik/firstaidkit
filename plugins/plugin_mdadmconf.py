@@ -104,6 +104,7 @@ class MdadmConfig(Plugin):
                 return
 
         self._reporting.info("There was no problem found with the current mdadm.conf file.", level = PLUGIN, origin = self)
+        self._issue.set(checked = True, happened = (self._result == ReturnFailure), reporting = self._reporting, level = PLUGIN, origin = self)
         self._result = ReturnSuccess
 
     def backup(self):
