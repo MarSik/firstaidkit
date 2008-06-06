@@ -126,7 +126,7 @@ class MdadmConfig(Plugin):
             # The original mdadm.conf will be restore to mdadm.conf.firstaidkit, just in case.
             self._reporting.info("Will put the old mdadm.conf in %s."%os.path.join(Config.system.root,"etc/mdamd.conf.firstaidkit"),
                     level = PLUGIN, origin = self)
-            self.backupSpace.restoreName(self.configFile, path = self.configFile+".firstaidkit"))
+            self.backupSpace.restoreName(self.configFile, path = self.configFile+".firstaidkit")
             self.result = ReturnSuccess
         except IOError:
             fd.close()
