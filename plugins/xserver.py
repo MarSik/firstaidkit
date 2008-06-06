@@ -140,7 +140,8 @@ class Xserver(Plugin):
     def restore(self):
         if self.backupName is None:
             # This is the case where there is no config file.
-            self._reporting.info("The backedup file was not present. Assuming that xorg did not have a config file to begin with.")
+            self._reporting.info("The backedup file was not present. Assuming that xorg did not have a config file to begin with.", 
+                    level = PLUGIN, origin = self)
             self._result = ReturnSuccess
             return
 
