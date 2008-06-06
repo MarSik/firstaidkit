@@ -59,6 +59,7 @@ class Xserver(Plugin):
         self.display = ":10"
         self.confPath = "/etc/X11/xorg.conf"
         self.backupName = None
+        self.backupSpace = self._backups.getBackup(self)
         self._issue = SimpleIssue(self.name, "X server didn't start")
 
     def prepare(self):
@@ -111,16 +112,10 @@ class Xserver(Plugin):
 
     def backup(self):
         if os.path.isfile(self.confPath):
-            try:
-                self.backupName = "Xconfig"
-                self._backups.backupPath(self.confPath, self.backupName)
-            except BackupException:
-                self.backupName = "Xconfig"+os.getpid()
-                self._backups.backupPath(self.confPath, self.backupName)
-            self._result = ReturnSuccess
+            self.backupSpace.backupPath(self.confPath)
         else:
             self._reporting.info("%s does not exist." % self.confPath, level = PLUGIN, origin = self)
-            self._result = ReturnSuccess
+        self._result = ReturnSuccess
 
     def fix(self):
         self._reporting.info("Starting the fix task.", level = PLUGIN, origin = self)
@@ -138,20 +133,15 @@ class Xserver(Plugin):
         self._issue.set(fixed = (self._result == ReturnSuccess), reporting = self._reporting, level = PLUGIN, origin = self)
 
     def restore(self):
-        if self.backupName is None:
+        if not self.backupSpace.exists(path=self.confPath):
             # This is the case where there is no config file.
             self._reporting.info("The backedup file was not present. Assuming that xorg did not have a config file to begin with.", 
                     level = PLUGIN, origin = self)
-            self._result = ReturnSuccess
-            return
-
-        try:
+        else:
             self._reporting.info("Restoring original file.", level = PLUGIN , origin = self)
-            self._backups.restoreName(self.backupName)
-            self._result = ReturnSuccess
-        except BackupException:
-            # This means that the backed up file was lost somewhere.
-            raise GeneralPluginException(self, "Very ugly inconsistency with the backup files.")
+            self.backupSpace.restoreName(self.confPath)
+
+        self._result = ReturnSuccess
 
     def clean(self):
         self._result = ReturnSuccess
