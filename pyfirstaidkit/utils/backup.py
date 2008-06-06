@@ -190,7 +190,7 @@ class FileBackupStore(BackupStoreInterface):
             if name != None and self._data.has_key(name):
                 return True
 
-            if path != None and self._origin.has_key[path]:
+            if path != None and self._origin.has_key(path):
                 return True
 
             return False
