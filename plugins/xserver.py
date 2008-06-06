@@ -58,7 +58,6 @@ class Xserver(Plugin):
         # Arbitrary test display
         self.display = ":10"
         self.confPath = "/etc/X11/xorg.conf"
-        self.backupName = None
         self.backupSpace = self._backups.getBackup(self)
         self._issue = SimpleIssue(self.name, "X server didn't start")
 
