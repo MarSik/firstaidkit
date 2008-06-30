@@ -36,6 +36,7 @@ def createDefaultConfig(config):
     config.operation.verbose = "False"
     config.operation.dependencies = "True"
     config.operation.interactive = "False"
+    config.operation.printinfo = "False"
     config.log.method = "file"
     config.log.filename = "/var/log/firstaidkit.log"
     config.plugin.disabled = ""
@@ -74,6 +75,13 @@ class FAKConfigSection(object):
     def __init__(self, cfg, name):
         self.__dict__["__section_name"] = name
         self.__dict__["__configuration"] = cfg
+        self.__dict__["__use_lock"] = True
+
+    def lock(self):
+        self.__dict__["__use_lock"] = True
+
+    def unlock(self):
+        self.__dict__["__use_lock"] = False
 
     def __getattr__(self, key):
         if not self.__dict__["__configuration"].has_section(self.__dict__["__section_name"]) and self.__dict__["__section_name"]!="DEFAULT":
@@ -85,7 +93,7 @@ class FAKConfigSection(object):
         return self.__dict__["__configuration"].get(self.__dict__["__section_name"], key)
 
     def __setattr__(self, key, value):
-        if self.__dict__["__configuration"].__dict__.has_key("_lock") and self.__dict__["__configuration"].__dict__["_lock"]:
+        if self.__dict__["__configuration"].__dict__.has_key("_lock") and self.__dict__["__configuration"].__dict__["_lock"] and self.__dict__["__use_lock"]:
             raise LockedError(key)
 
         if not self.__dict__["__configuration"].has_section(self.__dict__["__section_name"]) and self.__dict__["__section_name"]!="DEFAULT":
@@ -141,4 +149,10 @@ def getConfigBits(name, cfg = Config):
     c.read(os.path.join(cfg.system.configuration, name))
     c.lock()
     return c
+
+class FAKInfo(ConfigParser.SafeConfigParser, FAKConfigMixIn):
+    pass
+
+Info = FAKInfo()
+Info.lock()
 

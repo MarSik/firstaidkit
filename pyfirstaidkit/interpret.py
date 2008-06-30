@@ -16,6 +16,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 import os
+import sys
 from plugins import PluginSystem
 from reporting import Reports, TASKER, PLUGINSYSTEM
 import logging
@@ -23,6 +24,7 @@ import copy
 from errors import *
 from utils import FileBackupStore
 from dependency import Dependencies
+from configuration import Info
 
 Logger=logging.getLogger("firstaidkit")
 
@@ -156,6 +158,11 @@ class Tasker:
             Logger.error("Incorrect task specified")
             self._reporting.stop(level = TASKER, origin = self)
             return False
+
+        if self._config.operation.printinfo:
+            print "--- Info section ---"
+            Info.write(sys.stdout)
+            print "--------------------"
 
         self._reporting.stop(level = TASKER, origin = self)
         return True

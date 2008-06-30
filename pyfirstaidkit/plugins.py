@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-from configuration import Config
+from configuration import Config, Info
 from returns import *
 from errors import *
 from reporting import *
@@ -100,7 +100,7 @@ class Plugin(object):
 
     default_flow = "diagnose"
 
-    def __init__(self, flow, reporting, dependencies, path = None, backups = None):
+    def __init__(self, flow, reporting, dependencies, path = None, backups = None, info = None):
         """ Initialize the instance.
 
         flow -- Name of the flow to be used with this instance.
@@ -114,6 +114,7 @@ class Plugin(object):
         self._dependencies = dependencies
         self._path = path
         self._backups = backups
+        self._info = info
 
         self.provide = dependencies.provide
         self.unprovide = dependencies.unprovide
@@ -542,7 +543,9 @@ class PluginSystem(object):
                         self._reporting.stop(level = PLUGIN, origin = self, message = plugin)
                         return False
 
-        p = pklass(flowName, reporting = self._reporting, dependencies = self._deps, backups = self._backups, path = plugindir)
+        infosection = getattr(Info, plugin)
+        infosection.unlock()
+        p = pklass(flowName, reporting = self._reporting, dependencies = self._deps, backups = self._backups, path = plugindir, info = infosection)
         for (step, rv) in p: #autorun all the needed steps
             Logger.info("Running step %s in plugin %s ...", step, plugin)
             Logger.info("%s is current step and %s is result of that step." % (step, rv))
