@@ -27,7 +27,7 @@ import os
 class Sample1Plugin(Plugin):
     """Discover information about the system"""
     name = "Discovery"
-    description = "Discovering system properties failed"
+    description = "Discover properties of the system"
     version = "0.0.1"
     author = "Martin Sivak"
 
@@ -36,7 +36,7 @@ class Sample1Plugin(Plugin):
 
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
-        self._issue = SimpleIssue(self.name, self.description)
+        self._issue = SimpleIssue(self.name, "Discovering system properties failed")
 
     def prepare(self):
         self._issue.set(reporting  = self._reporting, origin = self, level = PLUGIN)
