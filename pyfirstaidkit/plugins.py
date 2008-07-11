@@ -1,16 +1,16 @@
 # First Aid Kit - diagnostic and repair tool for Linux
 # Copyright (C) 2007 Martin Sivak <msivak@redhat.com>
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -55,8 +55,8 @@ class Plugin(object):
     # Dictionary that holds all the flows.  The keys for each flow is its
     # name.  The flow will be addressed by this name.  The plugin developer
     # Can add as many flows as he wants. The developer must use the instance.
-    # flows["name"] = SomeFlow.  Be aware that you can overwirhte 
-    # previously added flows.  This class attribute has to be initialized by 
+    # flows["name"] = SomeFlow.  Be aware that you can overwirhte
+    # previously added flows.  This class attribute has to be initialized by
     # each plugin using flows = Flow.init(ParentClass)
     #
     flows = {}
@@ -79,36 +79,46 @@ class Plugin(object):
     # has to be named "diagnose"
     #
     flows["diagnose"] = Flow({
-            initial : {Return: "prepare"},
-            "prepare"    : {ReturnSuccess: "diagnose", None: "clean"},
-            "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "clean", None: "clean"},
-            "clean"      : {ReturnSuccess: final, ReturnFailure: final, None: final}
-            }, description="The default, fully automated, diagnose sequence")
-    flows["fix"] = Flow({
-            initial : {Return: "prepare"},
-            "prepare"    : {ReturnSuccess: "diagnose", None: "clean"},
-            "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "backup", None: "clean"},
-            "backup"     : {ReturnSuccess: "fix", ReturnFailure: "clean", None: "clean"},
-            "fix"        : {ReturnSuccess: "clean", ReturnFailure: "restore", None: "restore"},
-            "restore"    : {ReturnSuccess: "clean", ReturnFailure: "clean", None: "clean"},
-            "clean"      : {ReturnSuccess: final, ReturnFailure: final, None: final}
-            }, description="The default, fully automated, fixing sequence")
+        initial : {Return: "prepare"},
+        "prepare"    : {ReturnSuccess: "diagnose", None: "clean"},
+        "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "clean",
+            None: "clean"},
+        "clean"      : {ReturnSuccess: final, ReturnFailure: final, None: final}
+        }, description="The default, fully automated, diagnose sequence")
 
-    # By default, when no other parameters are passed, we use the diagnose flow as
-    # the default flow to run. You can change this, BUT it MUST always be a non-changing
-    # non-destructive and safe flow, which does the diagnostics
+    flows["fix"] = Flow({
+        initial : {Return: "prepare"},
+        "prepare"    : {ReturnSuccess: "diagnose", None: "clean"},
+        "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "backup",
+            None: "clean"},
+        "backup"     : {ReturnSuccess: "fix", ReturnFailure: "clean",
+            None: "clean"},
+        "fix"        : {ReturnSuccess: "clean", ReturnFailure: "restore",
+            None: "restore"},
+        "restore"    : {ReturnSuccess: "clean", ReturnFailure: "clean",
+            None: "clean"},
+        "clean"      : {ReturnSuccess: final, ReturnFailure: final, None: final}
+        }, description="The default, fully automated, fixing sequence")
+
+    # By default, when no other parameters are passed, we use the diagnose
+    # flow as the default flow to run. You can change this, BUT it MUST always
+    # be a non-changing non-destructive and safe flow, which does the
+    # diagnostics
 
     default_flow = "diagnose"
 
-    def __init__(self, flow, reporting, dependencies, path = None, backups = None, info = None):
+    def __init__(self, flow, reporting, dependencies, path = None,
+            backups = None, info = None):
         """ Initialize the instance.
 
         flow -- Name of the flow to be used with this instance.
         reporting -- object used to report information to the user
-        dependencies -- object encapsulating the inter-plugin dependency API (require, provide)
+        dependencies -- object encapsulating the inter-plugin dependency API
+                        (require, provide)
         path -- directory from where was this plugin imported
 
-        The flow is defined in the __init__ so we don't have to worry about changing it.
+        The flow is defined in the __init__ so we don't have to worry about
+        changing it.
         """
         self._reporting = reporting
         self._dependencies = dependencies
@@ -155,9 +165,10 @@ class Plugin(object):
         """Defines the current flow to name.
 
         flow -- Name of the flow
-        This function is to be called from the __init__ only. There will be the flows defined by the
-        Plugin class and the flows defined by the actual plugin.  We will first search the Plugin
-        class and then the plugin itself for the name.
+        This function is to be called from the __init__ only. There will be the
+        flows defined by the Plugin class and the flows defined by the actual
+        plugin.  We will first search the Plugin class and then the plugin
+        itself for the name.
         """
         #
         # The flow that will be used for the instance.
@@ -172,7 +183,7 @@ class Plugin(object):
         """Return a set with the names of all possible flows."""
         fatherf = cls.flows.keys()
         return set(fatherf)
-    
+
     @classmethod
     def getFlow(cls, name):
         """Return a Flow object associated with provided name"""
@@ -184,31 +195,35 @@ class Plugin(object):
     #dependency stuff
     @classmethod
     def getDeps(cls):
-        """Return list of conditions required to be set before automated run can be done"""
-        return set()
-    
-    @classmethod
-    def getConflicts(cls):
-        """Return list of conditions required to be UNset before automated run can be done"""
+        """Return list of conditions required to be set before automated rune"""
         return set()
 
-    #methods available only for instance, see interpreter.py and dependency stuff there
+    @classmethod
+    def getConflicts(cls):
+        """Return list of conditions required to be UNset before automated run"""
+        return set()
+
+    #methods available only for instance, see interpreter.py and dependency
+    #stuff there
     #def require(self, id)
     #def provide(self, id)
 
     #list of all actions provided
     def actions(self):
         """Returns list of available actions"""
-        return set(["prepare", "backup", "diagnose", "describe", "fix", "restore", "clean"])
+        return set(["prepare", "backup", "diagnose", "describe", "fix",
+            "restore", "clean"])
 
     def nextstate(self, state=None, result=None):
-        """Returns next state when analizing self._state, self._result and the self.cflow in automode.
+        """Returns next state when analizing self.{_state,_result,cflow}.
 
+        This is relevant for automode.
         state -- Name of hte function.
         result -- The return value of the previous function
-        We do not check for validity of the key in the self.cflow.  If key is invalid, function will
-        Traceback.  When self._state = self.final the function will traceback.  This situation must
-        be handled outside this function.  If an automatica iteration is needed that avoids the 
+        We do not check for validity of the key in the self.cflow.  If key is
+        invalid, function will Traceback.  When self._state = self.final the
+        function will traceback.  This situation must be handled outside this
+        function.  If an automatica iteration is needed that avoids the
         necesity to address the self.final state, use __iter__ and next.
         """
         # If any of the vals are missing, we default to the current ones.
@@ -237,7 +252,8 @@ class Plugin(object):
     def next(self):
         """Iteration function.
 
-        Will return (self._state, self._result).  The function that was executed and the return value.
+        Will return (self._state, self._result).  The function that was executed
+        and the return value.
         """
         func = self.nextstate()
 
@@ -248,8 +264,10 @@ class Plugin(object):
                 # Execute the function.
                 self.call(func)
             except Exception, e: #fallback, when there is some error in plugin
-                self._reporting.exception(level = TASK, origin = self, message = func+" raised "+str(e))
-                self._reporting.stop(level = TASK, origin = self, message = func)
+                self._reporting.exception(level = TASK, origin = self,
+                        message = func+" raised "+str(e))
+                self._reporting.stop(level = TASK, origin = self,
+                        message = func)
                 pass
 
         return (self._state, self._result)
@@ -260,55 +278,65 @@ class Plugin(object):
     def prepare(self):
         """Initial actions.
 
-        All the actions that must be done before the execution of any plugin function.
-        This function generaly addresses things that are global to the plugin.
+        All the actions that must be done before the execution of any plugin
+        function. This function generaly addresses things that are global to
+        the plugin.
         """
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Prepare is an abstract method, it should be used as such.")
+            Logger.warning("Prepare is an abstract method, it should be used \
+                    as such.")
 
     def clean(self):
         """Final actions.
 
-        All the actions that must be done after the exection of all plugin functions.
-        This function generaly addresses things that are global and need to be closed
-        off, like file descriptos, or mounted partitions....
+        All the actions that must be done after the exection of all plugin
+        functions. This function generaly addresses things that are global
+        and need to be closed off, like file descriptos, or mounted
+        partitions....
         """
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Clean is an abstract method, it should be used as such.")
+            Logger.warning("Clean is an abstract method, it should be used as \
+                    such.")
 
     def backup(self):
         """Gather important information needed for restore."""
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Backup is an abstract method, it should be used as such.")
+            Logger.warning("Backup is an abstract method, it should be used as \
+                    such.")
 
     def restore(self):
         """Try to restore the previous state described in backup."""
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Restore is an abstract method, it should be used as such.")
+            Logger.warning("Restore is an abstract method, it should be used \
+                    as such.")
 
     def diagnose(self):
         """Diagnose the situation."""
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Diagnose is an abstract method, it should be used as such.")
+            Logger.warning("Diagnose is an abstract method, it should be used \
+                    as such.")
 
     def fix(self):
         """Try to fix whatever is wrong in the system."""
          #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Fix is an abstract method, it should be used as such.")
+            Logger.warning("Fix is an abstract method, it should be used as \
+                    such.")
 
 class IssuesPlugin(Plugin):
-    """Simple plugin which uses Issue classes to test more small and INDEPENDENT issues in the system.
-Just fill the issue_tests list with classes describing the tests and let it run."""
+    """Plugin which uses Issue classes to test smaller and INDEPENDENT issues.
+
+    Just fill the issue_tests list with classes describing the tests and let
+    it run."""
 
     issue_tests = [] #List of Issue classes to check
     set_flags = [] #flags to set when everything is OK
-    
+
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
         self.tests = []
@@ -316,7 +344,8 @@ Just fill the issue_tests list with classes describing the tests and let it run.
     def prepare(self):
         """Prepare the issues list"""
         for i in self.issue_tests:
-            self._reporting.info(level = TASK, origin = self, message = "Preparing tests for '%s'" % (i.name,))
+            self._reporting.info(level = TASK, origin = self,
+                    message = "Preparing tests for '%s'" % (i.name,))
             issue = i(plugin = self)
             self.tests.append(issue)
             self._reporting.issue(level = TASK, origin = self, issue = issue)
@@ -328,12 +357,14 @@ Just fill the issue_tests list with classes describing the tests and let it run.
         result = False
         happened = False
         for i in self.tests:
-            self._reporting.info(level = TASK, origin = self, message = "Investigating '%s'" % (i.name,))
+            self._reporting.info(level = TASK, origin = self,
+                    message = "Investigating '%s'" % (i.name,))
             result = result or i.detect()
             self._reporting.issue(level = TASK, origin = self, issue = i)
             if i.happened():
                 happened = True
-                self._reporting.info(level = TASK, origin = self, message = i.str())
+                self._reporting.info(level = TASK, origin = self,
+                        message = i.str())
 
         if result and not happened:
             self._result=ReturnSuccess
@@ -350,7 +381,8 @@ Just fill the issue_tests list with classes describing the tests and let it run.
         result = False
         fixed = True
         for i in self.tests:
-            self._reporting.info(level = TASK, origin = self, message = "Fixing '%s'" % (i.name,))
+            self._reporting.info(level = TASK, origin = self,
+                    message = "Fixing '%s'" % (i.name,))
             result = result or i.fix()
             self._reporting.issue(level = TASK, origin = self, issue = i)
             if not i.fixed():
@@ -373,12 +405,12 @@ Just fill the issue_tests list with classes describing the tests and let it run.
 
 
 class FlagTrackerPlugin(Plugin):
-    """This kind of plugin monitores all the flags in the system and when certain flags
-    are set, provides some kind of higher level flag.
+    """This kind of plugin monitores all the flags in the system and when
+    certain flags are set, provides some kind of higher level flag.
 
     Example:
-      monitor flags 'filesystem_drive', 'filesystem_lvm' and 'filesystem_ext3' and if
-      everything is ok set the master flag 'filesystem'"""
+      monitor flags 'filesystem_drive', 'filesystem_lvm' and 'filesystem_ext3'
+      and if everything is ok set the master flag 'filesystem'"""
 
     # Higher level master flag to set
     #flag_decide = "x_decide"
@@ -414,10 +446,12 @@ class FlagTrackerPlugin(Plugin):
         """Decide about state of higher level flags."""
          #We want these functions to be overridden by the plugin developer.
         if self.__class__ is FlagTrackerPlugin:
-            Logger.warning("Decide is an abstract method, it should be used as such.")
-        
+            Logger.warning("Decide is an abstract method, it should be used \
+                    as such.")
+
         if self.flag_decide is None:
-            Logger.warning("You have to specify flag to set when everything is ok.")
+            Logger.warning("You have to specify flag to set when everything \
+                    is ok.")
             return Return
 
         for flag in self.flag_list:
@@ -433,7 +467,7 @@ class PluginSystem(object):
 
     name = "Plugin System"
 
-    def __init__(self, reporting, dependencies, config = Config, backups = None):
+    def __init__(self, reporting, dependencies, config=Config, backups=None):
         self._paths = Config.paths.valueItems()
         self._backups = backups
         self._reporting = reporting
@@ -443,25 +477,32 @@ class PluginSystem(object):
 
         for path in self._paths:
             if not os.path.isdir(path):
-                self._reporting.debug("The path %s does not exist" % path, level = PLUGINSYSTEM, origin = self)
+                self._reporting.debug("The path %s does not exist" % path,
+                        level = PLUGINSYSTEM, origin = self)
                 continue
             #create list of potential modules in the path
             importlist = set()
             for f in os.listdir(path):
                 fullpath = os.path.join(path, f)
-                self._reporting.debug("Processing file: %s" % (f,), level = PLUGINSYSTEM, origin = self)
-                if os.path.isdir(fullpath) and os.path.isfile(os.path.join(path, f, "__init__.py")):
+                self._reporting.debug("Processing file: %s" % (f,),
+                        level = PLUGINSYSTEM, origin = self)
+                if os.path.isdir(fullpath) \
+                    and os.path.isfile(os.path.join(path, f, "__init__.py")):
                     importlist.add(f)
-                    self._reporting.debug("Adding python module (directory): %s" % (f,),
-                            level = PLUGINSYSTEM, origin = self)
-                elif os.path.isfile(fullpath) and (f[-3:]==".so" or f[-3:]==".py"):
+                    self._reporting.debug("Adding python module (directory): %s"
+                            % (f,), level = PLUGINSYSTEM, origin = self)
+
+                elif os.path.isfile(fullpath) and (f[-3:]==".so"
+                        or f[-3:]==".py"):
                     importlist.add(f[:-3])
-                    self._reporting.debug("Adding python module (file): %s" % (f,),
-                            level = PLUGINSYSTEM, origin = self)
-                elif os.path.isfile(fullpath) and (f[-4:]==".pyc" or f[-4:]==".pyo"):
+                    self._reporting.debug("Adding python module (file): %s"
+                            % (f,), level = PLUGINSYSTEM, origin = self)
+
+                elif os.path.isfile(fullpath) and (f[-4:]==".pyc"
+                        or f[-4:]==".pyo"):
                     importlist.add(f[:-4])
-                    self._reporting.debug("Adding python module (compiled): %s" % (f,),
-                            level = PLUGINSYSTEM, origin = self)
+                    self._reporting.debug("Adding python module (compiled): %s"
+                            % (f,), level = PLUGINSYSTEM, origin = self)
 
             #try to import the modules as FirstAidKit.plugins.modulename
             for m in importlist:
@@ -470,18 +511,25 @@ class PluginSystem(object):
 
                 imp.acquire_lock()
                 try:
-                    self._reporting.debug("Importing module %s from %s" % (m, path), 
-                            level = PLUGINSYSTEM, origin = self)
+                    self._reporting.debug("Importing module %s from %s"
+                            % (m, path), level = PLUGINSYSTEM, origin = self)
                     moduleinfo = imp.find_module(m, [path])
-                    module = imp.load_module(".".join([FirstAidKit.__name__, m]), *moduleinfo)
-                    self._deps.introduce(module.get_plugin().getDeps()) #notify the dependency system about all used dependencies
-                    self._deps.introduce(module.get_plugin().getConflicts()) #notify the dependency system about all used reverse-dependencies
+                    module = imp.load_module(".".join([FirstAidKit.__name__,m]),
+                            *moduleinfo)
+                    #notify the dependency system about all used dependencies
+                    self._deps.introduce(module.get_plugin().getDeps())
+                    #notify the dependency system about all used
+                    #reverse-dependencies
+                    self._deps.introduce(module.get_plugin().getConflicts())
                     self._plugins[m] = module
-                    self._reporting.debug("Module %s successfully imported with basedir %s" % 
-                        (m, os.path.dirname(module.__file__)), level = PLUGINSYSTEM, origin = self)
+                    self._reporting.debug("Module %s successfully imported \
+                            with basedir %s" %
+                            (m, os.path.dirname(module.__file__)),
+                            level = PLUGINSYSTEM, origin = self)
                 except Exception, e:
-                    self._reporting.error(message = "Module %s was NOT imported, because of %s" % 
-                        (m, str(e)), level = PLUGINSYSTEM, origin = self)
+                    self._reporting.error(message = "Module %s was NOT \
+                            imported, because of %s" %
+                            (m, str(e)), level = PLUGINSYSTEM, origin = self)
                 finally:
                     imp.release_lock()
 
@@ -500,11 +548,12 @@ class PluginSystem(object):
         self._reporting.start(level = PLUGIN, origin = self, message = plugin)
 
         if plugin in self._plugins.keys():
-            pklass = self._plugins[plugin].get_plugin() #get top level class of plugin
+            #get top level class of plugin
+            pklass = self._plugins[plugin].get_plugin()
         else:
-            self._reporting.exception(message = "Plugin %s was not found" % plugin,
-                    level = PLUGINSYSTEM, origin = self)
-            self._reporting.stop(level = PLUGIN, origin = self, message = plugin)
+            self._reporting.exception(message = "Plugin %s was not found" %
+                    plugin, level = PLUGINSYSTEM, origin = self)
+            self._reporting.stop(level=PLUGIN, origin=self, message=plugin)
             raise InvalidPluginNameException(plugin)
 
         plugindir = os.path.dirname(self._plugins[plugin].__file__)
@@ -520,9 +569,10 @@ class PluginSystem(object):
 
         Logger.info("Using %s flow" % flowName)
         if flowName not in flows:
-            self._reporting.exception(message = "Flow %s does not exist in plugin %s" % 
-                    (flowName, plugin), level = PLUGINSYSTEM, origin = self)
-            self._reporting.stop(level = PLUGIN, origin = self, message = plugin)
+            self._reporting.exception(message = "Flow %s does not exist in \
+                    plugin %s" % (flowName, plugin), level = PLUGINSYSTEM,
+                    origin = self)
+            self._reporting.stop(level=PLUGIN, origin=self, message=plugin)
             raise InvalidFlowNameException(flowName)
 
         if dependencies:
@@ -531,29 +581,38 @@ class PluginSystem(object):
                 Logger.info("depends on: %s" % (", ".join(deps),))
                 for d in deps:
                     if not self._deps.require(d):
-                        Logger.info("depends on usatisfied condition: %s" % (d,))
-                        self._reporting.stop(level = PLUGIN, origin = self, message = plugin)
+                        Logger.info("depends on usatisfied condition: %s" %
+                                (d,))
+                        self._reporting.stop(level = PLUGIN, origin = self,
+                                message = plugin)
                         return False
             deps = pklass.getConflicts()
             if len(deps)>0:
-                Logger.info("depends on flags to be unset: %s" % (", ".join(deps),))
+                Logger.info("depends on flags to be unset: %s" %
+                        (", ".join(deps),))
                 for d in deps:
                     if self._deps.require(d):
-                        Logger.info("depends on condition to be UNset: %s" % (d,))
-                        self._reporting.stop(level = PLUGIN, origin = self, message = plugin)
+                        Logger.info("depends on condition to be UNset: %s" %
+                                (d,))
+                        self._reporting.stop(level = PLUGIN, origin = self,
+                                message = plugin)
                         return False
 
         infosection = getattr(Info, plugin)
         infosection.unlock()
-        p = pklass(flowName, reporting = self._reporting, dependencies = self._deps, backups = self._backups, path = plugindir, info = infosection)
+        p = pklass(flowName, reporting = self._reporting,
+                dependencies = self._deps, backups = self._backups,
+                path = plugindir, info = infosection)
         for (step, rv) in p: #autorun all the needed steps
             Logger.info("Running step %s in plugin %s ...", step, plugin)
-            Logger.info("%s is current step and %s is result of that step." % (step, rv))
+            Logger.info("%s is current step and %s is result of that step." %
+                    (step, rv))
 
         self._reporting.stop(level = PLUGIN, origin = self, message = plugin)
         return True
 
     def getplugin(self, plugin):
-        """Get top level class of plugin, so we can create the instance and call the steps manually"""
+        """Get top level class of plugin, so we can create the instance and
+        call the steps manually"""
         return self._plugins[plugin].get_plugin()
 

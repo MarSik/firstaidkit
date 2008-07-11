@@ -31,8 +31,11 @@ class SimpleIssue(object):
         self._happened = False
         self._fixed = False
 
-    def set(self, happened = None, fixed = None, checked = None, reporting = None, **kwreportingargs):
-        """Set the state of this issue and send a report (if reporting is not None)"""
+    def set(self, happened = None, fixed = None, checked = None,
+            reporting = None, **kwreportingargs):
+        """Set the state of this issue and send a report
+
+        The report is set if reporting is not None"""
         if happened:
             self._happened = happened
         if fixed:
@@ -44,6 +47,7 @@ class SimpleIssue(object):
 
     def happened(self):
         """Get the 'issue happened' flag.
+
 Return values:
     True - YES it happened
     False - NO, it is OK
@@ -53,9 +57,10 @@ Return values:
             return None
         else:
             return self._happened
-        
+
     def fixed(self):
         """Get the 'issue fixed' flag.
+
 Return values:
     True - YES it is fixed
     False - NO, it is still broken
@@ -91,7 +96,8 @@ Return values:
 
 class Issue(SimpleIssue):
     name = "Parent issue"
-    description = "This happens when you use the wrong object in the issues list"
+    description = "This happens when you use the wrong object in the issues \
+            list"
 
     def __init__(self, plugin, reporting = None):
         SimpleIssue.__init__(self, self.name, self.description)
@@ -99,7 +105,9 @@ class Issue(SimpleIssue):
         self._reporting = reporting
 
     def detect(self):
-        """Detect if this situation happened and store some information about it, so we can fix it
+        """Detect if situation happened and store some information about it.
+
+        This is done so we can fix it
 Return values:
     True - check OK
     False - check Failed
@@ -110,10 +118,13 @@ Return values:
         if self._checked or self._fixed:
             return not self._fixed and self._checked
 
-        return None #no error, please do the check (so the child-class knows to actually do something)
+        #no error, please do the check (so the child-class knows to actually
+        #do something)
+        return None
 
     def fix(self):
         """Fix the situation if needed
+
 Return values:
     True - fix OK
     False - fix Failed
@@ -123,6 +134,6 @@ Return values:
         #if it was not checked, the check si needed too
         if not self._checked or self._fixed:
             return self._fixed and self._checked
-
-        return None #no fix error, please do the fix (so the child-class knows to actually do something)
-
+        #no fix error, please do the fix (so the child-class knows to actually
+        #do something)
+        return None

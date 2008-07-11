@@ -1,16 +1,16 @@
 # First Aid Kit - diagnostic and repair tool for Linux
 # Copyright (C) 2007 Martin Sivak <msivak@redhat.com>
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -33,7 +33,8 @@ class Tasker:
 
     name = "Task interpreter"
 
-    def __init__(self, cfg, reporting = None, dependencies = None, backups = None, pluginsystem = None):
+    def __init__(self, cfg, reporting = None, dependencies = None,
+            backups = None, pluginsystem = None):
         self._config = cfg
         self._running = True
 
@@ -53,13 +54,16 @@ class Tasker:
             self._backups = backups
 
         if pluginsystem is None:
-            self.pluginSystem = PluginSystem(reporting = self._reporting, dependencies = self._provide, backups = self._backups)
+            self.pluginSystem = PluginSystem(reporting = self._reporting,
+                    dependencies = self._provide, backups = self._backups)
         else:
             self.pluginSystem = pluginsystem
 
     def interrupt(self):
         self._running = False
-        self._reporting.info("You sent an interrupt signal to Tasker! This is not recommended.", level = TASKER, origin = self, importance = logging.WARNING)
+        self._reporting.info("You sent an interrupt signal to \
+                Tasker! This is not recommended.", level = TASKER,
+                origin = self, importance = logging.WARNING)
 
     def flags(self):
         return self._provide
@@ -84,8 +88,9 @@ class Tasker:
                     level = TASKER, origin = self, importance = logging.WARNING)
             self._provide.provide("root")
         else:
-            self._reporting.info("You are not running the firstaidkit as root." \
-                    "Some plugins may not be available.", level = TASKER, origin = self, importance = logging.WARNING)
+            self._reporting.info("You are not running the firstaidkit as " \
+                    "root.  Some plugins may not be available.", level = TASKER,
+                    origin = self, importance = logging.WARNING)
             self._provide.unprovide("root")
 
         #initialize the startup set of flags
@@ -93,13 +98,15 @@ class Tasker:
         for flag in self._config.operation._list("flags"):
             self._provide.provide(flag)
 
-        if self._config.operation.mode in ("auto", "auto-flow", "plugin", "flow"):
+        # For the auto, auto-flow, plugin, flow cases.
+        if self._config.operation.mode in ("auto", "auto-flow", "plugin",
+                "flow"):
 
             if self._config.operation.mode == "plugin":
                 pluginlist = self._config.operation._list("plugin")
             else:
                 pluginlist = set(pluginSystem.list())
-            
+
             if self._config.operation.mode == "auto-flow":
                 flows = len(pluginlist)*[self._config.operation.flow]
             elif self._config.operation.mode == "flow":
@@ -108,61 +115,87 @@ class Tasker:
             else:
                 flows = len(pluginlist)*[None]
 
-            #iterate through plugins until there is no plugin left or no action performed during whole iteration
+            #iterate through plugins until there is no plugin left or no
+            #action performed during whole iteration
             oldlist = set()
             actlist = set(zip(pluginlist, flows))
 
             self._running = True
             while self._running and len(actlist)>0 and oldlist!=actlist:
                 oldlist = copy.copy(actlist)
+
                 for plugin,flow in oldlist:
-                    #If plugin does not contain the automated flow or if it ran correctly, remove it from list
-                    if ((flow and not flow in pluginSystem.getplugin(plugin).getFlows()) or
-                                (not flow and not pluginSystem.getplugin(plugin).default_flow in
-                                pluginSystem.getplugin(plugin).getFlows())):
-                        self._reporting.info("Plugin %s does not contain flow %s"%
-                                (plugin, flow or pluginSystem.getplugin(plugin).default_flow,), 
+                    #If plugin does not contain the automated flow or if
+                    #it ran correctly, remove it from list
+                    if ((flow and
+                        not flow in pluginSystem.getplugin(plugin).getFlows())
+                        or (not flow and
+                            not pluginSystem.getplugin(plugin).default_flow in
+                            pluginSystem.getplugin(plugin).getFlows())):
+
+                        self._reporting.info("Plugin %s does not contain \
+                                flow %s"% (plugin, flow or \
+                                pluginSystem.getplugin(plugin).default_flow,), \
                                 level = TASKER, origin = self)
+
                         actlist.remove((plugin, flow))
-                    elif pluginSystem.autorun(plugin, flow = flow, dependencies = self._config.operation.dependencies != "False"):
+
+                    elif (pluginSystem.autorun(plugin, flow = flow,
+                            dependencies = self._config.operation.dependencies
+                            != "False")):
                         actlist.remove((plugin, flow))
 
             #some plugins may not be called because of unfavorable flags
             for plugin in set(map(lambda x: x[0], actlist)):
-                self._reporting.info("Plugin %s was not called because of unsatisfied dependencies"%
-                        (plugin,), level = TASKER, origin = self, importance = logging.WARNING)
+                self._reporting.info("Plugin %s was not called because of \
+                        unsatisfied dependencies"% (plugin,), level = TASKER, \
+                        origin = self, importance = logging.WARNING)
+
+        # For the flags case
         elif self._config.operation.mode == "flags":
-            self._reporting.table(self._provide.known(), level = TASKER, origin = self, title = "List of flags")
+            self._reporting.table(self._provide.known(), level = TASKER,
+                    origin = self, title = "List of flags")
+
+        # For the list case
         elif self._config.operation.mode == "list":
             #get list of plugins
             rep = []
             for k in pluginSystem.list():
                 p = pluginSystem.getplugin(k)
-                flowinfo = [ (f, p.getFlow(f).description) for f in p.getFlows() ]
-                rep.append((k, p.name, p.version, p.author, p.description, p.default_flow, flowinfo))
-            self._reporting.table(rep, level = TASKER, origin = self, title = "List of plugins")
+                flowinfo = [(f, p.getFlow(f).description) for f in p.getFlows()]
+                rep.append((k, p.name, p.version, p.author, p.description,
+                    p.default_flow, flowinfo))
+            self._reporting.table(rep, level = TASKER, origin = self,
+                    title = "List of plugins")
+
+        # For the info case
         elif self._config.operation.mode == "info":
             #get info about plugin
             try:
                 p = pluginSystem.getplugin(self._config.operation.params)
             except KeyError:
-                Logger.error("No such plugin '%s'" % (self._config.operation.params,))
+                Logger.error("No such plugin '%s'" %
+                        (self._config.operation.params,))
                 return False
             flowinfo = [ (f, p.getFlow(f).description) for f in p.getFlows() ]
-            rep = {"id": self._config.operation.params, "name": p.name, 
-                    "version": p.version, "author": p.author, 
-                    "description": p.description, "flow": p.default_flow, "flows": flowinfo}
-            self._reporting.tree(rep, level = TASKER, origin = self, 
-                    title = "Information about plugin %s" % (self._config.operation.params,))
+            rep = {"id": self._config.operation.params, "name": p.name,
+                    "version": p.version, "author": p.author,
+                    "description": p.description, "flow": p.default_flow,
+                    "flows": flowinfo}
+            self._reporting.tree(rep, level = TASKER, origin = self,
+                    title = "Information about plugin %s" % \
+                            (self._config.operation.params,))
+
+        # Any other case
         else:
             Logger.error("Incorrect task specified")
             self._reporting.stop(level = TASKER, origin = self)
             return False
 
         if self._config.operation.printinfo:
-            print "--- Info section ---"
+            print("--- Info section ---")
             Info.write(sys.stdout)
-            print "--------------------"
+            print("--------------------")
 
         self._reporting.stop(level = TASKER, origin = self)
         return True

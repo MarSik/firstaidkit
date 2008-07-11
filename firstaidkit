@@ -1,17 +1,17 @@
 #!/usr/bin/python -tt
 # First Aid Kit - diagnostic and repair tool for Linux
 # Copyright (C) 2007 Martin Sivak <msivak@redhat.com>
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -45,51 +45,69 @@ class Output(Thread):
             self.process_message(message)
 
     def process_message(self, message):
-            if message["action"]==reporting.END:
-                self._running = False
-                return
-            elif message["action"]==reporting.QUESTION:
-                print "FIXME: Questions not implemented yet"
-            elif message["action"]==reporting.START:
-                if self._importance<=message["importance"]:
-                    print "START: %s (%s)" % (message["origin"].name, message["message"])
-                self.levelstack.append(message["origin"].name)
-            elif message["action"]==reporting.STOP:
-                if self._importance<=message["importance"]:
-                    print "STOP: %s (%s)" % (message["origin"].name, message["message"])
-                if self.levelstack[-1]!=message["origin"].name:
-                    print "WARNING: START/STOP ordering mismatch in stack: "+" / ".join(self.levelstack)
-                else:
-                    self.levelstack.pop()
-            elif message["action"]==reporting.PROGRESS:
-                if self._importance<=message["importance"]:
-                    print "PROGRESS: %d of %d (%s)" % (message["message"][0], message["message"][1], message["origin"].name)
-            elif message["action"]==reporting.INFO:
-                if self._importance<=message["importance"]:
-                    print "INFO: %s (%s)" % (message["message"], message["origin"].name)
-            elif message["action"]==reporting.ALERT:
-                if self._importance<=message["importance"]:
-                    print "ALERT: %s (%s)" % (message["message"], message["origin"].name)
-            elif message["action"]==reporting.EXCEPTION:
-                print "EXCEPTION: %s (%s)" % (message["message"], message["origin"].name)
-            elif message["action"]==reporting.TABLE:
-                if self._importance<=message["importance"]:
-                    print "TABLE %s FROM %s" % (message["title"], message["origin"].name,)
-                    pprint.pprint(message["message"])
-            elif message["action"]==reporting.TREE:
-                if self._importance<=message["importance"]:
-                    print "TREE %s FROM %s" % (message["title"], message["origin"].name,)
-                    pprint.pprint(message["message"])
-            elif message["action"]==reporting.ISSUE:
-                print "ISSUE FROM %s" % (message["origin"].name,)
-                pprint.pprint(str(message["message"]))
-            else:
-                print "FIXME: Unknown message action %d!!" % (message["action"],)
-                print message
+        if message["action"]==reporting.END:
+            self._running = False
+            return
+        elif message["action"]==reporting.QUESTION:
+            print("FIXME: Questions not implemented yet")
 
+        elif message["action"]==reporting.START:
+            if self._importance<=message["importance"]:
+                print("START: %s (%s)" % (message["origin"].name,
+                        message["message"]))
+            self.levelstack.append(message["origin"].name)
+
+        elif message["action"]==reporting.STOP:
+            if self._importance<=message["importance"]:
+                print("STOP: %s (%s)" % (message["origin"].name,
+                        message["message"]))
+            if self.levelstack[-1]!=message["origin"].name:
+                print("WARNING: START/STOP ordering mismatch in stack: " \
+                        +" / ".join(self.levelstack))
+            else:
+                self.levelstack.pop()
+
+        elif message["action"]==reporting.PROGRESS:
+            if self._importance<=message["importance"]:
+                print("PROGRESS: %d of %d (%s)" % (message["message"][0],
+                        message["message"][1], message["origin"].name))
+
+        elif message["action"]==reporting.INFO:
+            if self._importance<=message["importance"]:
+                print("INFO: %s (%s)" % (message["message"],
+                        message["origin"].name))
+
+        elif message["action"]==reporting.ALERT:
+            if self._importance<=message["importance"]:
+                print("ALERT: %s (%s)" % (message["message"],
+                        message["origin"].name))
+
+        elif message["action"]==reporting.EXCEPTION:
+            print("EXCEPTION: %s (%s)" % (message["message"],
+                    message["origin"].name))
+
+        elif message["action"]==reporting.TABLE:
+            if self._importance<=message["importance"]:
+                print("TABLE %s FROM %s" % (message["title"],
+                        message["origin"].name,))
+                pprint.pprint(message["message"])
+
+        elif message["action"]==reporting.TREE:
+            if self._importance<=message["importance"]:
+                print("TREE %s FROM %s" % (message["title"],
+                        message["origin"].name,))
+                pprint.pprint(message["message"])
+
+        elif message["action"]==reporting.ISSUE:
+            print("ISSUE FROM %s" % (message["origin"].name,))
+            pprint.pprint(str(message["message"]))
+        else:
+            print("FIXME: Unknown message action %d!!" % (message["action"],))
+            print(message)
 
 class GuiOutput(Thread):
-    def __init__(self, cfg, tasker, dir, importance = logging.INFO, *args, **kwargs):
+    def __init__(self, cfg, tasker, dir, importance = logging.INFO,
+            *args, **kwargs):
         Thread.__init__(self, *args, **kwargs)
         self.w = MainWindow(cfg, tasker, importance = importance, dir=dir)
 
@@ -97,7 +115,7 @@ class GuiOutput(Thread):
         self.w.run()
 
 def usage(name):
-    print """Usage:
+    print("""Usage:
  %s [params]
  %s [params] -a         - runs the automated default mode [diagnose]
  %s [params] -a <flow>  - runs the automated mode with specified flow
@@ -121,7 +139,7 @@ def usage(name):
   --list           - list all plugins
   --info <plugin>  - get information about plugin
   --nodeps         - do not use plugin dependencies
-""" % (name, name, name, name, name)
+""" % (name, name, name, name, name))
 
 if __name__=="__main__":
     try:
@@ -130,58 +148,75 @@ if __name__=="__main__":
                 "verbose", "log=", "exclude=","flag=", "gui=", "plugin-path=",
                 "print-config", "help", "flags", "nodeps"])
     except Exception, e:
-        print "\nError parsing the argument line: ",e,"\n"
+        print("\nError parsing the argument line: ",e,"\n")
         usage(sys.argv[0])
         sys.exit(1)
 
-    #
     # Preliminary checks before we parse the options.
-    #
     if len(params) == 0:
         Flags.main_help = True
 
     for key,val in params:
-        if key in ("-t", "--task"): #currently not implemented and not documented!
+        #currently not implemented and not documented!
+        if key in ("-t", "--task"):
             Config.operation.mode = "task"
             Flags.main_help = False
+
         elif key in ("-a", "--auto"):
             Config.operation.mode = "auto"
             Flags.main_help = False
+
         elif key in ("-f", "--flow"):
             Config.operation.mode = "flow"
             Flags.main_help = False
+
         elif key in ("-c", "--config"):
             Config.read(val)
+
         elif key in ("-v", "--verbose"):
             Config.operation.verbose = "True"
+
         elif key in ("-l", "--log"):
             Config.log.method = val
+
         elif key in ("-x", "--exclude"):
-            Config.plugin.disabled = Config.plugin.disabled + ' "%s"' % (val.encode("string-escape"))
-            print "Excluding plugin %s\n" % (val,)
+            Config.plugin.disabled = Config.plugin.disabled + \
+                    ' "%s"' % (val.encode("string-escape"))
+            print("Excluding plugin %s\n" % (val,))
+
         elif key in ("-F", "--flag"):
-            Config.operation.flags = Config.operation.flags + ' "%s"' % (val.encode("string-escape"))
+            Config.operation.flags = Config.operation.flags + \
+                    ' "%s"' % (val.encode("string-escape"))
+
         elif key in ("-r", "--root"):
             Config.system.root = val
+
         elif key in ("-g", "--gui"):
             Config.operation.gui = val
+
         elif key in ("-P", "--plugin-path"):
             if not os.path.isdir(val):
-                print "%s is not a valid directory.  Exiting..."% val
+                print("%s is not a valid directory.  Exiting..."% val)
                 sys.exit(1)
             Config.set("paths", val.strip("/"), val)
+
         elif key in ("--print-config"):
             Flags.print_config = True
+
         elif key in ("-h", "--help"):
             Config.operation.help = "True"
             Flags.main_help = True
+
         elif key in ("--flags"):
             Config.operation.mode = "flags"
+
         elif key in ("--list"):
             Config.operation.mode = "list"
+
         elif key in ("--info"):
             Config.operation.mode = "info"
             Config.operation.params = val
+
         elif key in ("--nodeps"):
             Config.operation.dependencies = "False"
 
@@ -191,7 +226,7 @@ if __name__=="__main__":
 
     if Config.operation.mode == "flow":
         if len(rest) < 1:
-            print "Error in the command arguments.\n"
+            print("Error in the command arguments.\n")
             usage(sys.argv[0])
             sys.exit(1)
         Config.operation.plugin = rest[0].encode("string-escape")
@@ -199,10 +234,12 @@ if __name__=="__main__":
             Config.operation.mode = "plugin"
         else:
             Config.operation.flow = rest[1].encode("string-escape")
+
     elif Config.operation.mode == "auto":
         if len(rest)>0:
             Config.operation.mode = "auto-flow"
             Config.operation.flow = rest[0].encode("string-escape")
+
     elif Config.operation.mode == "task":
         Config.operation.plugin = rest[0]
         Config.operation.task = rest[1]
@@ -224,12 +261,12 @@ if __name__=="__main__":
 
     # TUI/GUI detection
     if not Flags.gui_available and Config.operation.gui=="gtk":
-        print "GUI mode not available"
+        print("GUI mode not available")
         Config.operation.gui="console"
 
     # TUI has to have operation specified
     if Config.operation.mode == "" and Config.operation.gui!="gtk":
-        print "\nError in command arguments: no mode specified\n"
+        print("\nError in command arguments: no mode specified\n")
         usage(sys.argv[0])
         sys.exit(1)
 
@@ -244,7 +281,7 @@ if __name__=="__main__":
                 Config.log.filename = lfile
                 continue
             else:
-                print e
+                print(e)
                 usage(sys.argv[0])
                 sys.exit(1)
 
@@ -252,33 +289,36 @@ if __name__=="__main__":
     try:
         singlerun = Tasker(Config, reporting = report)
     except BackupException, be:
-        print "\nError: %s" % be[0]
-        print "\nThis happens when firstaidkit end without properly closing the backup dir.  "
-        print "If you are sure you don't have sensitive information in that directory, "
-        print "you can safely erase it.  If you are not sure, just change the "
-        print "directory name.\n"
+        print("\nError: %s\n"
+               "This happens when firstaidkit end without properly closing the "
+               "backup dir. If you are sure you don't have sensitive information "
+               "in that directory, you can safely erase it.  If you are not sure, "
+               "just change the directory name.\n" % be[0])
         sys.exit(1)
 
     if Config.operation.verbose=="False":
         outputThread = Output(singlerun.reporting())
         if Config.operation.gui=="gtk":
-            outputThreadGui = GuiOutput(Config, singlerun, dir = os.path.dirname(frontend_gtk.__file__))
+            outputThreadGui = GuiOutput(Config, singlerun,
+                    dir = os.path.dirname(frontend_gtk.__file__))
     else:
         outputThread = Output(singlerun.reporting(), importance = 0)
         if Config.operation.gui=="gtk":
-            outputThreadGui = GuiOutput(Config, singlerun, importance = 0,  dir = os.path.dirname(frontend_gtk.__file__))
+            outputThreadGui = GuiOutput(Config, singlerun, importance = 0,
+                    dir = os.path.dirname(frontend_gtk.__file__))
 
     if Config.operation.gui=="gtk":
         singlerun.reporting().notify(outputThreadGui.w.update)
     singlerun.reporting().notify(outputThread.process_message)
 
-    print "Starting the Threads"
+    print("Starting the Threads")
     #outputThread.start() #not needed, we use the callback method now
     if Config.operation.gui=="gtk":
         outputThreadGui.start()
 
-    if Config.operation.gui=="console": #XXX change this to detection if GUI is not used (eg. noninteractive mode)
-        print "Do the work!"
+    #XXX change this to detection if GUI is not used (eg. noninteractive mode)
+    if Config.operation.gui=="console":
+        print("Do the work!")
 
         # Lock the Configuration
         Config.lock()
@@ -286,14 +326,15 @@ if __name__=="__main__":
         try:
             singlerun.run()
         except Exception, e:
-            print "!!! Impossible happened!! The First Aid Kit crashed in very unsafe way.\n!!! Please report this to the authors along with the following message.\n\n"
+            print("!!! Impossible happened!! The First Aid Kit crashed in "
+                   "very unsafe way.\n!!! Please report this to the authors "
+                   "along with the following message.\n\n")
             Config.write(sys.stdout)
-            print
-            print e
+            print("\n%s"% e)
         finally:
             singlerun.end()
 
-    print "Waiting for the Threads"
+    print("Waiting for the Threads")
     #outputThread.join() #not needed, we use the callback method now
     if Config.operation.gui=="gtk":
         outputThreadGui.join()
@@ -303,4 +344,4 @@ if __name__=="__main__":
         del outputThreadGui
     del singlerun
 
-    print "Done."
+    print("Done.")

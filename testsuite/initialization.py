@@ -29,9 +29,11 @@ class Initialization(unittest.TestCase):
         self.confPath = self.contentdir+"/initialization.conf"
         Config.read(self.confPath)
         initLogger(Config)
-        self.pluginSystem = PluginSystem(reporting=Reports(), dependencies=Dependencies())
+        self.pluginSystem = PluginSystem(reporting=Reports(),
+                dependencies=Dependencies())
         self.plugin = self.pluginSystem.getplugin("pluginInfo")
-        py_compile.compile("%s/pycFile" % self.contentdir, cfile="%s/pycFile.pyc" % self.contentdir)
+        py_compile.compile("%s/pycFile" % self.contentdir,
+                cfile="%s/pycFile.pyc" % self.contentdir)
 
     def tearDown(self):
         if(os.path.isfile(Config.log.filename)):
@@ -41,13 +43,16 @@ class Imports(Initialization):
     """Tests the capability of importing 3 typs of files."""
 
     def testImportsPy(self):
-        self.assert_('pyFile' in self.pluginSystem.list(), "Firstaidkit failed to import a 'py' file.")
+        self.assert_('pyFile' in self.pluginSystem.list(),
+                "Firstaidkit failed to import a 'py' file.")
 
     def testImportsPyc(self):
-        self.assert_('pycFile' in self.pluginSystem.list(), "Firstaidkit failed to import a 'pyc' file.")
+        self.assert_('pycFile' in self.pluginSystem.list(),
+                "Firstaidkit failed to import a 'pyc' file.")
 
     def testImportsDir(self):
-        self.assert_('directory' in self.pluginSystem.list(), "Firstaidkit failed to import from a directory.")
+        self.assert_('directory' in self.pluginSystem.list(),
+                "Firstaidkit failed to import from a directory.")
 
 class Info(Initialization):
     """Test the infomration from the plugins."""
@@ -61,8 +66,11 @@ class Info(Initialization):
         self.assertEqual(self.plugin.version, "3.4.5")
 
     def testInfoFlowName(self):
-        self.assert_('newflow' in self.plugin.getFlows(), "Firstaidkit failed to show access the flow name")
+        self.assert_('newflow' in self.plugin.getFlows(),
+                "Firstaidkit failed to show access the flow name")
 
     def testInfoFlowDescription(self):
-        self.assert_('This is the newflow' == self.plugin.getFlow("newflow").description, "Firstaidkit failed to show access the flow name")
+        self.assert_('This is the newflow' == \
+                self.plugin.getFlow("newflow").description,
+                "Firstaidkit failed to show access the flow name")
 

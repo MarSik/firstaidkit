@@ -24,11 +24,11 @@ class PluginInfo(Plugin):
     author = "John Galt"
     flows={}
     flows["newflow"] = Flow({
-                    Plugin.initial: {Return: "prepare"},
-                    "prepare"     : {ReturnSuccess: "fix"},
-                    "fix"         : {ReturnSuccess: "clean", ReturnFailure: "clean"},
-                    "clean"       : {ReturnSuccess: Plugin.final}
-                    }, description="This is the newflow")
+            Plugin.initial: {Return: "prepare"},
+            "prepare"     : {ReturnSuccess: "fix"},
+            "fix"         : {ReturnSuccess: "clean", ReturnFailure: "clean"},
+            "clean"       : {ReturnSuccess: Plugin.final}
+            }, description="This is the newflow")
 
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)

@@ -43,7 +43,8 @@ class CallbacksMainWindow(object):
             return
 
         def _o(pages, stopbutton):
-            """Always return False -> remove from the idle queue after first execution"""
+            """Always return False -> remove from the idle queue after first
+            execution"""
             for i in range(pages.get_n_pages()):
                 pages.get_nth_page(i).set_sensitive(True)
             stopbutton.set_sensitive(False)
@@ -67,17 +68,20 @@ class CallbacksMainWindow(object):
 
     #menu callbacks
     def on_mainmenu_open_activate(self, widget, *args):
-        print "on_mainmenu_open_activate"
-        d = gtk.FileChooserDialog(title="Load the configuration file", parent=self._dialog, action=gtk.FILE_CHOOSER_ACTION_OPEN,
+        print("on_mainmenu_open_activate")
+        d = gtk.FileChooserDialog(title="Load the configuration file",
+                parent=self._dialog, action=gtk.FILE_CHOOSER_ACTION_OPEN,
                 buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
-        print d.run()
+        print(d.run())
         d.destroy()
         return True
 
     def on_mainmenu_save_activate(self, widget, *args):
-        print "on_mainmenu_save_activate"
-        d = gtk.FileChooserDialog(title="Save the configuration file", parent=self._dialog, action=gtk.FILE_CHOOSER_ACTION_SAVE,
-                buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+        print("on_mainmenu_save_activate")
+        d = gtk.FileChooserDialog(title="Save the configuration file",
+                parent=self._dialog, action=gtk.FILE_CHOOSER_ACTION_SAVE,
+                buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT, gtk.STOCK_OK,
+                    gtk.RESPONSE_ACCEPT))
         ret=d.run()
 
         if ret==gtk.RESPONSE_ACCEPT:
@@ -92,14 +96,16 @@ class CallbacksMainWindow(object):
         return True
 
     def on_quit_activate(self, widget, *args):
-        print "on_quit_activate"
-        if True: #XXX destroy right now, but warn, in final code we have to wait until plugin finishes
-            print "!!! You should wait until the running plugin finishes!!"
+        print("on_quit_activate")
+        #XXX destroy right now, but warn, in final code we have to wait until
+        #plugin finishes
+        if True:
+            print("!!! You should wait until the running plugin finishes!!")
             self._dialog.destroy()
         return True
 
     def on_destroy(self, widget, *args):
-        print "on_destroy"
+        print("on_destroy")
         self._tasker.end()
         del self._tasker
         del self._cfg
@@ -107,14 +113,15 @@ class CallbacksMainWindow(object):
         gtk.main_quit()
 
     def on_mainmenu_about_activate(self, widget, *args):
-        print "on_mainmenu_about_activate"
-        AboutDialog(self._cfg, dir = os.path.dirname(self._glade.relative_file(".")))
+        print("on_mainmenu_about_activate")
+        AboutDialog(self._cfg,
+                dir = os.path.dirname(self._glade.relative_file(".")))
         return True
 
     #simple mode callbacks
     def on_b_StartSimple_activate(self, widget, *args):
-        print "on_b_StartSimple_activate"
-       
+        print("on_b_StartSimple_activate")
+
         flags = set(self._cfg.operation._list("flags"))
 
         #check fix
@@ -146,16 +153,17 @@ class CallbacksMainWindow(object):
             except KeyError, e:
                 pass
 
-        self._cfg.operation.flags = " ".join(map(lambda x: x.encode("string-escape"), flags))
+        self._cfg.operation.flags = " ".join(
+                map(lambda x: x.encode("string-escape"), flags))
         self.execute()
         return True
 
     #advanced mode callbacks
     def on_b_StartAdvanced_activate(self, widget, *args):
-        print "on_b_StartAdvanced_activate"
-        
+        print("on_b_StartAdvanced_activate")
+
         flags = set(self._cfg.operation._list("flags"))
-        
+
         #set the auto-flow
         self._cfg.operation.mode = "auto-flow"
 
@@ -191,34 +199,37 @@ class CallbacksMainWindow(object):
         else:
             self._cfg.operation.dependencies = "False"
 
-        self._cfg.operation.flags = " ".join(map(lambda x: x.encode("string-escape"), flags))
+        self._cfg.operation.flags = " ".join(
+                map(lambda x: x.encode("string-escape"), flags))
 
         self.execute()
         return True
 
     #expert mode callbacks
     def on_b_FlagsExpert_activate(self, widget, *args):
-        print "on_b_FlagsExpert_activate"
-        FlagList(self._cfg, self._tasker.flags(), dir = os.path.dirname(self._glade.relative_file(".")))
+        print("on_b_FlagsExpert_activate")
+        FlagList(self._cfg, self._tasker.flags(),
+                dir = os.path.dirname(self._glade.relative_file(".")))
         return True
 
     def on_b_InfoExpert_activate(self, widget, *args):
-        print "on_b_InfoExpert_activate"
-        
+        print("on_b_InfoExpert_activate")
+
         path,focus = self._data.plugin_list.get_cursor()
         if path is None:
             return True
 
         iter = self._data.plugin_list_store.get_iter(path)
         pluginname = self._data.plugin_list_store.get_value(iter, 4)
-        print "Selected: ", pluginname
+        print("Selected: %s"% pluginname)
 
-        PluginInfo(self._tasker.pluginsystem().getplugin(pluginname), dir = os.path.dirname(self._glade.relative_file(".")))
+        PluginInfo(self._tasker.pluginsystem().getplugin(pluginname),
+                dir = os.path.dirname(self._glade.relative_file(".")))
 
         return True
 
     def on_b_StartExpert_activate(self, widget, *args):
-        print "on_b_StartExpert_activate"
+        print("on_b_StartExpert_activate")
 
         #check verbose
         if self._glade.get_widget("check_Expert_Verbose").get_active():
@@ -245,9 +256,11 @@ class CallbacksMainWindow(object):
         for pname,iter in self._data.plugin_iter.iteritems():
             childiter = self._data.plugin_list_store.iter_children(iter)
             while childiter is not None:
-                if self._data.plugin_list_store.get_value(childiter, 0): #checkbox is checked
+                #checkbox is checked
+                if self._data.plugin_list_store.get_value(childiter, 0):
                     plugins.append(pname)
-                    flows.append(self._data.plugin_list_store.get_value(childiter, 1))
+                    flows.append(self._data.plugin_list_store.get_value(
+                        childiter, 1))
                 childiter = self._data.plugin_list_store.iter_next(childiter)
 
         plugins = map(lambda x: x.encode("string-escape"), plugins)
@@ -263,14 +276,14 @@ class CallbacksMainWindow(object):
 
     #results callbacks
     def on_b_ResetResults_activate(self, widget, *args):
-        print "on_b_ResetResults_activate"
+        print("on_b_ResetResults_activate")
         self._data.result_list_store.clear()
         del self._data.result_list_iter
         self._data.result_list_iter = dict()
         return True
 
     def on_b_StopResults_activate(self, widget, *args):
-        print "on_b_StopResults_activate"
+        print("on_b_StopResults_activate")
         self._tasker.interrupt()
         return True
 
@@ -281,7 +294,7 @@ class CallbacksFlagList(object):
         self._cfg = cfg
 
     def on_b_OK_activate(self, widget, *args):
-        print "on_b_OK_activate"
+        print("on_b_OK_activate")
 
         f = set()
         for k,w in self._flags.iteritems():
@@ -291,13 +304,14 @@ class CallbacksFlagList(object):
         if len(f)==0:
             self._cfg.operation.flags = ""
         else:
-            self._cfg.operation.flags = " ".join(map(lambda x: x.encode("string-escape"), f))
+            self._cfg.operation.flags = " ".join(
+                    map(lambda x: x.encode("string-escape"), f))
 
         self._dialog.destroy()
         return True
 
     def on_b_Cancel_activate(self, widget, *args):
-        print "on_b_Cancel_activate"
+        print("on_b_Cancel_activate")
         self._dialog.destroy()
         return True
 
@@ -305,9 +319,11 @@ class MainWindow(object):
     def __init__(self, cfg, tasker, importance = logging.INFO, dir=""):
         self._importance = importance
         self._cfg = cfg
-        self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"), "MainWindow")
+        self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"),
+                "MainWindow")
         self._window = self._glade.get_widget("MainWindow")
-        self._cb = CallbacksMainWindow(self._window, cfg, tasker, self._glade, self)
+        self._cb = CallbacksMainWindow(self._window, cfg, tasker, self._glade,
+                self)
         self._glade.signal_autoconnect(self._cb)
         self._window.connect("destroy", self._cb.on_destroy)
 
@@ -315,7 +331,9 @@ class MainWindow(object):
         self.status_text = self._glade.get_widget("status_text")
         self.status_progress = self._glade.get_widget("status_progress")
 
-        self.plugin_list_store = gtk.TreeStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_STRING)
+        self.plugin_list_store = gtk.TreeStore(gobject.TYPE_BOOLEAN,
+                gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_STRING,
+                gobject.TYPE_STRING)
         self.plugin_list = self._glade.get_widget("tree_Expert")
         self.plugin_list.set_model(self.plugin_list_store)
 
@@ -324,26 +342,33 @@ class MainWindow(object):
         self.plugin_rend_toggle.set_radio(False)
         self.plugin_rend_toggle.set_property("activatable", False)
 
-        def plugin_rend_text_func(column, cell_renderer, tree_model, iter, user_data):
+        def plugin_rend_text_func(column, cell_renderer, tree_model, iter,
+                user_data):
             if tree_model.iter_depth(iter)==0:
                 cell_renderer.set_property("cell-background-set", True)
-                cell_renderer.set_property("cell-background-gdk", gtk.gdk.Color(red=50000, green=50000, blue=50000))
-                cell_renderer.set_property("markup", "<b>" + tree_model.get_value(iter, user_data) + "</b>")
+                cell_renderer.set_property("cell-background-gdk",
+                        gtk.gdk.Color(red=50000, green=50000, blue=50000))
+                cell_renderer.set_property("markup",
+                        "<b>" + tree_model.get_value(iter, user_data) + "</b>")
             else:
                 cell_renderer.set_property("cell-background-set", False)
-                cell_renderer.set_property("text", tree_model.get_value(iter, user_data))
+                cell_renderer.set_property("text",
+                        tree_model.get_value(iter, user_data))
             return
 
-        def plugin_rend_toggle_func(column, cell_renderer, tree_model, iter, user_data = None):
+        def plugin_rend_toggle_func(column, cell_renderer, tree_model, iter,
+                user_data = None):
             if tree_model.iter_depth(iter)==0:
                 cell_renderer.set_property("activatable", False)
                 cell_renderer.set_property("active", False)
                 cell_renderer.set_property("visible", False)
                 cell_renderer.set_property("cell-background-set", True)
-                cell_renderer.set_property("cell-background-gdk", gtk.gdk.Color(red=40000, green=40000, blue=40000))
+                cell_renderer.set_property("cell-background-gdk",
+                        gtk.gdk.Color(red=40000, green=40000, blue=40000))
             else:
                 cell_renderer.set_property("activatable", True)
-                cell_renderer.set_property("active", tree_model.get_value(iter,0))
+                cell_renderer.set_property("active",
+                        tree_model.get_value(iter,0))
                 cell_renderer.set_property("visible", True)
                 cell_renderer.set_property("cell-background-set", False)
             return
@@ -355,20 +380,25 @@ class MainWindow(object):
 
         self.plugin_list_col_0 = gtk.TreeViewColumn('Use')
         self.plugin_list_col_0.pack_start(self.plugin_rend_toggle, False)
-        self.plugin_list_col_0.set_cell_data_func(self.plugin_rend_toggle, plugin_rend_toggle_func)
-        self.plugin_rend_toggle.connect("toggled", plugin_rend_toggle_cb, (self.plugin_list_store, 0))
+        self.plugin_list_col_0.set_cell_data_func(self.plugin_rend_toggle,
+                plugin_rend_toggle_func)
+        self.plugin_rend_toggle.connect("toggled", plugin_rend_toggle_cb,
+                (self.plugin_list_store, 0))
 
         self.plugin_list_col_1 = gtk.TreeViewColumn('Name')
         self.plugin_list_col_1.pack_start(self.plugin_rend_text, True)
-        self.plugin_list_col_1.set_cell_data_func(self.plugin_rend_text, plugin_rend_text_func, 1)
+        self.plugin_list_col_1.set_cell_data_func(self.plugin_rend_text,
+                plugin_rend_text_func, 1)
 
         self.plugin_list_col_2 = gtk.TreeViewColumn('Description')
         self.plugin_list_col_2.pack_start(self.plugin_rend_text, True)
-        self.plugin_list_col_2.set_cell_data_func(self.plugin_rend_text, plugin_rend_text_func, 2)
+        self.plugin_list_col_2.set_cell_data_func(self.plugin_rend_text,
+                plugin_rend_text_func, 2)
 
         self.plugin_list_col_3 = gtk.TreeViewColumn('Parameters')
         self.plugin_list_col_3.pack_start(self.plugin_rend_text, True)
-        self.plugin_list_col_3.set_cell_data_func(self.plugin_rend_text, plugin_rend_text_func, 3)
+        self.plugin_list_col_3.set_cell_data_func(self.plugin_rend_text,
+                plugin_rend_text_func, 3)
 
         self.plugin_list.append_column(self.plugin_list_col_0)
         self.plugin_list.append_column(self.plugin_list_col_1)
@@ -383,7 +413,9 @@ class MainWindow(object):
         #flow combobox
         for plname in pluginsystem.list():
             p = pluginsystem.getplugin(plname)
-            piter = self.plugin_list_store.append(None, [False, "%s (%s)" % (p.name, p.version), p.description, "", plname])
+            piter = self.plugin_list_store.append(None,
+                    [False, "%s (%s)" % (p.name, p.version), p.description,
+                        "", plname])
             self.plugin_iter[plname] = piter
             for n,d in [ (f, p.getFlow(f).description) for f in p.getFlows() ]:
                 self.plugin_list_store.append(piter, [False, n, d, "", plname])
@@ -403,12 +435,14 @@ class MainWindow(object):
         self.flow_list.set_active(self.flow_list_store_diagnose)
 
         # results
-        self.result_list_store = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_INT)
+        self.result_list_store = gtk.ListStore(gobject.TYPE_STRING,
+                gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_INT)
         self.result_list = self._glade.get_widget("tree_Results")
         self.result_list.set_model(self.result_list_store)
         self.result_list_iter = {}
-        
-        def result_rend_text_func(column, cell_renderer, tree_model, iter, user_data):
+
+        def result_rend_text_func(column, cell_renderer, tree_model, iter,
+                user_data):
             colors = [
                     gtk.gdk.Color(red=50000, green=50000, blue=50000),
                     gtk.gdk.Color(red=10000, green=50000, blue=10000),
@@ -422,26 +456,31 @@ class MainWindow(object):
 
             if user_data==2 and state!=2:
                 cell_renderer.set_property("foreground-set", True)
-                cell_renderer.set_property("foreground-gdk", gtk.gdk.Color(red=40000, green=40000, blue=40000))
+                cell_renderer.set_property("foreground-gdk",
+                        gtk.gdk.Color(red=40000, green=40000, blue=40000))
             else:
                 cell_renderer.set_property("foreground-set", False)
 
-            cell_renderer.set_property("text", tree_model.get_value(iter, user_data))
+            cell_renderer.set_property("text",
+                    tree_model.get_value(iter, user_data))
             return
-        
+
         self.result_rend_text = gtk.CellRendererText()
-        
+
         self.result_list_col_0 = gtk.TreeViewColumn('Name')
         self.result_list_col_0.pack_start(self.result_rend_text, True)
-        self.result_list_col_0.set_cell_data_func(self.result_rend_text, result_rend_text_func, 0)
+        self.result_list_col_0.set_cell_data_func(self.result_rend_text,
+                result_rend_text_func, 0)
 
         self.result_list_col_1 = gtk.TreeViewColumn('Status')
         self.result_list_col_1.pack_start(self.result_rend_text, True)
-        self.result_list_col_1.set_cell_data_func(self.result_rend_text, result_rend_text_func, 1)
+        self.result_list_col_1.set_cell_data_func(self.result_rend_text,
+                result_rend_text_func, 1)
 
         self.result_list_col_2 = gtk.TreeViewColumn('Description')
         self.result_list_col_2.pack_start(self.result_rend_text, True)
-        self.result_list_col_2.set_cell_data_func(self.result_rend_text, result_rend_text_func, 2)
+        self.result_list_col_2.set_cell_data_func(self.result_rend_text,
+                result_rend_text_func, 2)
 
         self.result_list_col_3 = gtk.TreeViewColumn('Status ID')
         self.result_list_col_3.pack_start(self.result_rend_text, True)
@@ -456,7 +495,8 @@ class MainWindow(object):
 
     def update(self, message):
         def _o(func, *args, **kwargs):
-            """Always return False -> remove from the idle queue after first execution"""
+            """Always return False -> remove from the idle queue after first
+            execution"""
             func(*args, **kwargs)
             return False
 
@@ -476,57 +516,86 @@ class MainWindow(object):
         else:
             self._importance = logging.INFO
 
-        """Read the reporting system message and schedule a call to update stuff in the gui using gobject.idle_add(_o, func, params...)"""
+        """Read the reporting system message and schedule a call to update
+        stuff in the gui using gobject.idle_add(_o, func, params...)"""
         if message["action"]==reporting.END:
             gobject.idle_add(_o, self._window.destroy)
+
         elif message["action"]==reporting.QUESTION:
-            print "FIXME: Questions not implemented yet"
+            print("FIXME: Questions not implemented yet")
+
         elif message["action"]==reporting.START:
             if self._importance<=message["importance"]:
                 ctx = self.status_text.get_context_id(message["origin"].name)
-                gobject.idle_add(_o, self.status_text.push, ctx, "START: %s (%s)" % (message["origin"].name, message["message"]))
+                gobject.idle_add(_o, self.status_text.push, ctx,
+                        "START: %s (%s)" % (message["origin"].name,
+                            message["message"]))
+
         elif message["action"]==reporting.STOP:
             if self._importance<=message["importance"]:
                 ctx = self.status_text.get_context_id(message["origin"].name)
-                gobject.idle_add(_o, self.status_text.push, ctx, "STOP: %s (%s)" % (message["origin"].name, message["message"]))
+                gobject.idle_add(_o, self.status_text.push, ctx,
+                        "STOP: %s (%s)" % (message["origin"].name,
+                            message["message"]))
+
         elif message["action"]==reporting.PROGRESS:
             if self._importance<=message["importance"]:
                 if message["message"] is None:
                   gobject.idle_add(self.status_progress.hide)
                 else:
-                  gobject.idle_add(_o, self.status_progress.set_text, "%d/%d - %s" % (message["message"][0], message["message"][1], message["origin"].name))
-                  gobject.idle_add(_o, self.status_progress.set_fraction, float(message["message"][0])/message["message"][1])
+                  gobject.idle_add(_o, self.status_progress.set_text,
+                          "%d/%d - %s" % (message["message"][0],
+                              message["message"][1], message["origin"].name))
+                  gobject.idle_add(_o, self.status_progress.set_fraction,
+                          float(message["message"][0])/message["message"][1])
                   gobject.idle_add(_o, self.status_progress.show)
+
         elif message["action"]==reporting.INFO:
             if self._importance<=message["importance"]:
                 ctx = self.status_text.get_context_id(message["origin"].name)
-                gobject.idle_add(_o, self.status_text.push, ctx, "INFO: %s (%s)" % (message["message"], message["origin"].name))
+                gobject.idle_add(_o, self.status_text.push, ctx,
+                        "INFO: %s (%s)" % (message["message"],
+                            message["origin"].name))
+
         elif message["action"]==reporting.ALERT:
             if self._importance<=message["importance"]:
                 ctx = self.status_text.get_context_id(message["origin"].name)
-                gobject.idle_add(_o, self.status_text.push, ctx, "ALERT: %s (%s)" % (message["message"], message["origin"].name))
+                gobject.idle_add(_o, self.status_text.push, ctx,
+                        "ALERT: %s (%s)" % (message["message"],
+                            message["origin"].name))
+
         elif message["action"]==reporting.EXCEPTION:
             ctx = self.status_text.get_context_id(message["origin"].name)
-            gobject.idle_add(_o, self.status_text.push, ctx, "EXCEPTION: %s (%s)" % (message["message"], message["origin"].name))
+            gobject.idle_add(_o, self.status_text.push, ctx,
+                    "EXCEPTION: %s (%s)" % (message["message"],
+                        message["origin"].name))
+
         elif message["action"]==reporting.TABLE:
             if self._importance<=message["importance"]:
-                print "TABLE %s FROM %s" % (message["title"], message["origin"].name,)
+                print("TABLE %s FROM %s" % (message["title"],
+                    message["origin"].name,))
                 pprint.pprint(message["message"])
+
         elif message["action"]==reporting.TREE:
             if self._importance<=message["importance"]:
-                print "TREE %s FROM %s" % (message["title"], message["origin"].name,)
+                print("TREE %s FROM %s" % (message["title"],
+                    message["origin"].name,))
                 pprint.pprint(message["message"])
+
         elif message["action"]==reporting.ISSUE:
                 i = message["message"]
                 t,ids = issue_state(i)
                 if not self.result_list_iter.has_key(i):
-                    self.result_list_iter[i] = self.result_list_store.append([i.name, t, i.description, ids])
+                    self.result_list_iter[i] = self.result_list_store.append(
+                            [i.name, t, i.description, ids])
                 else:
                     for idx,val in enumerate([i.name, t, i.description, ids]):
-                        gobject.idle_add(_o, self.result_list_store.set, self.result_list_iter[i], idx, val)
+                        gobject.idle_add(_o, self.result_list_store.set,
+                                self.result_list_iter[i], idx, val)
+
         else:
-            print "FIXME: Unknown message action %d!!" % (message["action"],)
-            print message
+            print("FIXME: Unknown message action %d!!" % (message["action"],))
+            print(message)
 
     def run(self):
         gtk.gdk.threads_init()
@@ -534,7 +603,8 @@ class MainWindow(object):
 
 class FlagList(object):
     def __init__(self, cfg, flags, dir=""):
-        self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"), "FlagList")
+        self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"),
+                "FlagList")
         self._window = self._glade.get_widget("FlagList")
         self._window.set_modal(True)
         self.flags = {}
@@ -558,7 +628,8 @@ class AboutDialog(object):
         self._window.destroy()
 
     def __init__(self, cfg, dir=""):
-        self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"), "AboutDialog")
+        self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"),
+                "AboutDialog")
         self._window = self._glade.get_widget("AboutDialog")
         self._window.connect("response", self.close)
 
@@ -581,14 +652,15 @@ class PluginInfo(object):
         self._window.destroy()
 
     def __init__(self, plugin, dir=""):
-        self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"), "PluginInfo")
+        self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"),
+                "PluginInfo")
         self._window = self._glade.get_widget("PluginInfo")
         self._window.set_modal(True)
         self._window.set_title(self._window.get_title()+plugin.name)
 
         self._close = self._glade.get_widget("CloseButton")
         self._close.connect("clicked", self.close)
-        
+
         self._name = self._glade.get_widget("Info_name")
         self._name.set_label(plugin.name)
 
@@ -600,10 +672,11 @@ class PluginInfo(object):
 
         self._description = self._glade.get_widget("Info_description")
         self._description.set_label(plugin.description)
-        
+
         self._table = self._glade.get_widget("Table")
 
-        for n,d in [ (f, plugin.getFlow(f).description) for f in plugin.getFlows() ]:
+        for n,d in [ (f, plugin.getFlow(f).description)
+                for f in plugin.getFlows() ]:
             if n==plugin.default_flow:
                 lname = gtk.Label("<b>"+n+"</b>")
                 lname.set_property("use-markup", True)
@@ -618,9 +691,11 @@ class PluginInfo(object):
             sx = self._table.get_property("n-columns")
             sy += 1
             self._table.resize(sy, sx)
-            self._table.attach(lname, 0, 1, sy-1, sy, yoptions = gtk.FILL, xoptions = gtk.FILL)
+            self._table.attach(lname, 0, 1, sy-1, sy, yoptions = gtk.FILL,
+                    xoptions = gtk.FILL)
             lname.set_alignment(0, 0)
-            self._table.attach(ldesc, 1, 2, sy-1, sy, yoptions = gtk.FILL, xoptions = gtk.FILL)
+            self._table.attach(ldesc, 1, 2, sy-1, sy, yoptions = gtk.FILL,
+                    xoptions = gtk.FILL)
             ldesc.set_alignment(0, 0)
 
 

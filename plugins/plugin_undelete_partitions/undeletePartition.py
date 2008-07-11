@@ -1,16 +1,16 @@
 # First Aid Kit - diagnostic and repair tool for Linux
 # Copyright (C) 2008 Joel Andres Granados <jgranado@redhat.com>
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -26,7 +26,7 @@ class UndeletePartition(Plugin):
 
     Uses parted libriary to search for partitions that are not included in
     the partition table of a disk.  If it is possible, this plugin will put
-    the partition back into the parition table so it is visible to the 
+    the partition back into the parition table so it is visible to the
     system again.
     """
 
@@ -48,7 +48,7 @@ class UndeletePartition(Plugin):
 
         # Dictionary that will hold the partitions that are not included in the
         # partition table of a certain disk and can be recovered. It will also
-        # house the initial partition table and the partition table that is a 
+        # house the initial partition table and the partition table that is a
         # result of running the fix.  The structure is:
         # slef.disks={diskname: [ [recoverables], initialPT, finalPT ], .... }
         self.disks = {}

@@ -36,8 +36,9 @@ class Dependencies(object):
         """Add flag"""
         Logger.info("Setting dependency flag %s", id)
         self._provide.add(id)
-        if setactionflag: self._provide.add(id+"?") #Action flags denote activity happening on some regular flag
-    
+        #Action flags denote activity happening on some regular flag
+        if setactionflag: self._provide.add(id+"?")
+
     def unprovide(self, id, setactionflag = True):
         """Remove flag"""
         Logger.info("Resetting dependency flag %s", id)
@@ -55,13 +56,15 @@ class Dependencies(object):
         return id in self._provide
 
     def introduce(self, s):
-        """Notifies the system about dependency names used in the plugins, so we can list them in help"""
+        """Notifies the system about dep names used in the plugins.
+
+        This allows us to list them in help"""
         self._known = self._known.union(s)
 
     def known(self):
         """Returns list of known flags"""
         return list(self._known.union(self._provide))
-    
+
     def valid(self):
         """Returns list of valid/provided flags"""
         return list(self._provide)

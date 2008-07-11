@@ -1,16 +1,16 @@
 # First Aid Kit - diagnostic and repair tool for Linux
 # Copyright (C) 2007 Martin Sivak <msivak@redhat.com>
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -45,7 +45,8 @@ QUESTION = 999 #type of message which contains respond-to field
 END = 1000 #End of operations, final message
 
 class Origin(object):
-    """Class which defines mandatory interface for origin, when using the reporting system"""
+    """Class which defines mandatory interface for origin,
+    when using the reporting system"""
     name = "Origin:Unknown"
 
     def __init__(self, name):
@@ -82,12 +83,17 @@ class Reports(object):
         self._notify = []
 
     def notify(self, cb, *args, **kwargs):
-        """When putting anything new into the Queue, run notifications callbacks. Usefull for Gui and single-thread reporting.
-        The notification function has parameters: message recorded to the queue, any parameters provided when registering"""
+        """When putting anything new into the Queue, run notifications
+        callbacks. Usefull for Gui and single-thread reporting.
+        The notification function has parameters: message recorded to the
+        queue, any parameters provided when registering"""
         return self._notify.append((cb, args, kwargs))
 
-    def put(self, message, level, origin, action, importance = logging.INFO, reply = None, title = "", destination = None):
-        data = {"level": level, "origin": origin, "action": action, "importance": importance, "message": message, "reply": reply, "title": title}
+    def put(self, message, level, origin, action, importance = logging.INFO,
+            reply = None, title = "", destination = None):
+        data = {"level": level, "origin": origin, "action": action,
+                "importance": importance, "message": message,
+                "reply": reply, "title": title}
 
         if destination is not None:
             return destination.put(data)
@@ -99,7 +105,9 @@ class Reports(object):
         except Queue.Full, e:
             if not self._round:
                 raise
-            destination.get() #Queue is full and it is a round buffer.. remove the oldest item and use the free space to put the new item
+            #Queue is full and it is a round buffer.. remove the oldest item
+            #and use the free space to put the new item
+            destination.get()
             ret=destination.put(data)
         finally:
             self._queue_lock.release()
@@ -137,15 +145,20 @@ class Reports(object):
 
     def error(self, message, level, origin, action = INFO):
         Logger.error(origin.name+": "+message)
-        return self.put(message, level, origin, action, importance = logging.ERROR)
+        return self.put(message, level, origin, action,
+                importance = logging.ERROR)
 
     def start(self, level, origin, message = ""):
-        return self.put(message, level, origin, START, importance = logging.DEBUG)
+        return self.put(message, level, origin, START,
+                importance = logging.DEBUG)
     def stop(self, level, origin, message = ""):
-        return self.put(message, level, origin, STOP, importance = logging.DEBUG)
+        return self.put(message, level, origin, STOP,
+                importance = logging.DEBUG)
 
-    def progress(self, position, maximum, level, origin, importance = logging.INFO):
-        return self.put((position, maximum), level, origin, PROGRESS, importance = importance)
+    def progress(self, position, maximum, level, origin,
+            importance = logging.INFO):
+        return self.put((position, maximum), level, origin, PROGRESS,
+                importance = importance)
 
     def issue(self, issue, level, origin, importance = logging.INFO):
         Logger.debug(origin.name+": issue changed state to "+str(issue))
@@ -158,14 +171,19 @@ class Reports(object):
         Logger.debug(origin.name+": "+message)
         return self.put(message, level, origin, INFO, importance = importance)
 
-    def tree(self, message, level, origin, importance = logging.INFO, title = ""):
-        return self.put(message, level, origin, TREE, importance = importance, title = title)
-    def table(self, message, level, origin, importance = logging.INFO, title = ""):
-        return self.put(message, level, origin, TABLE, importance = importance, title = title)
+    def tree(self, message, level, origin, importance = logging.INFO,
+            title = ""):
+        return self.put(message, level, origin, TREE, importance = importance,
+                title = title)
+    def table(self, message, level, origin, importance = logging.INFO,
+            title = ""):
+        return self.put(message, level, origin, TABLE,
+                importance = importance, title = title)
 
     def alert(self, message, level, origin, importance = logging.WARNING):
         return self.put(message, level, origin, ALERT, importance = importance)
     def exception(self, message, level, origin, importance = logging.ERROR):
         Logger.error(origin.name+": "+message)
-        return self.put(message, level, origin, EXCEPTION, importance = importance)
+        return self.put(message, level, origin, EXCEPTION,
+                importance = importance)
 

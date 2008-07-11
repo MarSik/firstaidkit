@@ -208,7 +208,7 @@ class FileBackupStore(BackupStoreInterface):
         else:
             os.makedirs(self._path)
         self.__class__._singleton = weakref.proxy(self)
-        print "Backup system initialized"
+        print("Backup system initialized")
 
     def getBackup(self, id):
         if not self._backups.has_key(id):
@@ -228,7 +228,7 @@ class FileBackupStore(BackupStoreInterface):
         for id,backup in self._backups.iteritems():
             backup.cleanup()
         os.rmdir(self._path)
-        print "Backup closed"
+        print("Backup closed")
 
     @classmethod
     def get(cls, path):
