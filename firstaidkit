@@ -234,17 +234,19 @@ if __name__=="__main__":
         sys.exit(1)
 
     # initialize log for plugin system.
-    try:
-        initLogger(Config)
-    except IOError, ioe:
-        if ioe[0] == 13:
-            #This is probably because the user is not root.
-            Config.log.filename = "firstaidkit.log"
+    fallbacks = Config.log.fallbacks.split(",")
+    for lfile in fallbacks:
+        try:
             initLogger(Config)
-        else:
-            print ioe
-            usage(sys.argv[0])
-            sys.exit(1)
+            break
+        except Exception, e:
+            if lfile != fallbacks[len(fallbacks)-1]:
+                Config.log.filename = lfile
+                continue
+            else:
+                print e
+                usage(sys.argv[0])
+                sys.exit(1)
 
     report = reporting.Reports(maxsize = 1, round = True)
     try:

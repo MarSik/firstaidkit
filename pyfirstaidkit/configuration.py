@@ -39,6 +39,7 @@ def createDefaultConfig(config):
     config.operation.printinfo = "False"
     config.log.method = "file"
     config.log.filename = "/var/log/firstaidkit.log"
+    config.log.fallbacks = "firstaidkit.log,/tmp/firstaidkit.log,/dev/null"
     config.plugin.disabled = ""
     config.backup.method = "file"
     config.backup.path = "/tmp/firstaidkitbackup"
