@@ -338,7 +338,8 @@ if __name__=="__main__":
                    "along with the following message.  You can create a ticket "
                    "at https://fedorahosted.org/firstaidkit/newticket\n\n")
             Config.write(sys.stdout)
-            print("\n%s"% e)
+            print("Description of the error:\nError message:%s\n " \
+                    "Error class %s"% (e, e.__class__))
         finally:
             singlerun.end()
 
