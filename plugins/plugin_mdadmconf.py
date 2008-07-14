@@ -64,7 +64,7 @@ class MdadmConfig(Plugin):
         self._reporting.info("Scanning for software raid with mdadm.",
                 level = PLUGIN, origin = self)
         mdadmargs = ["--misc", "--detail", "--scan"]
-        proc = spawnvch(executable = "mdamd", args = mdadmargs,
+        proc = spawnvch(executable = "mdadm", args = mdadmargs,
                 chroot = Config.system.root)
         (out, err) = proc.communicate()
 
@@ -102,7 +102,7 @@ class MdadmConfig(Plugin):
         # in the curren config file.
         for key, value in self.scannedFileDict.iteritems():
             if not self.currentFileDict.has_key(key):
-                self._reporting.info("Found that the current mdamd.conf is " \
+                self._reporting.info("Found that the current mdadm.conf is " \
                         "missing %s."%value, level = PLUGIN, origin = self)
                 self._result = ReturnFailure
                 return
@@ -148,7 +148,7 @@ class MdadmConfig(Plugin):
             # mdadm.conf.firstaidkit, just in case.
             self._reporting.info("Will put the old mdadm.conf in %s."%
                     os.path.join(Config.system.root,
-                        "etc/mdamd.conf.firstaidkit"),
+                        "etc/mdadm.conf.firstaidkit"),
                     level = PLUGIN, origin = self)
             self.backupSpace.restoreName(self.configFile,
                     path = self.configFile+".firstaidkit")
