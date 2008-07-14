@@ -143,13 +143,23 @@ class Xserver(Plugin):
         self._reporting.info("Testing modified environment", level = PLUGIN,
                 origin = self)
         if self.serverStart():
-            self._reporting.info("X server started successfully with new file.",
-                    level = PLUGIN, origin = self)
+            self._reporting.info("X server started successfully with no "
+                    "config file.", level = PLUGIN, origin = self)
+            self._reporting.info("If you must have a config file, create "
+                    "one with system-config-display and place it at "
+                    "/etc/X11/xorg.conf", level = PLUGIN, origin = self )
             self._result = ReturnSuccess
+
+            # Lets give the user his previous file.
+            if self.backupSpace.exists(path=self.confPath):
+                self.backupSpace.restoreName(self.confPath,
+                        "%s-FAKbackup"%self.confPath)
+
         else:
-            self._reporting.info("X server is still missconfigured with new "
-                    "file.", level = PLUGIN, origin = self)
+            self._reporting.info("X server is does not autodetect the users "
+                    "environment.", level = PLUGIN, origin = self)
             self._result = ReturnFailure
+
         self._issue.set(fixed = (self._result == ReturnSuccess),
                 reporting = self._reporting, level = PLUGIN, origin = self)
 
