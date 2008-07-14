@@ -581,7 +581,7 @@ class PluginSystem(object):
                 Logger.info("depends on: %s" % (", ".join(deps),))
                 for d in deps:
                     if not self._deps.require(d):
-                        Logger.info("depends on usatisfied condition: %s" %
+                        Logger.info("depends on unsatisfied condition: %s" %
                                 (d,))
                         self._reporting.stop(level = PLUGIN, origin = self,
                                 message = plugin)
