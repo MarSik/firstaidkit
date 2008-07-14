@@ -18,7 +18,7 @@
 
 class InvalidFlowStateException(Exception):
     def __init__(self, flow):
-        self.message="There appears to be an inconsistency with the %s "
+        self.message="There appears to be an inconsistency with the %s " \
                 "varialbe. " % flow
     def __str__(self):
         return self.message
