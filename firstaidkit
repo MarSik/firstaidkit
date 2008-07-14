@@ -121,6 +121,8 @@ def usage(name):
  %s [params] -a <flow>  - runs the automated mode with specified flow
  %s [params] -a fix     - automated fixing sequence [using the fix flows]
  %s [params] -f <plugin> <flow>
+                        - This implies --nodeps
+
  params is none or more items from:
   -c <config file> - location of the config file
   -r <root path>   - location of the root directory
@@ -172,6 +174,8 @@ if __name__=="__main__":
         elif key in ("-f", "--flow"):
             Config.operation.mode = "flow"
             Flags.main_help = False
+            # Implies nodeps so the individual plugins can run.
+            Config.operation.dependencies = "False"
 
         elif key in ("-c", "--config"):
             Config.read(val)
