@@ -17,6 +17,7 @@
 
 import ConfigParser
 import os
+import sys
 from cStringIO import StringIO
 from shlex import shlex
 
@@ -173,6 +174,11 @@ def getConfigBits(name, cfg = Config):
     return c
 
 class FAKInfo(ConfigParser.SafeConfigParser, FAKConfigMixIn):
+    def write(self, fd=sys.stdout):
+        fd.write("--- Info section ---\n")
+        ConfigParser.SafeConfigParser.write(self, fd)
+        fd.write("--------------------\n")
+
     pass
 
 Info = FAKInfo()

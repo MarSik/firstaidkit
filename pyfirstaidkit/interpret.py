@@ -193,9 +193,7 @@ class Tasker:
             return False
 
         if self._config.operation.printinfo:
-            print("--- Info section ---")
-            Info.write(sys.stdout)
-            print("--------------------")
+            Info.write()
 
         self._reporting.stop(level = TASKER, origin = self)
         return True
