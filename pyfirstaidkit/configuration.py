@@ -56,8 +56,8 @@ def createDefaultConfig(config):
     config.system.configuration = "/etc/firstaidkit"
 
     # Frontend modules are in specified directories
-    config.system.frontend = "'/usr/lib64/firstaidkit/frontend' \
-            '/usr/lib/firstaidkit/frontend'"
+    config.system.frontend = ("'/usr/lib64/firstaidkit/frontend'"
+            "'/usr/lib/firstaidkit/frontend'")
 
     #
     # There will be 4 default places where FAK will look for plugins,

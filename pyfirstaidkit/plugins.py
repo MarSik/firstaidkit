@@ -284,8 +284,8 @@ class Plugin(object):
         """
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Prepare is an abstract method, it should be used \
-                    as such.")
+            Logger.warning("Prepare is an abstract method, it should be used "
+                    "as such.")
 
     def clean(self):
         """Final actions.
@@ -297,36 +297,36 @@ class Plugin(object):
         """
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Clean is an abstract method, it should be used as \
-                    such.")
+            Logger.warning("Clean is an abstract method, it should be used as "
+                    "such.")
 
     def backup(self):
         """Gather important information needed for restore."""
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Backup is an abstract method, it should be used as \
-                    such.")
+            Logger.warning("Backup is an abstract method, it should be used as "
+                    "such.")
 
     def restore(self):
         """Try to restore the previous state described in backup."""
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Restore is an abstract method, it should be used \
-                    as such.")
+            Logger.warning("Restore is an abstract method, it should be used "
+                    "as such.")
 
     def diagnose(self):
         """Diagnose the situation."""
         #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Diagnose is an abstract method, it should be used \
-                    as such.")
+            Logger.warning("Diagnose is an abstract method, it should be used "
+                    "as such.")
 
     def fix(self):
         """Try to fix whatever is wrong in the system."""
          #We want these functions to be overridden by the plugin developer.
         if self.__class__ is Plugin:
-            Logger.warning("Fix is an abstract method, it should be used as \
-                    such.")
+            Logger.warning("Fix is an abstract method, it should be used as "
+                    "such.")
 
 class IssuesPlugin(Plugin):
     """Plugin which uses Issue classes to test smaller and INDEPENDENT issues.
@@ -446,12 +446,12 @@ class FlagTrackerPlugin(Plugin):
         """Decide about state of higher level flags."""
          #We want these functions to be overridden by the plugin developer.
         if self.__class__ is FlagTrackerPlugin:
-            Logger.warning("Decide is an abstract method, it should be used \
-                    as such.")
+            Logger.warning("Decide is an abstract method, it should be used "
+                    "as such.")
 
         if self.flag_decide is None:
-            Logger.warning("You have to specify flag to set when everything \
-                    is ok.")
+            Logger.warning("You have to specify flag to set when everything "
+                    "is ok.")
             return Return
 
         for flag in self.flag_list:
@@ -522,13 +522,13 @@ class PluginSystem(object):
                     #reverse-dependencies
                     self._deps.introduce(module.get_plugin().getConflicts())
                     self._plugins[m] = module
-                    self._reporting.debug("Module %s successfully imported \
-                            with basedir %s" %
+                    self._reporting.debug("Module %s successfully imported "
+                            "with basedir %s" %
                             (m, os.path.dirname(module.__file__)),
                             level = PLUGINSYSTEM, origin = self)
                 except Exception, e:
-                    self._reporting.error(message = "Module %s was NOT \
-                            imported, because of %s" %
+                    self._reporting.error(message = "Module %s was NOT "
+                            "imported, because of %s" %
                             (m, str(e)), level = PLUGINSYSTEM, origin = self)
                 finally:
                     imp.release_lock()
@@ -569,8 +569,8 @@ class PluginSystem(object):
 
         Logger.info("Using %s flow" % flowName)
         if flowName not in flows:
-            self._reporting.exception(message = "Flow %s does not exist in \
-                    plugin %s" % (flowName, plugin), level = PLUGINSYSTEM,
+            self._reporting.exception(message = "Flow %s does not exist in "
+                    "plugin %s" % (flowName, plugin), level = PLUGINSYSTEM,
                     origin = self)
             self._reporting.stop(level=PLUGIN, origin=self, message=plugin)
             raise InvalidFlowNameException(flowName)

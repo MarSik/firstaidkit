@@ -72,8 +72,8 @@ class Xserver(Plugin):
         if os.path.exists("/tmp/.X0-lock"):
             self._reporting.info("An X server is already running.",
                     level = PLUGIN, origin = self)
-            self._reporting.info("You can run the \"force\" flow to \
-                    avoud this check. In some cases it works.",
+            self._reporting.info("You can run the \"force\" flow to "
+                    "avoud this check. In some cases it works.",
                     level = PLUGIN, origin = self)
             self._result = ReturnSuccess
 
@@ -86,8 +86,8 @@ class Xserver(Plugin):
             # If the configuration is not there dont even bother to try
             #fixing it.  This will go through the proces of trying to fix
             #it.  at least we told the user.
-            self._reporting.info("The error is in the xservers autodetection \
-                    mechanism, this does not have an automated solution yet.",
+            self._reporting.info("The error is in the xservers autodetection "
+                    "mechanism, this does not have an automated solution yet.",
                     level = PLUGIN, origin = self)
             self._result = ReturnFailure
 
@@ -110,8 +110,8 @@ class Xserver(Plugin):
             # If the configuration is not there dont even bother to try fixing it.
             # This will go through the proces of trying to fix it.  at least we
             #told the user.
-            self._reporting.info("The error is in the xservers autodetection \
-                    mechanism, this does not have an automated solution yet.",
+            self._reporting.info("The error is in the xservers autodetection "
+                    "mechanism, this does not have an automated solution yet.",
                     level = PLUGIN, origin = self)
             self._result = ReturnFailure
 
@@ -147,8 +147,8 @@ class Xserver(Plugin):
                     level = PLUGIN, origin = self)
             self._result = ReturnSuccess
         else:
-            self._reporting.info("X server is still missconfigured with new \
-                    file.", level = PLUGIN, origin = self)
+            self._reporting.info("X server is still missconfigured with new "
+                    "file.", level = PLUGIN, origin = self)
             self._result = ReturnFailure
         self._issue.set(fixed = (self._result == ReturnSuccess),
                 reporting = self._reporting, level = PLUGIN, origin = self)
@@ -156,8 +156,8 @@ class Xserver(Plugin):
     def restore(self):
         if not self.backupSpace.exists(path=self.confPath):
             # This is the case where there is no config file.
-            self._reporting.info("The backedup file was not present. Assuming \
-                    that xorg did not have a config file to begin with.", 
+            self._reporting.info("The backedup file was not present. Assuming "
+                    "that xorg did not have a config file to begin with.", 
                     level = PLUGIN, origin = self)
         else:
             self._reporting.info("Restoring original file.", level = PLUGIN ,

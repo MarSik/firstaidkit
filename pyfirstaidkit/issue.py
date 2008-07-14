@@ -96,8 +96,8 @@ Return values:
 
 class Issue(SimpleIssue):
     name = "Parent issue"
-    description = "This happens when you use the wrong object in the issues \
-            list"
+    description = "This happens when you use the wrong object in the issues "
+            "list"
 
     def __init__(self, plugin, reporting = None):
         SimpleIssue.__init__(self, self.name, self.description)

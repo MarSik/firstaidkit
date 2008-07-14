@@ -61,8 +61,8 @@ class Tasker:
 
     def interrupt(self):
         self._running = False
-        self._reporting.info("You sent an interrupt signal to \
-                Tasker! This is not recommended.", level = TASKER,
+        self._reporting.info("You sent an interrupt signal to "
+                "Tasker! This is not recommended.", level = TASKER,
                 origin = self, importance = logging.WARNING)
 
     def flags(self):
@@ -88,7 +88,7 @@ class Tasker:
                     level = TASKER, origin = self, importance = logging.WARNING)
             self._provide.provide("root")
         else:
-            self._reporting.info("You are not running the firstaidkit as " \
+            self._reporting.info("You are not running the firstaidkit as "
                     "root.  Some plugins may not be available.", level = TASKER,
                     origin = self, importance = logging.WARNING)
             self._provide.unprovide("root")
@@ -133,8 +133,8 @@ class Tasker:
                             not pluginSystem.getplugin(plugin).default_flow in
                             pluginSystem.getplugin(plugin).getFlows())):
 
-                        self._reporting.info("Plugin %s does not contain \
-                                flow %s"% (plugin, flow or \
+                        self._reporting.info("Plugin %s does not contain "
+                                "flow %s"% (plugin, flow or \
                                 pluginSystem.getplugin(plugin).default_flow,), \
                                 level = TASKER, origin = self)
 
@@ -147,8 +147,8 @@ class Tasker:
 
             #some plugins may not be called because of unfavorable flags
             for plugin in set(map(lambda x: x[0], actlist)):
-                self._reporting.info("Plugin %s was not called because of \
-                        unsatisfied dependencies"% (plugin,), level = TASKER, \
+                self._reporting.info("Plugin %s was not called because of "
+                        "unsatisfied dependencies"% (plugin,), level = TASKER, \
                         origin = self, importance = logging.WARNING)
 
         # For the flags case
