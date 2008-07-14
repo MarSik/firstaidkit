@@ -175,7 +175,8 @@ class FileBackupStore(BackupStoreInterface):
             return True
 
         def cleanup(self):
-            for name,(stored,origin) in self._data.iteritems():
+            _datakeys = self._data.keys()
+            for name in _datakeys:
                 self.delete(name)
             os.rmdir(self._path)
 
