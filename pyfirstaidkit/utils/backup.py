@@ -81,24 +81,28 @@ class FileBackupStore(BackupStoreInterface):
                 name = path
 
             if self._origin.has_key(path):
-                raise BackupException("Path %s already in the backup store %s!" % (path,self._id))
+                raise BackupException("Path %s already in the backup store %s!"
+                        % (path,self._id))
             if self._data.has_key(name):
-                raise BackupException("Named backup %s already in the backup store %s!" % (name,self._id))
+                raise BackupException("Named backup %s already in the backup "
+                        "store %s!" % (name,self._id))
 
             stored = hashlib.sha224(name).hexdigest()
 
             if os.path.isdir(path):
-                shutil.copytree(path, os.path.join(self._path, stored), symlinks = True)
+                shutil.copytree(path, os.path.join(self._path, stored),
+                        symlinks = True)
             else:
                 shutil.copy2(path, os.path.join(self._path, stored))
 
             self._origin[path] = name
             self._data[name] = (stored, path)
             return True
-        
+
         def backupValue(self, value, name):
             if self._data.has_key(name):
-                raise BackupException("Named backup %s already in the backup store %s!" % (name,self._id))
+                raise BackupException("Named backup %s already in the backup "
+                        "store %s!" % (name,self._id))
             stored = hashlib.sha224(name).hexdigest()
 
             f = open(os.path.join(self._path, stored), "wb")
@@ -108,23 +112,25 @@ class FileBackupStore(BackupStoreInterface):
             self._data[name] = (stored, None)
 
             return True
-            
+
         def restoreValue(self, name):
             stored, origin = self._data[name]
             if origin is not None:
-                raise BackupException("Named backup %s is not a value object!" % (name,))
+                raise BackupException("Named backup %s is not a value object!"
+                        % (name,))
 
 
             f = open(os.path.join(self._path, stored), "rb")
             val = pickle.load(f)
             f.close()
-            
+
             return val
-        
+
         def restoreName(self, name, path = None):
             stored, origin = self._data[name]
             if origin is None:
-                raise BackupException("Named backup %s is not a filesystem object!" % (name,))
+                raise BackupException("Named backup %s is not a filesystem "
+                        "object!" % (name,))
 
             assert self._origin[name]==origin
 
@@ -138,14 +144,13 @@ class FileBackupStore(BackupStoreInterface):
                     os.unlink(path)
 
             stored = os.path.join(self._path, stored)
-            
+
             if os.path.isdir(stored):
                 shutil.copytree(stored, path, symlinks = True)
             else:
                 shutil.copy2(stored, path)
             return True
 
-            
         def restorePath(self, path, name = None):
             assert self._data[self._origin[path]][1]==path
 
@@ -176,7 +181,8 @@ class FileBackupStore(BackupStoreInterface):
 
         def exists(self, name=None, path=None):
             if name == None and path == None:
-                raise BackupException("Cannot call the exists method with both the arguments equal to None")
+                raise BackupException("Cannot call the exists method with both "
+                        "the arguments equal to None")
 
             if name != None and path != None:
                 try:
@@ -197,14 +203,16 @@ class FileBackupStore(BackupStoreInterface):
 
     def __init__(self, path):
         if self.__class__._singleton:
-            raise BackupException("BackupStore with %s type can have only one instance" % (self.__name__,))
+            raise BackupException("BackupStore with %s type can have only "
+                    "one instance" % (self.__name__,))
 
         assert self.__class__._singleton==None
 
         self._path = path
         self._backups = {}
         if os.path.isdir(self._path):
-            raise BackupException("Backupdir %s already exists. Erase dir or change backup dir." % self._path)
+            raise BackupException("Backupdir %s already exists. Erase dir or "
+                    "change backup dir." % self._path)
         else:
             os.makedirs(self._path)
         self.__class__._singleton = weakref.proxy(self)

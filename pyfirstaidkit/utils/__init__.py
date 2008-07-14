@@ -38,8 +38,10 @@ def spawnvch(executable, args, chroot, env = None):
 
 Returns the subprocess.Popen object"""
 
-    return subprocess.Popen(executable = executable, args = args, preexec_fn = chroot_func(chroot), env = env,
-            stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    return subprocess.Popen(executable = executable, args = args,
+            preexec_fn = chroot_func(chroot), env = env,
+            stdin = subprocess.PIPE, stdout = subprocess.PIPE,
+            stderr = subprocess.PIPE)
 
 
 
