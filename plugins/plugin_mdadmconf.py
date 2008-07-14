@@ -42,13 +42,14 @@ class MdadmConfig(Plugin):
         self.scannedFileDict = {} #what `mdadm --misc --detail --scan`
         self.scannedFile = None # what `mdadm --misc --detail --scan` returns
         self.configFile = os.path.join(Config.system.root,"/etc/mdadm.conf")
-        self.backupSpace = self._backups.getBackup(self)
+        self.backupSpace = self._backups.getBackup(str(self))
         self._issue = SimpleIssue(self.name, "mdadm.con misconfigured")
 
     def prepare(self):
         # We read the configuration file if it exists
         if os.path.exists(self.configFile):
-            self._reporting.info("Gathering information from %s."%self.configFile, level = PLUGIN, origin = self)
+            self._reporting.info("Gathering information from %s."%
+                    self.configFile, level = PLUGIN, origin = self)
             fd = open(self.configFile, "r")
             for line in fd.readlines():
                 splitline = line.strip("\n").split(" ")
@@ -56,12 +57,15 @@ class MdadmConfig(Plugin):
                     self.currentFileDict[splitline[1]] = splitline
             fd.close()
         else:
-            self._reporting.info("File %s was not found."%self.configFile, level = PLUGIN, origin = self)
+            self._reporting.info("File %s was not found."%
+                    self.configFile, level = PLUGIN, origin = self)
 
         # We execute the mdadm command
-        self._reporting.info("Scanning for software raid with mdadm.", level = PLUGIN, origin = self)
+        self._reporting.info("Scanning for software raid with mdadm.",
+                level = PLUGIN, origin = self)
         mdadmargs = ["--misc", "--detail", "--scan"]
-        proc = spawnvch(executable = "mdamd", args = mdadmargs, chroot = Config.system.root)
+        proc = spawnvch(executable = "mdamd", args = mdadmargs,
+                chroot = Config.system.root)
         (out, err) = proc.communicate()
 
         if err == '':
@@ -72,76 +76,100 @@ class MdadmConfig(Plugin):
                     self.scannedFileDict[splitline[1]] = splitline
             self.scannedFileDict = out
         else:
-            # This should make the flow go to clean.  If there is an error we should not trust what mdadm tells us.
-            self._reporting.info("The mdadm command had the following error:%s. The plugin will silently exit."%err,
+            # This should make the flow go to clean.  If there is an error we
+            # should not trust what mdadm tells us.
+            self._reporting.info("The mdadm command had the following " \
+                    "error:%s. The plugin will silently exit."%err,
                     level = PLUGIN, origin = self)
             self._result = None
             return
         self._result = ReturnSuccess
-        self._issue.set(reporting = self._reporting, level = PLUGIN, origin = self)
+        self._issue.set(reporting = self._reporting, level = PLUGIN,
+                origin = self)
 
     def diagnose(self):
-        # If nothing was returned by the mdadm command.  we dont have software raid.
+        # If nothing was returned by the mdadm command.  we dont have software
+        # raid.
         if len(self.scannedFileDict) == 0:
-            self._reporting.info("There was no sofware raid found by the mdadm command.... Nothing to do.",
-                    level = PLUGIN, origin = self)
+            self._reporting.info("There was no sofware raid found by the " \
+                    "mdadm command.... Nothing to do.", level = PLUGIN,
+                    origin = self)
             self._result = ReturnSuccess
             return
 
-        # If there is one difference between the configs, regarding the ARRAYS.  We replace the config file.
-        # Lets check for missing arrays in the curren config file.
+        # If there is one difference between the configs, regarding the
+        # ARRAYS.  We replace the config file. Lets check for missing arrays
+        # in the curren config file.
         for key, value in self.scannedFileDict.iteritems():
             if not self.currentFileDict.has_key(key):
-                self._reporting.info("Found that the current mdamd.conf is missing %s."%value, level = PLUGIN, origin = self)
+                self._reporting.info("Found that the current mdamd.conf is " \
+                        "missing %s."%value, level = PLUGIN, origin = self)
                 self._result = ReturnFailure
                 return
         # Lets check for additional ARRAYS that should not be there.
         for key, value in self.currentFileDict.iteritems():
             if not self.scannedFileDict.has_key(key):
-                self._reporting.info("The followint entry: %s, is in the config file but was not detected by mdadm."%value,
+                self._reporting.info("The followint entry: %s, is in the " \
+                        "config file but was not detected by mdadm."%value,
                         level = PLUGIN, origin = self)
                 self._result = ReturnFailure
                 return
 
-        self._reporting.info("There was no problem found with the current mdadm.conf file.", level = PLUGIN, origin = self)
-        self._issue.set(checked = True, happened = (self._result == ReturnFailure), reporting = self._reporting, level = PLUGIN, origin = self)
+        self._reporting.info("There was no problem found with the current " \
+                "mdadm.conf file.", level = PLUGIN, origin = self)
+        self._issue.set(checked = True,
+                happened = (self._result == ReturnFailure),
+                reporting = self._reporting, level = PLUGIN, origin = self)
         self._result = ReturnSuccess
 
     def backup(self):
         if os.path.isfile(self.configFile):
-            self._reporting.info("Making a backup of %s."%self.configFile, level = PLUGIN, origin = self)
+            self._reporting.info("Making a backup of %s."%
+                    self.configFile, level = PLUGIN, origin = self)
             self.backupSpace.backupPath(self.configFile)
         else:
-            self._reporting.info("It appears that the file %s does not exist.  No backup attempt will be made."%self.configFile,
+            self._reporting.info("It appears that the file %s does not "\
+                    "exist.  No backup attempt will be made."%self.configFile,
                     level = PLUGIN, origin = self)
-            self._reporting.info("%s does not exist."%self.configFile, level = PLUGIN, origin = self)
+            self._reporting.info("%s does not exist."%self.configFile,
+                    level = PLUGIN, origin = self)
         self._result = ReturnSuccess
 
     def fix(self):
         try:
-            self._reporting.info("Going to write configuration to %s."%self.configFile, level = PLUGIN, origin = self)
+            self._reporting.info("Going to write configuration to %s."%
+                    self.configFile, level = PLUGIN, origin = self)
             fd = open(self.configFile, "w")
             fd.write(self.scannedFile)
             fd.close()
-            self._reporting.info("Configuration file writen.", level = PLUGIN, origin = self)
-            # The original mdadm.conf will be restore to mdadm.conf.firstaidkit, just in case.
-            self._reporting.info("Will put the old mdadm.conf in %s."%os.path.join(Config.system.root,"etc/mdamd.conf.firstaidkit"),
+            self._reporting.info("Configuration file writen.", level = PLUGIN,
+                    origin = self)
+            # The original mdadm.conf will be restore to
+            # mdadm.conf.firstaidkit, just in case.
+            self._reporting.info("Will put the old mdadm.conf in %s."%
+                    os.path.join(Config.system.root,
+                        "etc/mdamd.conf.firstaidkit"),
                     level = PLUGIN, origin = self)
-            self.backupSpace.restoreName(self.configFile, path = self.configFile+".firstaidkit")
+            self.backupSpace.restoreName(self.configFile,
+                    path = self.configFile+".firstaidkit")
             self.result = ReturnSuccess
         except IOError:
             fd.close()
-            self._reporting.info("Error occurred while writing %s."%self.configFile, level = PLUGIN, origin = self)
+            self._reporting.info("Error occurred while writing %s."%
+                    self.configFile, level = PLUGIN, origin = self)
             self._result = ReturnFailure
-        self._issue.set(fixed = (self._result == ReturnSuccess), reporting = self._reporting, level = PLUGIN, origin = self)
+        self._issue.set(fixed = (self._result == ReturnSuccess),
+                reporting = self._reporting, level = PLUGIN, origin = self)
 
     def restore(self):
         if not self.backupSpace.exists(self.configFile):
             # This is the case where there is no config file.
-            self._reporting.info("The backedup file was not present. Assuming that %s was ont present to begin with."%
+            self._reporting.info("The backedup file was not present. " \
+                    "Assuming that %s was ont present to begin with."%
                     self.configFile, level = PLUGIN, original = self)
         else:
-            self._reporting.info("Restoring original file.", level = PLUGIN , origin = self)
+            self._reporting.info("Restoring original file.", level = PLUGIN ,
+                    origin = self)
             self.backupSpace.restoreName(self.configFile)
         self._result = ReturnSuccess
 
