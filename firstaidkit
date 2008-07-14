@@ -335,7 +335,8 @@ if __name__=="__main__":
         except Exception, e:
             print("!!! Impossible happened!! The First Aid Kit crashed in "
                    "very unsafe way.\n!!! Please report this to the authors "
-                   "along with the following message.\n\n")
+                   "along with the following message.  You can create a ticket "
+                   "at https://fedorahosted.org/firstaidkit/newticket\n\n")
             Config.write(sys.stdout)
             print("\n%s"% e)
         finally:
