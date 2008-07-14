@@ -171,7 +171,7 @@ class Xserver(Plugin):
 
 
     def serverStart(self):
-        self._reorting.info("Trying to start X server", level = PLUGIN,
+        self._reporting.info("Trying to start X server", level = PLUGIN,
                 origin = self)
         xorgargs = [self.display]
         try:
