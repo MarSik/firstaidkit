@@ -25,16 +25,19 @@ from random import Random
 rng = Random()
 
 class PasswdPlugin(Plugin):
-    """This plugin provides operations for convenient manipulation with the password system."""
+    """This plugin provides operations for convenient manipulation with the
+    password system."""
     #
     # Additional flow defprepareion.
     #
-    # flows = Flow.init(Plugin) # we do not need the default fix and diagnose flows
+    # flows = Flow.init(Plugin) # we do not need the default fix and diagnose
+    # flows
     flows = {}
     flows["resetRoot"] = Flow({
                     Plugin.initial: {Return: "resetRoot"},
                     "resetRoot"     : {ReturnSuccess: Plugin.final}
-                    }, description="Reset root password to random value so the user can login and change it")
+                    }, description="Reset root password to random value so " \
+                            "the user can login and change it")
 
     name = "Password plugin"
     version = "0.0.1"
@@ -48,14 +51,17 @@ class PasswdPlugin(Plugin):
         Plugin.__init__(self, *args, **kwargs)
 
     def resetRoot(self):
-        charlist = "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ.,"
+        charlist = "abcdefghijklmnopqrstuvwxyz" \
+                "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ.,"
         passlen = 10
         newpasswd = []
         while len(newpasswd)<passlen:
             newpasswd.append(rng.choice(charlist))
 
-        print spawnvch(executable = "/usr/bin/passwd", args = ["/usr/bin/passwd", "root"],
-                chroot = Config.system.root).communicate(input = "%s\n%s\n"%(newpasswd,newpasswd))
+        print spawnvch(executable = "/usr/bin/passwd",
+                args = ["/usr/bin/passwd", "root"],
+                chroot = Config.system.root).communicate(
+                        input = "%s\n%s\n"%(newpasswd,newpasswd))
 
         self._reporting.info("Root password was reset to '%s'" % 
                 ("".join(newpasswd),), level = PLUGIN, origin = self)
