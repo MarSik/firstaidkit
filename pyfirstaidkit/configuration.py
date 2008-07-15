@@ -69,7 +69,7 @@ def createDefaultConfig(config):
         for root in [ "usr/lib64", "usr/lib"]:
             if os.path.exists( "/%s/%s" % (root,dir)):
 
-                config.set( "paths",  "%s/%s"%(dir[19:], root[4]),
+                config.set( "paths",  "%s/%s"%(dir[19:], root[4:]),
                         "/%s/%s" %(root, dir) )
 
 
