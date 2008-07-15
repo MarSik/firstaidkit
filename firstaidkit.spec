@@ -45,7 +45,7 @@ Requires:       %{name}-plugin-xserver
 Requires:       %{name}-plugin-grub
 Requires:       %{name}-plugin-rpm
 Requires:       %{name}-gui
-Requires:       %{name}-mdadmconf
+Requires:       %{name}-plugin-mdadm-conf
 
 
 %description plugin-all
@@ -100,13 +100,13 @@ Summary:        FirstAidKit plugin to diagnose or repair the RPM packaging syste
 Requires:       %{name} = %{version}-%{release}
 Requires:       rpm, rpm-python
 
-%package plugin-mdadmconf
+%package plugin-mdadm-conf
 Group:          Applications/System
 Summary:        Firstaidkit plugin to diagnose software raid configuration file
 Requires:       %{name} = %{version}-%{release}
 Requires:       mdadm
 
-%description plugin-mdadmconf
+%description plugin-mdadm-conf
 This plugin will assess the validity and existence of the mdadm.conf file.
 The file will get replaced if any inconsistencies are found.
 
@@ -144,6 +144,7 @@ echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 #docs
 %{__install} -d $RPM_BUILD_ROOT%{_mandir}/man1
 %{__install} -p doc/firstaidkit-plugin.1 doc/firstaidkit.1 $RPM_BUILD_ROOT%{_mandir}/man1
+
 #examples
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/examples
 %{__mv} -f plugins/plugin_examples $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/examples
@@ -160,17 +161,17 @@ echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 %{__install} -p frontend/*.gladep  $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend/
 
 #plugins
-%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/plugin_undelete_partitions
-%{__cp} -f plugins/plugin_undelete_partitions/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/plugin_undelete_partitions/
+%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts
+%{__cp} -f plugins/undelparts/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts/
 %{__cp} -f plugins/passwd.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
 %{__cp} -f plugins/xserver.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
-%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/plugin_rpm
-%{__cp} -f plugins/plugin_rpm/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/plugin_rpm/
-%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/plugin_rpm_lowlevel
-%{__cp} -f plugins/plugin_rpm_lowlevel/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/plugin_rpm_lowlevel/
-%{__cp} -f plugins/plugin_grub.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
+%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm
+%{__cp} -f plugins/rpm/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm/
+%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm_lowlevel
+%{__cp} -f plugins/rpm_lowlevel/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm_lowlevel/
+%{__cp} -f plugins/grub.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
 %{__install} -p etc/firstaidkit/firstaidkit-plugin-grub $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
-%{__cp} -f plugins/plugin_mdadmconf.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
+%{__cp} -f plugins/mdadm_conf.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
 
 
 %clean
@@ -198,8 +199,8 @@ echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 %files plugin-all
 
 %files plugin-undelete-partitions
-%{_libdir}/firstaidkit/plugins/plugin_undelete_partitions/*.py*
-%{_libdir}/firstaidkit/plugins/plugin_undelete_partitions/*.so
+%{_libdir}/firstaidkit/plugins/undelparts/*.py*
+%{_libdir}/firstaidkit/plugins/undelparts/*.so
 
 %files plugin-passwd
 %{_libdir}/firstaidkit/plugins/passwd.py*
@@ -208,12 +209,12 @@ echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 %{_libdir}/firstaidkit/plugins/xserver.py*
 
 %files plugin-rpm
-%{_libdir}/firstaidkit/plugins/plugin_rpm_lowlevel/*
-%{_libdir}/firstaidkit/plugins/plugin_rpm/*
+%{_libdir}/firstaidkit/plugins/rpm_lowlevel/*
+%{_libdir}/firstaidkit/plugins/rpm/*
 
 %files plugin-grub
-%{_libdir}/firstaidkit/plugins/plugin_grub.py*
+%{_libdir}/firstaidkit/plugins/grub.py*
 %{_sysconfdir}/firstaidkit/firstaidkit-plugin-grub
 
-%files plugin-mdadmconf
-%{_libdir}/firstaidkit/plugins/plugin_mdadmconf.py*
+%files plugin-mdadm-conf
+%{_libdir}/firstaidkit/plugins/mdadm_conf.py*

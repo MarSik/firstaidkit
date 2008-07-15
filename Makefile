@@ -21,7 +21,7 @@ RELEASE := $(shell awk '/Release:/ { print $$2 }' firstaidkit.spec)
 
 PLUGIN_PATH = plugins
 # all the plugins that have a make build to run
-PLUGIN_DIRS = plugin_undelete_partitions
+PLUGIN_DIRS = undelparts
 
 tarball:
 	git-archive --format=tar --prefix=$(NAME)-$(VERSION)/ HEAD | bzip2 -f > $(NAME)-$(VERSION).tar.bz2
