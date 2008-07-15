@@ -333,16 +333,21 @@ if __name__=="__main__":
 
         try:
             singlerun.run()
+
         except InvalidPluginNameException, ipne:
             print(ipne)
+
         except Exception, e:
-            print("!!! Impossible happened!! The First Aid Kit crashed in "
-                   "very unsafe way.\n!!! Please report this to the authors "
-                   "along with the following message.  You can create a ticket "
-                   "at https://fedorahosted.org/firstaidkit/newticket\n\n")
+            # This is when an unexpected exception occurs.  This usally
+            # means there is a bug somewhere.
+            print("!!! The First Aid Kit crashed in very unsafe way.\n!!! "
+                    "Please report this to the authors along with the "
+                    "following message.  You can create a ticket at "
+                    "https://fedorahosted.org/firstaidkit/newticket\n\n")
             Config.write(sys.stdout)
             print("Description of the error:\nError message:%s\n " \
                     "Error class %s"% (e, e.__class__))
+
         finally:
             singlerun.end()
 
