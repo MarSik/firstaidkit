@@ -132,8 +132,7 @@ def usage(name):
   -v               - verbose mode
   -l <method>      - select different log method
                      -l stdout log to standard output
-                     -l file log to a file. The file is defined in
-                        firstaidkit config file.
+                     -l file log to a file defined in config file.
   -x <plugin>      - exclude plugin from run
   -F <flag>        - set startup flag
   -g <gui>         - frontend to show results
