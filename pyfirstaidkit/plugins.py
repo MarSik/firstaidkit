@@ -614,5 +614,7 @@ class PluginSystem(object):
     def getplugin(self, plugin):
         """Get top level class of plugin, so we can create the instance and
         call the steps manually"""
-        return self._plugins[plugin].get_plugin()
-
+        if plugin in self._plugins:
+            return self._plugins[plugin].get_plugin()
+        else:
+            raise InvalidPluginNameException(plugin)

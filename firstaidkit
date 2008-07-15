@@ -22,6 +22,7 @@ from pyfirstaidkit import Tasker
 from pyfirstaidkit import Config
 from pyfirstaidkit import reporting
 from pyfirstaidkit import initLogger
+from pyfirstaidkit.errors import InvalidPluginNameException
 from pyfirstaidkit.utils import BackupException
 
 class Flags:
@@ -332,6 +333,8 @@ if __name__=="__main__":
 
         try:
             singlerun.run()
+        except InvalidPluginNameException, ipne:
+            print(ipne)
         except Exception, e:
             print("!!! Impossible happened!! The First Aid Kit crashed in "
                    "very unsafe way.\n!!! Please report this to the authors "
