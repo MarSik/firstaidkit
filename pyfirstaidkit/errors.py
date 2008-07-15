@@ -16,26 +16,26 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
-class InvalidFlowStateException(Exception):
+class FAKException(Exception):
+    def __init__(self):
+        pass
+    def __str__(self):
+        return ("FAK_ERROR: %s" % self.message)
+
+class InvalidFlowStateException(FAKException):
     def __init__(self, flow):
         self.message="There appears to be an inconsistency with the %s " \
                 "varialbe. " % flow
-    def __str__(self):
-        return self.message
 
-class InvalidFlowNameException(Exception):
+class InvalidFlowNameException(FAKException):
     def __init__(self, name):
-        self.message="There are no flows by the name of %s" % name
-    def __str__(self):
-        return self.message
+        self.message="No flow by the name of %s was found." % name
 
-class InvalidPluginNameException(Exception):
+class InvalidPluginNameException(FAKException):
     def __init__(self, name):
-        self.message="No flows by the name of \"%s\" where found." % name
-    def __str__(self):
-        return self.message
+        self.message="No plugin by the name of \"%s\" was found." % name
 
-class GeneralPluginException(Exception):
+class GeneralPluginException(FAKException):
     """General exception
 
     This exception should be used for all exceptions that come from the
@@ -44,5 +44,3 @@ class GeneralPluginException(Exception):
     def __init__(self, plugin, message):
         self.message="There was an exception in plugin %s with message %s"% \
                 (plugin,message)
-    def __str__(self):
-        return self.message
