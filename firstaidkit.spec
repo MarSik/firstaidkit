@@ -161,8 +161,7 @@ echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 %{__install} -p frontend/*.py  $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend/
 %{__install} -p frontend/*.glade  $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend/
 %{__install} -p frontend/*.gladep  $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend/
-desktop-file-install --vendor="fedora"       \
---dir=${RPM_BUILD_ROOT}%{_datadir}/applications  %{SOURCE3}
+desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applications %{SOURCE3}
 
 #plugins
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts
@@ -195,6 +194,7 @@ desktop-file-install --vendor="fedora"       \
 %{_libdir}/firstaidkit/frontend/*.py*
 %{_libdir}/firstaidkit/frontend/*.glade
 %{_libdir}/firstaidkit/frontend/*.gladep
+%{_datadir}/applications/*.desktop
 
 %files devel
 %{_libdir}/firstaidkit/plugins/examples
