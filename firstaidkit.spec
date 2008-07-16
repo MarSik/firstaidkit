@@ -11,6 +11,7 @@ Group:          Applications/System
 License:        GPLv2+
 URL:            http://fedorahosted.org/firstaidkit
 Source0:        %{name}-%{version}.tar.bz2
+Source3:        %{name}.desktop
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  python-devel
@@ -21,6 +22,7 @@ BuildRequires: python-setuptools-devel
 BuildRequires: python-setuptools
 %endif
 BuildArch:      noarch
+BuildRequires: desktop-file-utils
 
 %description
 A tool that automates simple and common system recovery tasks.
@@ -159,6 +161,8 @@ echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 %{__install} -p frontend/*.py  $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend/
 %{__install} -p frontend/*.glade  $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend/
 %{__install} -p frontend/*.gladep  $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend/
+desktop-file-install --vendor="fedora"       \
+--dir=${RPM_BUILD_ROOT}%{_datadir}/applications  %{SOURCE3}
 
 #plugins
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts
