@@ -1,3 +1,6 @@
+clean:
+	rm -rf wiki
+	rm -rf concept
 wiki:
 	@mkdir wiki ; \
 	./man2wiki ; \
