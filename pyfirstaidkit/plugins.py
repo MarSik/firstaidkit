@@ -80,7 +80,8 @@ class Plugin(object):
     #
     flows["diagnose"] = Flow({
         initial : {Return: "prepare"},
-        "prepare"    : {ReturnSuccess: "diagnose", None: "clean"},
+        "prepare"    : {ReturnSuccess: "diagnose", ReturnFailure: "clean",
+            None: "clean"},
         "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "clean",
             None: "clean"},
         "clean"      : {ReturnSuccess: final, ReturnFailure: final, None: final}
@@ -88,7 +89,8 @@ class Plugin(object):
 
     flows["fix"] = Flow({
         initial : {Return: "prepare"},
-        "prepare"    : {ReturnSuccess: "diagnose", None: "clean"},
+        "prepare"    : {ReturnSuccess: "diagnose", ReturnFailure: "clean",
+            None: "clean"},
         "diagnose"   : {ReturnSuccess: "clean", ReturnFailure: "backup",
             None: "clean"},
         "backup"     : {ReturnSuccess: "fix", ReturnFailure: "clean",
