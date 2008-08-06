@@ -16,6 +16,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 import os
+import os.path
 import sys
 import subprocess
 from backup import *
@@ -44,4 +45,14 @@ Returns the subprocess.Popen object"""
             stderr = subprocess.PIPE)
 
 
+def join(path1, path2):
+    """Avoids the os.path.join behavioir.
 
+    if a full path is given to os.path.join it ignores the prefious
+    arguments.  The needed behavior is to join two paths with only
+    one separator.
+    path1 - being the begining of the path name and
+    path2 - being the end.
+    """
+    # We strip the paths first and then join them.
+    return os.path.join(os.sep, path1.strip(os.sep), path2.strip(os.sep))

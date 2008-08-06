@@ -91,7 +91,11 @@ configuration file xorg.conf.
 Group:          Applications/System
 Summary:        FirstAidKit plugin to diagnose or repair the GRUB instalation
 Requires:       %{name} = %{version}-%{release}
-Requires:       anaconda, booty
+#Requires:       anaconda, booty
+
+Requires:       dbus-python
+Requires:       grub
+Requires:       pyparted
 
 %description plugin-grub
 This FirstAidKit plugin automates the recovery from the GRUB bootloader problems.
@@ -172,8 +176,10 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %{__cp} -f plugins/rpm/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm/
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm_lowlevel
 %{__cp} -f plugins/rpm_lowlevel/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm_lowlevel/
-%{__cp} -f plugins/grub.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
-%{__install} -p etc/firstaidkit/firstaidkit-plugin-grub $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
+#%{__cp} -f plugins/grub.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
+#%{__install} -p etc/firstaidkit/firstaidkit-plugin-grub $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
+%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
+%{__cp} -f plugins/grub/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
 %{__cp} -f plugins/mdadm_conf.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
 
 
@@ -217,8 +223,9 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %{_libdir}/firstaidkit/plugins/rpm/*
 
 %files plugin-grub
-%{_libdir}/firstaidkit/plugins/grub.py*
-%{_sysconfdir}/firstaidkit/firstaidkit-plugin-grub
+#%{_libdir}/firstaidkit/plugins/grub.py*
+#%{_sysconfdir}/firstaidkit/firstaidkit-plugin-grub
+%{_libdir}/firstaidkit/plugins/grub/*
 
 %files plugin-mdadm-conf
 %{_libdir}/firstaidkit/plugins/mdadm_conf.py*
