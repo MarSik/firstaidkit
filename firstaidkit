@@ -121,8 +121,7 @@ def usage(name):
  %s [params] -a         - runs the automated default mode [diagnose]
  %s [params] -a <flow>  - runs the automated mode with specified flow
  %s [params] -a fix     - automated fixing sequence [using the fix flows]
- %s [params] -f <plugin> <flow>
-                        - This implies --nodeps
+ %s [params] -f <plugin> <flow>     - Implies --nodeps
 
  params is none or more items from:
   -c <config file> - location of the config file
