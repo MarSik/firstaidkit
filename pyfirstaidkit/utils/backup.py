@@ -24,6 +24,7 @@ import shutil
 import hashlib
 import weakref
 import cPickle as pickle
+import copy
 
 class BackupException(Exception):
     pass
@@ -49,18 +50,16 @@ class BackupStoreInterface(object):
             raise NotImplemented()
         def cleanup(self):
             raise NotImplemented()
+        def cleanup_persistent(self):
+            raise NotImplemented()
 
         def exists(self, name = None, path = None):
             raise NotImplemented()
 
-    class PersistentBackup(BackupStoreInterface.Backup):
-        def cleanup(self):
-            return  False
-
     def __init__(self):
         raise NotImplemented()
 
-    def getBackup(self, id):
+    def getBackup(self, id, persistent = False):
         raise NotImplemented()
 
     def closeBackup(self, id):
@@ -184,6 +183,9 @@ class FileBackupStore(BackupStoreInterface):
                 self.delete(name)
             os.rmdir(self._path)
             return True
+        
+        def cleanup_persistent(self):
+            return False
 
         def exists(self, name=None, path=None):
             if name == None and path == None:
@@ -207,10 +209,6 @@ class FileBackupStore(BackupStoreInterface):
 
             return False
 
-    class PersistentBackup(FileBackupStore.Backup):
-        def cleanup(self):
-            return  False
-
     def __init__(self, path):
         if self.__class__._singleton:
             raise BackupException("BackupStore with %s type can have only "
@@ -228,9 +226,11 @@ class FileBackupStore(BackupStoreInterface):
         self.__class__._singleton = weakref.proxy(self)
         print("Backup system initialized")
 
-    def getBackup(self, id):
+    def getBackup(self, id, persistent = False):
         if not self._backups.has_key(id):
             self._backups[id] = self.Backup(id, self._path+"/"+id+"/")
+            if persistent:
+                self._backups[id].cleanup = self._backups[id].cleanup_persistent
         return self._backups[id]
 
     def closeBackup(self, id):
@@ -250,6 +250,9 @@ class FileBackupStore(BackupStoreInterface):
 
         if backupEmpty:
             os.rmdir(self._path)
+        else:
+            print("I'm keeping persistent backup spaces intact")
+
 
         print("Backup closed")
 
