@@ -89,7 +89,7 @@ class Reports(object):
         queue, any parameters provided when registering"""
         return self._notify.append((cb, args, kwargs))
 
-    def put(self, message, level, origin, action, importance = logging.INFO,
+    def put(self, message, origin, level, action, importance = logging.INFO,
             reply = None, title = "", destination = None):
         data = {"level": level, "origin": origin, "action": action,
                 "importance": importance, "message": message,
@@ -143,47 +143,50 @@ class Reports(object):
     def end(self):
         return self.put(None, FIRSTAIDKIT, None, END, importance = 1000)
 
-    def error(self, message, level, origin, action = INFO):
+    def error(self, message, origin, level = PLUGIN, action = INFO):
         Logger.error(origin.name+": "+message)
-        return self.put(message, level, origin, action,
+        return self.put(message, origin, level, action,
                 importance = logging.ERROR)
 
-    def start(self, level, origin, message = ""):
-        return self.put(message, level, origin, START,
+    def start(self, origin, level = PLUGIN, message = ""):
+        return self.put(message, origin, level, START,
                 importance = logging.DEBUG)
-    def stop(self, level, origin, message = ""):
-        return self.put(message, level, origin, STOP,
+    def stop(self, origin, level = PLUGIN, message = ""):
+        return self.put(message, origin, level, STOP,
                 importance = logging.DEBUG)
 
-    def progress(self, position, maximum, level, origin,
+    def progress(self, position, maximum, origin, level = PLUGIN,
             importance = logging.INFO):
-        return self.put((position, maximum), level, origin, PROGRESS,
+        return self.put((position, maximum), origin, level, PROGRESS,
                 importance = importance)
 
-    def issue(self, issue, level, origin, importance = logging.INFO):
+    def issue(self, issue, origin, level = PLUGIN, importance = logging.INFO):
         Logger.debug(origin.name+": issue changed state to "+str(issue))
-        return self.put(issue, level, origin, ISSUE, importance = importance)
+        return self.put(issue, origin, level, ISSUE, importance = importance)
 
-    def info(self, message, level, origin, importance = logging.INFO):
+    def info(self, message, origin, level = PLUGIN, importance = logging.INFO):
         Logger.info(origin.name+": "+message)
-        return self.put(message, level, origin, INFO, importance = importance)
-    def debug(self, message, level, origin, importance = logging.DEBUG):
-        Logger.debug(origin.name+": "+message)
-        return self.put(message, level, origin, INFO, importance = importance)
+        return self.put(message, origin, level, INFO, importance = importance)
 
-    def tree(self, message, level, origin, importance = logging.INFO,
+    def debug(self, message, origin, level = PLUGIN, importance = logging.DEBUG):
+        Logger.debug(origin.name+": "+message)
+        return self.put(message, origin, level, INFO, importance = importance)
+
+    def tree(self, message, origin, level = PLUGIN, importance = logging.INFO,
             title = ""):
-        return self.put(message, level, origin, TREE, importance = importance,
+        return self.put(message, origin, level, TREE, importance = importance,
                 title = title)
-    def table(self, message, level, origin, importance = logging.INFO,
+
+    def table(self, message, origin, level = PLUGIN, importance = logging.INFO,
             title = ""):
-        return self.put(message, level, origin, TABLE,
+        return self.put(message, origin, level, TABLE,
                 importance = importance, title = title)
 
-    def alert(self, message, level, origin, importance = logging.WARNING):
-        return self.put(message, level, origin, ALERT, importance = importance)
-    def exception(self, message, level, origin, importance = logging.ERROR):
+    def alert(self, message, origin, level = PLUGIN, importance = logging.WARNING):
+        return self.put(message, origin, level, ALERT, importance = importance)
+
+    def exception(self, message, origin, level = PLUGIN, importance = logging.ERROR):
         Logger.error(origin.name+": "+message)
-        return self.put(message, level, origin, EXCEPTION,
+        return self.put(message, origin, level, EXCEPTION,
                 importance = importance)
 
