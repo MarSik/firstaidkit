@@ -49,7 +49,9 @@ class Tasker:
             self._reporting = reporting
 
         if backups is None:
-            self._backups = FileBackupStore(cfg.backup.path)
+            self._backups = FileBackupStore(rootpath = cfg.backup.rootpath,
+                    fullpath = cfg.backup.fullpath)
+            cfg.backup.fullpath = self._backups._path
         else:
             self._backups = backups
 

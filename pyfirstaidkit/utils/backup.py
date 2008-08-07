@@ -25,6 +25,7 @@ import hashlib
 import weakref
 import cPickle as pickle
 import copy
+import tempfile
 
 class BackupException(Exception):
     pass
@@ -209,20 +210,28 @@ class FileBackupStore(BackupStoreInterface):
 
             return False
 
-    def __init__(self, path):
+    def __init__(self, rootpath = "/tmp", fullpath = ""):
         if self.__class__._singleton:
             raise BackupException("BackupStore with %s type can have only "
                     "one instance" % (self.__name__,))
 
         assert self.__class__._singleton==None
 
-        self._path = path
-        self._backups = {}
-        if os.path.isdir(self._path):
-            raise BackupException("Backupdir %s already exists. Erase dir or "
-                    "change backup dir." % self._path)
+        if fullpath:
+            if os.path.isdir(fullpath):
+                raise BackupException("Backupdir %s already exists. Erase "
+                        "dir or change backup dir." % self._path)
+            else:
+                self._path = fullpath
+                os.makedirs(fullpath)
+
         else:
-            os.makedirs(self._path)
+            if not os.path.isdir(rootpath):
+                os.makedirs(rootpath)
+            self._path = tempfile.mkdtemp(prefix = "firstaidkitbackup-", dir = rootpath)
+
+        self._backups = {}
+
         self.__class__._singleton = weakref.proxy(self)
         print("Backup system initialized")
 
