@@ -53,6 +53,10 @@ class BackupStoreInterface(object):
         def exists(self, name = None, path = None):
             raise NotImplemented()
 
+    class PersistentBackup(BackupStoreInterface.Backup):
+        def cleanup(self):
+            return  False
+
     def __init__(self):
         raise NotImplemented()
 
@@ -179,6 +183,7 @@ class FileBackupStore(BackupStoreInterface):
             for name in _datakeys:
                 self.delete(name)
             os.rmdir(self._path)
+            return True
 
         def exists(self, name=None, path=None):
             if name == None and path == None:
@@ -201,6 +206,10 @@ class FileBackupStore(BackupStoreInterface):
                 return True
 
             return False
+
+    class PersistentBackup(FileBackupStore.Backup):
+        def cleanup(self):
+            return  False
 
     def __init__(self, path):
         if self.__class__._singleton:
@@ -227,16 +236,21 @@ class FileBackupStore(BackupStoreInterface):
     def closeBackup(self, id):
         if not self._backups.has_key(id):
             raise BackupException("Backup with id %s does not exist" % (id,))
-        self._backups[id].cleanup()
-        del self._backups[id]
+        if self._backups[id].cleanup():
+            del self._backups[id]
 
     def __del__(self):
         if self.__class__._singleton is None:
             return
 
+        backupEmpty = True
+
         for id,backup in self._backups.iteritems():
-            backup.cleanup()
-        os.rmdir(self._path)
+            backupEmpty = backupEmpty and backup.cleanup()
+
+        if backupEmpty:
+            os.rmdir(self._path)
+
         print("Backup closed")
 
     @classmethod
