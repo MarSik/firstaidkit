@@ -76,9 +76,29 @@ class FileBackupStore(BackupStoreInterface):
         def __init__(self, id, path):
             self._id = id
             self._path = path
+            self._metafile = "__meta.pickle"
             self._data = {} # name -> (stored as, origin)
             self._origin = {} # origin -> name
             os.makedirs(self._path)
+
+        def saveMeta(self):
+            f = open(os.path.join(self._path, self._metafile), "wb")
+            pickle.dump((self._id, self._data, self._origin), f, pickle.HIGHEST_PROTOCOL)
+            f.close()
+            return True
+        
+        def loadMeta(self):
+            f = open(os.path.join(self._path, self._metafile), "rb")
+            (id, data, origin) = pickle.load(f)
+            f.close()
+
+            if id==self._id:
+                self._data = data
+                self._origin = origin
+            else:
+                raise BackupException("Loading metadata for different Backup (ID mismatch: '%s' and '%s')" % (self._id, id))
+
+            return True
 
         def backupPath(self, path, name = None):
             if name is None:
@@ -101,6 +121,9 @@ class FileBackupStore(BackupStoreInterface):
 
             self._origin[path] = name
             self._data[name] = (stored, path)
+
+            self.saveMeta()
+
             return True
 
         def backupValue(self, value, name):
@@ -114,6 +137,8 @@ class FileBackupStore(BackupStoreInterface):
             f.close()
 
             self._data[name] = (stored, None)
+            
+            self.saveMeta()
 
             return True
 
@@ -175,6 +200,8 @@ class FileBackupStore(BackupStoreInterface):
             del self._data[name]
             if origin is not None:
                 del self._origin[origin]
+            
+            self.saveMeta()
 
             return True
 
