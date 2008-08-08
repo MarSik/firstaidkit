@@ -61,7 +61,7 @@ class Grub(Plugin):
         self.issue_grub_image = SimpleIssue(self.name, "Bad grub stage1 image.")
 
         # Initialize the backup space.
-        self.backupSpace = self._backups.getBackup(str(self))
+        self.backupSpace = self._backups.getBackup(str(self), persistent = True)
 
     def prepare(self):
         self._reporting.info("Initializing the search for all the grub " \
