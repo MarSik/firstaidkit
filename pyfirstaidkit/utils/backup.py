@@ -184,9 +184,6 @@ class FileBackupStore(BackupStoreInterface):
                 self.delete(name)
             os.rmdir(self._path)
             return True
-        
-        def cleanup_persistent(self):
-            return False
 
         def exists(self, name=None, path=None):
             if name == None and path == None:
@@ -208,6 +205,10 @@ class FileBackupStore(BackupStoreInterface):
             if path != None and self._origin.has_key(path):
                 return True
 
+            return False
+
+    class BackupPersistent(Backup):
+        def cleanup(self):
             return False
 
     def __init__(self, rootpath = "/tmp", fullpath = ""):
@@ -237,9 +238,10 @@ class FileBackupStore(BackupStoreInterface):
 
     def getBackup(self, id, persistent = False):
         if not self._backups.has_key(id):
-            self._backups[id] = self.Backup(id, self._path+"/"+id+"/")
             if persistent:
-                self._backups[id].cleanup = self._backups[id].cleanup_persistent
+                self._backups[id] = self.BackupPersistent(id, self._path+"/"+id+"/")
+            else:
+                self._backups[id] = self.Backup(id, self._path+"/"+id+"/")
         return self._backups[id]
 
     def closeBackup(self, id):
