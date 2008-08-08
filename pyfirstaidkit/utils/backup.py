@@ -26,6 +26,7 @@ import weakref
 import cPickle as pickle
 import copy
 import tempfile
+import datetime
 
 class BackupException(Exception):
     pass
@@ -255,7 +256,9 @@ class FileBackupStore(BackupStoreInterface):
         else:
             if not os.path.isdir(rootpath):
                 os.makedirs(rootpath)
-            self._path = tempfile.mkdtemp(prefix = "firstaidkitbackup-", dir = rootpath)
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%m%S")
+            self._path = tempfile.mkdtemp(prefix = "fakbackup-%s-"%timestamp,
+                    dir = rootpath)
 
         self._backups = {}
 
