@@ -236,6 +236,7 @@ class FileBackupStore(BackupStoreInterface):
 
     class BackupPersistent(Backup):
         def cleanup(self):
+            self.saveMeta()
             return False
 
     def __init__(self, rootpath = "/tmp", fullpath = ""):
