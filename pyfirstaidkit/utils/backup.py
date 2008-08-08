@@ -51,8 +51,6 @@ class BackupStoreInterface(object):
             raise NotImplemented()
         def cleanup(self):
             raise NotImplemented()
-        def cleanup_persistent(self):
-            raise NotImplemented()
 
         def exists(self, name = None, path = None):
             raise NotImplemented()
@@ -86,7 +84,7 @@ class FileBackupStore(BackupStoreInterface):
             pickle.dump((self._id, self._data, self._origin), f, pickle.HIGHEST_PROTOCOL)
             f.close()
             return True
-        
+
         def loadMeta(self):
             f = open(os.path.join(self._path, self._metafile), "rb")
             (id, data, origin) = pickle.load(f)
@@ -137,7 +135,7 @@ class FileBackupStore(BackupStoreInterface):
             f.close()
 
             self._data[name] = (stored, None)
-            
+
             self.saveMeta()
 
             return True
@@ -200,7 +198,7 @@ class FileBackupStore(BackupStoreInterface):
             del self._data[name]
             if origin is not None:
                 del self._origin[origin]
-            
+
             self.saveMeta()
 
             return True
