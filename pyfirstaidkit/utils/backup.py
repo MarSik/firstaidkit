@@ -208,6 +208,7 @@ class FileBackupStore(BackupStoreInterface):
             _datakeys = self._data.keys()
             for name in _datakeys:
                 self.delete(name)
+            os.remove(os.path.join(self._path, self._metafile))
             os.rmdir(self._path)
             return True
 
