@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import sys, getopt, os, pprint, logging, re
+import sys, getopt, os, pprint, logging, re, hashlib
 from threading import Thread
 from pyfirstaidkit import Tasker
 from pyfirstaidkit import Config
@@ -228,15 +228,9 @@ if __name__=="__main__":
             Config.operation.dependencies = "False"
 
         elif key in ("--plugin-args"):
-            m = re.search("[^ ]* ", val)
-            if m:
-                plugin = m.group(0).strip()
-                args = val.strip("%s "%plugin)
-                if plugin and args:
-                    if not Config.has_section("plugin-args"):
-                        Config.add_section("plugin-args")
-                    Config.set("plugin-args", plugin, args)
-
+            if not Config.has_section("plugin-args"):
+                Config.add_section("plugin-args")
+            Config.set("plugin-args", hashlib.sha1(val).hexdigest(), val)
 
     if Flags.main_help:
         usage(sys.argv[0])

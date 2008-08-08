@@ -27,6 +27,7 @@ import logging
 
 import imp
 import os
+import re
 import subprocess
 from cStringIO import StringIO
 
@@ -602,8 +603,13 @@ class PluginSystem(object):
                         return False
 
         args = None
-        if Config.has_option("plugin-args", pklass.name):
-            args = Config.get("plugin-args", pklass.name)
+        if Config.has_section("plugin-args"):
+            for (name, value) in Config.items("plugin-args"):
+                # We see if the args line begins with any plugin name.
+                m = re.search("^%s"%plugin, value)
+                if m:
+                    args = value.strip(plugin).strip(" ")
+                    break
 
         infosection = getattr(Info, plugin)
         infosection.unlock()
