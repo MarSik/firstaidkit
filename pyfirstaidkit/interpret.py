@@ -49,6 +49,10 @@ class Tasker:
             self._reporting = reporting
 
         if backups is None:
+            if fullpath:
+                # rootpath is silly if fullpath is set by user.
+                cfg.backup.rootpath = ""
+
             self._backups = FileBackupStore(rootpath = cfg.backup.rootpath,
                     fullpath = cfg.backup.fullpath)
             cfg.backup.fullpath = self._backups._path
