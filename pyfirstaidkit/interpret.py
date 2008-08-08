@@ -49,7 +49,7 @@ class Tasker:
             self._reporting = reporting
 
         if backups is None:
-            if fullpath:
+            if cfg.backup.fullpath:
                 # rootpath is silly if fullpath is set by user.
                 cfg.backup.rootpath = ""
 
