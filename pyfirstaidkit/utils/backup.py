@@ -290,7 +290,7 @@ class FileBackupStore(BackupStoreInterface):
         if backupEmpty:
             os.rmdir(self._path)
         else:
-            print("I'm keeping persistent backup spaces intact")
+            print("I'm keeping persistent backup spaces intact in %s" % (self._path,))
 
 
         print("Backup closed")

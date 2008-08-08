@@ -32,6 +32,7 @@ class Sample1Plugin(Plugin):
     def prepare(self):
         self._result=ReturnSuccess
         self._issue.set(reporting  = self._reporting, origin = self, level = PLUGIN)
+        self.backup = self._backups.getBackup(self.__class__.__name__+" -- "+self.name, persistent = True)
         self._reporting.info("Sample1Plugin in Prepare task", origin = self, level = PLUGIN)
 
     def backup(self):
@@ -54,6 +55,7 @@ class Sample1Plugin(Plugin):
 
     def clean(self):
         self._result=ReturnSuccess
+        self._backups.closeBackup(self.backup._id)
         self._reporting.info("Sample1Plugin in Clean task", origin = self, level = PLUGIN)
 
 def get_plugin():
