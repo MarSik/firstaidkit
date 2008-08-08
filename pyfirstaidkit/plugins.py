@@ -110,7 +110,7 @@ class Plugin(object):
     default_flow = "diagnose"
 
     def __init__(self, flow, reporting, dependencies, path = None,
-            backups = None, info = None):
+            backups = None, info = None, args = None):
         """ Initialize the instance.
 
         flow -- Name of the flow to be used with this instance.
@@ -127,6 +127,7 @@ class Plugin(object):
         self._path = path
         self._backups = backups
         self._info = info
+        self._args = args
 
         self.provide = dependencies.provide
         self.unprovide = dependencies.unprovide
@@ -600,11 +601,15 @@ class PluginSystem(object):
                                 message = plugin)
                         return False
 
+        args = None
+        if Config.has_option("plugin-args", pklass.name):
+            args = Config.get("plugin-args", pklass.name)
+
         infosection = getattr(Info, plugin)
         infosection.unlock()
         p = pklass(flowName, reporting = self._reporting,
                 dependencies = self._deps, backups = self._backups,
-                path = plugindir, info = infosection)
+                path = plugindir, info = infosection, args = args)
         for (step, rv) in p: #autorun all the needed steps
             Logger.info("Running step %s in plugin %s ...", step, plugin)
             Logger.info("%s is current step and %s is result of that step." %
