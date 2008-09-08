@@ -602,20 +602,23 @@ class PluginSystem(object):
                                 message = plugin)
                         return False
 
-        args = None
+        args = []
         if Config.has_section("plugin-args"):
             for (name, value) in Config.items("plugin-args"):
                 # We see if the args line begins with any plugin name.
-                m = re.search("^%s"%plugin, value)
+                m = re.search("^%s "%plugin, value)
                 if m:
-                    args = value.strip(plugin).strip(" ")
-                    break
+                    args.append(value.strip(plugin).strip(" "))
+                # We also want to be able to configure separate flows
+                m = re.search("^%s/%s "% (plugin, flowName), value)
+                if m:
+                    args.append(value.strip(plugin).strip(" "))
 
         infosection = getattr(Info, plugin)
         infosection.unlock()
         p = pklass(flowName, reporting = self._reporting,
                 dependencies = self._deps, backups = self._backups,
-                path = plugindir, info = infosection, args = args)
+                path = plugindir, info = infosection, args = " ".join(args))
         for (step, rv) in p: #autorun all the needed steps
             Logger.info("Running step %s in plugin %s ...", step, plugin)
             Logger.info("%s is current step and %s is result of that step." %

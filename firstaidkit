@@ -143,7 +143,7 @@ def usage(name):
   --list           - list all plugins
   --info <plugin>  - get information about plugin
   --nodeps         - do not use plugin dependencies
-  --plugin-args=<plugin_name args>
+  --plugin-args=<plugin_name[/flow] args>
                    - optionally pass arguments to plugin_name
 """ % (name, name, name, name, name))
 
