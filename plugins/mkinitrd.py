@@ -50,7 +50,7 @@ class mkinitrd(Plugin):
 
     def prepare(self):
         self._issue.set(reporting  = self._reporting, origin = self, level = PLUGIN)
-#        self.backup = self._backups.getBackup(self.__class__.__name__+" -- "+self.name, persistent = False)
+        self._backup = self._backups.getBackup(self.__class__.__name__+" -- "+self.name, persistent = False)
         self._reporting.info("mkinitrd in Prepare task", origin = self, level = PLUGIN)
         f = open(os.path.join(Config.system.root,"/boot/grub/menu.lst"))
         for l in f:
@@ -88,12 +88,12 @@ class mkinitrd(Plugin):
 
     def backup(self):
         self._reporting.info("mkinitrd in backup task", origin = self, level = PLUGIN)
-#        self.backup.backupPath(self.initrd_path)
+        self._backup.backupPath(self.initrd_path)
         self._result=ReturnSuccess
 
     def restore(self):
         self._reporting.info("mkinitrd in Restore task", origin = self, level = PLUGIN)
-#        self.backup.restorePath(self.initrd_path)
+        self._backup.restorePath(self.initrd_path)
         self._result=ReturnSuccess
         
     def diagnose(self):
@@ -109,7 +109,7 @@ class mkinitrd(Plugin):
 
     def clean(self):
         self._result=ReturnSuccess
-#        self._backups.closeBackup(self.backup._id)
+        self._backups.closeBackup(self._backup._id)
         self._reporting.info("mkinitrd in Clean task", origin = self, level = PLUGIN)
 
 def get_plugin():
