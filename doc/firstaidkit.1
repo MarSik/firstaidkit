@@ -84,6 +84,30 @@ Show help.
 Setup startup flags.
 
 .PP
+.SH "EXAMPLES"
+.nf
+For most of the situations its probably better to execute
+the plugins individually.  You manage this by using the -f
+option.
+.fi
+.IP "firstaidkit -f xserver diagnose"
+Execute the diagnose flow in a specific plugin.  This line
+will execute the xserver plugin in diagnose mode.
+.IP "firstaidkit -a diagnose --nodeps"
+Execute all plugins without dependencies.  this will execute
+all plugins without looking at the dependencies between them.
+This is good if you want a general diagnose of the system.
+.IP "firstaidkit --print-config"
+List the configuration.
+.IP "firstaidkit --list"
+List of plugins.
+.IP "firstaidkit --info xserver"
+Request a specific info from a plugin.
+.IP "firstaidkit -a -e xserver"
+Exclude a plugin from an action.  This will execute every plugin
+except the xserver.
+
+.PP
 .SH "BUGS"
 .nf
 Please report bugs at http://fedorahosted.org/firstaidkit/newticket
