@@ -71,13 +71,13 @@ class Grub(Plugin):
             # We end up with a structure where the keys are the drive names.
             self.devices = grubUtils.get_all_devs()
 
-            self._reporting.info("Searching for grub related files in the " \
-                    "system storage devices.", origin = self)
             # We must search in all the possible partitions for the grub files:
             # stage1, stage1.5, stage2....  When we find these directories we
             # will be able to install grub from there.  And the vmliuz (kernel
             # image), initrd.img, the grub.conf is probably in these places as
             # well.
+            self._reporting.info("Searching for grub related files in the " \
+                    "system storage devices.", origin = self)
             for (dev, parts) in self.devices.iteritems():
                 for part in parts:
                     try:
@@ -92,10 +92,10 @@ class Grub(Plugin):
                                 "searching partition %s. Error: %s." % \
                                 (part.path(), e) ,origin = self)
 
-            self._reporting.info("Searching for the grub stage1 image.", \
-                    origin = self)
             # We must search in all the possible partitions and devices for the
             # grub binary.
+            self._reporting.info("Searching for the grub stage1 image.", \
+                    origin = self)
             for (dev, parts) in self.devices.iteritems():
 
                 # We look for grub in the device
