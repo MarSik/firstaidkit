@@ -233,6 +233,31 @@ def part_unmount(part, opts=None):
     else:
         return True
 
+
+#
+# There will be the possitility of installing the grub in all partitions
+# that dont have a boot loader (This will hopefully be default behavior).
+# For this purpose we must test to see if there are boot loaders in the
+# device.
+#
+# The idea here is to have people scream about firstaidkit messing their
+# other bootloaders up and creating new tests as needed.
+#
+# FIXME:If this function gets too big, might want to make another file.
+def other_bootloader_present(dev):
+    # Will allways say that no bootloader is present.
+    def none_grub(dev):
+        return False
+
+    # We will have the list of all the tests in the tests variable.
+    tests = {none_grub}
+
+    for test in tests:
+        if test(dev):
+            return True
+
+    return False
+
 # The Strings contained in the grub stage one:
 stage1strings = ["GRUB", "Geom", "Hard", "Disk", "Read", "Error"]
 

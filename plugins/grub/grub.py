@@ -49,11 +49,11 @@ class Grub(Plugin):
         # found.
         self.grub_dir_parts = []
 
-        # The partitions where the grub binary is found in the first 446 bytes.
-        self.grub_bin_parts = []
+        # The partitions where grub binary will be installed (first 446 bytes).
+        self.install_grub_parts = []
 
-        # The devs where the grub binary is found in the first 446 bytes.
-        self.grub_bin_devs = []
+        # The devs where grub binary will be installed (first 446 bytes).
+        self.install_grub_devs = []
 
         # Initialize our list of related issues.
         self.issue_grub_dir = SimpleIssue(self.name, "Missing grub dir or " \
@@ -92,32 +92,50 @@ class Grub(Plugin):
                                 "searching partition %s. Error: %s." % \
                                 (part.path(), e) ,origin = self)
 
+
+            # We will search the devices and disks for the ones in which we can
+            # install the grub binary.  There are three possibilities when
+            # making this decision:
+            # 1. We find a grub in the mbr:  In this case we want to add it to
+            #       add it to the list because we will be reinstalling it.
+            # 2. We find no bootloader present:  In this case we also want
+            #       to add it because it wont hurt to have grub on a secto
+            #       that is not used anyway.  And there is a possibility that
+            #       installing it will fix the problem.
+            # 3. We find another bootloader:  In this case the default
+            #       behavior is to leave it alone.
+            # There will exist two override statements:
+            # 1. Dont ignore devices with other bootloaders.
+            # 2. Pass a list of devices in which the user wants to install the
+            #       grub.  In which case all checks are ignored.
+            #
             # We must search in all the possible partitions and devices for the
             # grub binary.
-            self._reporting.info("Searching for the grub stage1 image.", \
-                    origin = self)
+            self._reporting.info("Searching for locations in which to " \
+                    "install grub.", origin = self)
             for (dev, parts) in self.devices.iteritems():
 
-                # We look for grub in the device
+                # We see if we can install grub in device.
                 try:
-                    if grubUtils.grub_bin_in_dev(Dname(dev)):
-                        self._reporting.info("Found grub stage1 image in %s " \
-                                "device" % Dname.asPath(dev), origin = self)
-                        self.grub_bin_devs.append(grubUtils.Dname(dev))
+                    if grubUtils.other_bootloader_present(Dname(dev)):
+                        self._reporting.info("Found no other bootloader in " \
+                                "%s device." % Dname.asPath(dev), \
+                                origin = self)
+                        self.install_grub_devs.append(grubUtils.Dname(dev))
 
                 except Exception, e:
                     self._reporting.error("There was an error searching for " \
                             "the grub images in device %s. Error %s." % \
                             (Dname.asPath(dev), e), origin = self)
 
-                # No we look for the grub in the partitions.
+                # Now we see if we can install in the partitions.
                 for part in parts:
                     try:
-                        if grubUtils.grub_bin_in_part(Dname(part)):
-                            self._reporting.info("Found grub stage1 image " \
-                                    "in %s partition" % Dname.asPath(dev), \
-                                    origin = self)
-                            self.grub_bin_parts.append(Dname(part))
+                        if grubUtils.other_bootloader_present(Dname(part)):
+                        self._reporting.info("Found no other bootloader in " \
+                                "%s partition." % Dname.asPath(part), \
+                                origin = self)
+                            self.install_grub_parts.append(Dname(part))
 
                     except Exception, e:
                         self._reporting.error("There was an error searching " \
@@ -160,16 +178,16 @@ class Grub(Plugin):
         # At this point we know that we are going to reinstall the grub.  We
         # inform the user about the state of the stage1 in the partitions but
         # we do nothing else with this information.
-        if len(self.grub_bin_parts) == 0:
+        if len(self.install_grub_parts) == 0:
             self._reporting.info("No valid grub image was found in any " \
                     "partition in the system.", origin = self)
-        if len(self.grub_bin_devs) == 0:
+        if len(self.install_grub_devs) == 0:
             self._reporting.info("No valid grub image was found in any " \
                     "device in the system.", origin = self)
 
         # Only if there is no recognizable image do we consider it to be
         # an issue.
-        if len(self.grub_bin_parts) == 0 and len(self.grub_bin_devs) == 0:
+        if len(self.install_grub_parts) == 0 and len(self.install_grub_devs) == 0:
             self.issue_grub_image.set(checked = True, happened = True,
                     reporting = self._reporting, origin = self)
         else:
