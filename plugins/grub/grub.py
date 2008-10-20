@@ -63,6 +63,9 @@ class Grub(Plugin):
         # Initialize the backup space.
         self.backupSpace = self._backups.getBackup(str(self), persistent = True)
 
+        # Parce the parameters passed to the plugin.
+        self.args = gurbUtils.get_grub_opts(self._args)
+
     def prepare(self):
         self._reporting.info("Initializing the search for all the grub " \
                 "related elements.", origin = self)
@@ -86,7 +89,7 @@ class Grub(Plugin):
                                     "partition." % part.path(), origin = self)
                             self.grub_dir_parts.append(part)
                     except Exception, e:
-                        # If something happened while checking the partition 
+                        # If something happened while checking the partition
                         # it will not be taken into account.
                         self._reporting.error("There was an error while " \
                                 "searching partition %s. Error: %s." % \
@@ -109,38 +112,44 @@ class Grub(Plugin):
             # 2. Pass a list of devices in which the user wants to install the
             #       grub.  In which case all checks are ignored.
             #
-            # We must search in all the possible partitions and devices for the
-            # grub binary.
+            # Be aware that the list of devices to install to could be empty.
+            # We must check for this whenever we finish.
             self._reporting.info("Searching for locations in which to " \
                     "install grub.", origin = self)
-            for (dev, parts) in self.devices.iteritems():
 
-                # We see if we can install grub in device.
-                try:
+            if len(self.args.install_to) > 0:
+                # We install to the selected devices.  Since grub-install
+                # will screat in case the device names are not valid, I think
+                # its not necesary to check here.
+                for dev in self.args.install_to:
+                    self.install_grub_devs.append(Dname(dev))
+
+            elif self.args.install_all:
+                # We install to all the devices
+                for (dev, parts) in self.devices.iteritems():
+                    self.install_grub_devs.append(Dname(dev))
+                    for part in parts:
+                        self.install_grub_parts.append(Dname(part))
+
+            else:
+                # Skip devices with other bootloader (default).
+                for (dev, parts) in self.devices.iteritems():
+
+                    # We see if we can install grub in device.
+                    # FIXME: Create exception for failed bootloader search.
                     if grubUtils.other_bootloader_present(Dname(dev)):
                         self._reporting.info("Found no other bootloader in " \
                                 "%s device." % Dname.asPath(dev), \
                                 origin = self)
-                        self.install_grub_devs.append(grubUtils.Dname(dev))
+                        self.install_grub_devs.append(Dname(dev))
 
-                except Exception, e:
-                    self._reporting.error("There was an error searching for " \
-                            "the grub images in device %s. Error %s." % \
-                            (Dname.asPath(dev), e), origin = self)
-
-                # Now we see if we can install in the partitions.
-                for part in parts:
-                    try:
+                    # Now we see if we can install in the partitions.
+                    for part in parts:
                         if grubUtils.other_bootloader_present(Dname(part)):
                         self._reporting.info("Found no other bootloader in " \
                                 "%s partition." % Dname.asPath(part), \
                                 origin = self)
                             self.install_grub_parts.append(Dname(part))
-
-                    except Exception, e:
-                        self._reporting.error("There was an error searching " \
-                                "for grub images in partition %s. Error %s." % \
-                                (Dname.asPath(part), e), origin = self)
 
             self._result = ReturnSuccess
         except Exception, e:
