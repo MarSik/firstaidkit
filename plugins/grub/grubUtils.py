@@ -21,6 +21,7 @@ import os.path
 import re
 import subprocess
 import tempfile
+import getopt
 
 import minihal
 import parted
@@ -84,7 +85,8 @@ def get_all_devs():
                             Dname("%s%s"%(device["device"],part.num)))
                 part = disk.next_partition(part)
             # The key will be the device name and it will contain a list of
-            # parts.
+            # parts.  This is very unfortunate as the object would be better
+            # sutied as a key.
             retval[Dname.asName(device["device"])] = partitions
 
     return retval
@@ -332,6 +334,58 @@ def install_grub(root, setup):
                 % m.group(0))
 
     return out
+
+# Function to parse the user options.
+def get_grub_opts(args):
+    """ Function to parse user options.
+
+    --install-all : This option will tell grub plugin that it must not ignore
+                    any devices that have other bootloaders.  In other word
+                    its telling the plugin to install in all possible places.
+                    In case --install-to is also defined allong side this
+                    options, we will choose the list from install-to
+
+    --install-to=dev1,dev2... : This tells the grub plugin the specific
+                                devices that should be considered for
+                                installation.  All other devices will be
+                                ignored.  If install-all is selected with
+                                this option, we will prefer the list
+                                described in install-to.
+
+    We will return a object with all de relative information.
+    """
+
+    # Create the object with the argument decision.
+    class grub_args:
+        install_all = Flase
+        install_to = []
+    retval = grub_args()
+
+    # Parse the args string
+    optsstr = ""
+    longotps = ["install-all", "install-to="]
+    try:
+        (opts, vals) = getopt.getopt( args.split(), optsstr, longopts )
+    except:
+        # FIXME: put some sort of exception here so the use can know when
+        # he passed the wrong params.
+        # FIXME: there can also be the case the it fails because the split
+        # is done to somehting that is not a string.
+        pass
+
+    for (opt, val) in opts:
+
+        if opt is "--install-all" and len(retval.install_to) == 0:
+            retval.install_all = True
+
+        if opt is "--install-to":
+            retval.install_all = False
+            retval.install_to = val.split()
+
+    return retval
+
+
+
 
 # I really don't like the fact that you can have a variable that represents
 # a device or partition and not know, until runtime, with total certainty,
