@@ -39,6 +39,10 @@ class Grub(Plugin):
     def getDeps(cls):
         return set(["root", "experimental", "filesystem"])
 
+    @classmethod
+    def revert(cls, backup, report):
+        report.info("Executing revert", origin = Grub)
+
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
 
@@ -61,10 +65,11 @@ class Grub(Plugin):
         self.issue_grub_image = SimpleIssue(self.name, "Bad grub stage1 image.")
 
         # Initialize the backup space.
-        self.backupSpace = self._backups.getBackup(str(self), persistent = True)
+        self.backupSpace = self._backups.getBackup( \
+                self.__module__.split('.')[-1:][0], persistent = True)
 
         # Parce the parameters passed to the plugin.
-        self.args = gurbUtils.get_grub_opts(self._args)
+        self.args = grubUtils.get_grub_opts(self._args)
 
     def prepare(self):
         self._reporting.info("Initializing the search for all the grub " \
@@ -146,7 +151,7 @@ class Grub(Plugin):
                     # Now we see if we can install in the partitions.
                     for part in parts:
                         if grubUtils.other_bootloader_present(Dname(part)):
-                        self._reporting.info("Found no other bootloader in " \
+                            self._reporting.info("Found no other bootloader in " \
                                 "%s partition." % Dname.asPath(part), \
                                 origin = self)
                             self.install_grub_parts.append(Dname(part))

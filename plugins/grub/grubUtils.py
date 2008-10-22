@@ -252,7 +252,7 @@ def other_bootloader_present(dev):
         return False
 
     # We will have the list of all the tests in the tests variable.
-    tests = {none_grub}
+    tests = [none_grub]
 
     for test in tests:
         if test(dev):
@@ -357,13 +357,13 @@ def get_grub_opts(args):
 
     # Create the object with the argument decision.
     class grub_args:
-        install_all = Flase
+        install_all = False
         install_to = []
     retval = grub_args()
 
     # Parse the args string
     optsstr = ""
-    longotps = ["install-all", "install-to="]
+    longopts = ["install-all", "install-to="]
     try:
         (opts, vals) = getopt.getopt( args.split(), optsstr, longopts )
     except:
@@ -477,7 +477,7 @@ class Dname:
             openpar = ""
             closepar = ""
 
-        # Create the gurb device string.
+        # Create the grub device string.
         if partnum == None:
             return "%shd%s%s"%(openpar, devnum, closepar)
         else:

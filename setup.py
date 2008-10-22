@@ -8,6 +8,6 @@ setup(name='firstaidkit',
       url='http://fedorahosted.org/firstaidkit',
       license='GPLv2+',
       packages = ['pyfirstaidkit', 'pyfirstaidkit/utils'],
-      scripts = ['firstaidkit']
+      scripts = ['firstaidkit', 'firstaidkitrevert']
       )
 
