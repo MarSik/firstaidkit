@@ -16,21 +16,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import getopt, sys, os, os.path, pickle
+import getopt, sys, os, os.path, pickle, logging
 
 from pyfirstaidkit import Config
 from pyfirstaidkit import reporting
 from pyfirstaidkit import initLogger
 from pyfirstaidkit.plugins import PluginSystem
 from pyfirstaidkit.dependency import Dependencies
-
-import logging
-
-
-
-# backup object location inside the backup directory.
-# FIXME: Take this value from the Backup class.
-bolocation = "__meta.pickle"
+from pyfirstaidkit.utils.backup import FileBackupStore
 
 def usage(name):
     print("""Usage:
@@ -50,52 +43,44 @@ opts:
                           present in directory.
 """) % (name,)
 
-def revert(picklepath, plugin, report):
-    """ user the plugin revert function with the backup object stored in path.
+def revert(backup, plugin, report):
+    """ use the plugin revert function with the backup object stored in path.
 
-    path - Path to pickle file for backup object of plugin.
-    plugin - module that has the revert fuction.
+    backup - BackupPersistent object.
+    plugin - The plugin class.
+    report - the reporting object.
     """
-    # We recover the backup object from the pickle file.
-    try:
-        fd = open(picklepath, 'rb')
-        backup = pickle.load(fd)
-        fd.close()
-    except:
-        Logger.critical("FAK Revert: An error has occured while accessing the backup " \
-                "object for %s." % plugin)
-        sys.exit(1)
 
     # We try to execute the plugin revert function.
     try:
         plugink = plugin.get_plugin()
         plugink.revert(backup, report)
     except:
-        Logger.warning("FAK Revert: An Erro has occured whle executing the revert " \
-                "function for plugin %s/" % plugin)
+        Logger.warning("FAK Revert: An Error has occured whle executing the " \
+                "revert function for plugin %s/" % plugin)
 
 
-def findPicklePath(plugin):
-    retval = os.path.join(Config.revert.dir, \
-            plugin.__name__.split('.')[-1:][0], bolocation)
-    if os.path.isfile(retval):
-        return retval
+def findPluginIdPath(plugin):
+    pluginid = plugin.__name__.split('.')[-1:][0]
+    pluginpath = os.path.join(Config.revert.dir, pluginid)
+    if os.path.isdir(pluginpath):
+        retval = (pluginid, pluginpath)
     else:
 
-        # Ask the plugin for the directory name.
-        try:
-            retval = os.path.join(Config.revert.dir, plugin.getBackupId())
-        except:
-            Logger.warning("FAK Revert: No backup directory was found for %s." \
-                    % plugin.__name__)
-            retval = ""
+        pluginid = plugin.getBackupId()
+        pluginpath = os.path.join(Config.revert.dir, pluginid)
+        if os.path.isdir(pluginpath):
+            retval =  (pluginid, pluginpath)
+        else:
+            Logger.warning("FAK Revert: No backup directory was found " \
+                    "for %s." % plugin.__name__)
+        retval = (None, None)
 
         # FIXME: if there is a change of the namespace for the current
         # plugin being different from the namespace of the same plugin
         # but called from firstaidkit, we should include a check for this.
 
     return retval
-
 
 if __name__ == "__main__":
     try:
@@ -172,8 +157,8 @@ if __name__ == "__main__":
     try:
         ps = PluginSystem(report, Dependencies())
     except:
-        Logger.critical("FAK Revert: An error has occured while creating the Plugin " \
-                "system.")
+        Logger.critical("FAK Revert: An error has occured while creating " \
+                "the Plugin system.")
         sys.exit(1)
 
     if Config.revert.all == "True":
@@ -181,8 +166,13 @@ if __name__ == "__main__":
 
     # we execute the revert for all plugins passed by the user.
     for plugin in plugins:
-        picklepath = findPicklePath(ps._plugins[plugin])
-        if picklepath == "":
-            Logger.warning("FAK Revert: Revert found no backup object for %s" % plugin)
+        (id, path) = findPluginIdPath(ps._plugins[plugin])
+        if id is None or path is None:
+            Logger.warning("FAK Revert: Revert found no backup object " \
+                    "for %s" % plugin)
         else:
-            revert(picklepath, ps._plugins[plugin], report)
+            # We create the backup persistent object bpo before passing it to
+            # the revert function.
+            bpo = FileBackupStore.BackupPersistent(id, path, reverting = True)
+            bpo.loadMeta()
+            revert(bpo, ps._plugins[plugin], report)

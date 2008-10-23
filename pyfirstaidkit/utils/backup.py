@@ -238,6 +238,16 @@ class FileBackupStore(BackupStoreInterface):
             return False
 
     class BackupPersistent(Backup):
+        def __init__(self, id, path, reverting = False):
+            self._id = id
+            self._path = path
+            self._metafile = "__meta.pickle"
+            self._data = {} # name -> (stored as, origin)
+            self._origin = {} # origin -> name
+
+            if not reverting:
+                os.makedirs(self._path)
+
         def cleanup(self):
             self.saveMeta()
             return False

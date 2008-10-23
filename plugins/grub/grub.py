@@ -52,7 +52,7 @@ class Grub(Plugin):
                     origin = Grub)
             try:
                 fd = os.open(devpath, os.O_WRONLY)
-                first446btemp = os.write(fd, 446)
+                os.write(fd, first446bytes)
                 os.close(fd)
             except IOError, ie:
                 report.debug("There was an error writing to %s, It is very " \
