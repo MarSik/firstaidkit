@@ -41,7 +41,29 @@ class Grub(Plugin):
 
     @classmethod
     def revert(cls, backup, report):
-        report.info("Executing revert", origin = Grub)
+        """ Use the backup object to replace the first 446 bytes in all devs.
+        """
+        report.info("Entering revert...", origin = Grub)
+        firstblockdict = backup.restoreValue("firstblockdict")
+        for (dev, val) in firstblockdict.iteritems():
+            devpath = val[1].path()
+            first446bytes = val[0]
+            report.info("Reverting changes for device %s." % devpath, \
+                    origin = Grub)
+            try:
+                fd = os.open(devpath, os.O_WRONLY)
+                first446btemp = os.write(fd, 446)
+                os.close(fd)
+            except IOError, ie:
+                report.debug("There was an error writing to %s, It is very " \
+                        "probable that this device is in an invalid state." \
+                        "Error: %s" % (devpath, ie), origin = Grub)
+            except Exception, e:
+                report.debug("There was an unexpected error: %s" % e, \
+                        origin = Grub)
+
+            report.info("Successfully reverted changes to device %s." % devpath, \
+                    origin = Grub)
 
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
@@ -220,13 +242,15 @@ class Grub(Plugin):
         # devices, we will backup all of them.
         self._reporting.info("Going to backup all the first 446 bytes of " \
                 "all storage devices in the system.", origin = self)
+        firstblockdict = {}
         for (device, partitions) in self.devices.iteritems():
             fd = os.open(Dname.asPath(device), os.O_RDONLY)
             first446btemp = os.read(fd, 446)
             os.close(fd)
-            self.backupSpace.backupValue(first446btemp, Dname.asName(device))
+            firstblockdict[Dname.asName(device)] = [first446btemp, \
+                    Dname(device)]
+        self.backupSpace.backupValue( firstblockdict, "firstblockdict")
         self._result = ReturnSuccess
-
 
     def fix(self):
         # We ar to fail if there is no dirs.

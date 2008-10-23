@@ -444,7 +444,7 @@ class Dname:
     def grubName(self, parenthesis = False):
         """Change the kernel device name to something that grub understands
 
-        It returns a string of the form hd[devicd],[partition]
+        It returns a string of the form hd[device],[partition]
         """
 
         # First we search for the number that ends the device string.
@@ -469,7 +469,7 @@ class Dname:
             raise Exception("The conversion from kernel device scheme to " \
                     "grub scheme failed.")
 
-        # Decide weather to return with or withoug parenthesis.
+        # Decide weather to return with or without parenthesis.
         if parenthesis:
             openpar = "("
             closepar = ")"
