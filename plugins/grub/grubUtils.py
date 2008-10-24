@@ -357,6 +357,9 @@ def get_grub_opts(args):
 
     --install-auto : This will try to avoid overwriting other bootloaders.
 
+    --recover=dev1,dev2 : Same as --install-to, just more intuitive for the
+                      user that does not know how grub works.
+
     We will return a object with all de relative information.
     """
 
@@ -382,20 +385,20 @@ def get_grub_opts(args):
     for (opt, val) in opts:
 
         if opt == "--install-all" and len(retval.install_to) == 0:
-            if len(retval.install_to) == 0
+            if len(retval.install_to) == 0:
                 retval.install_all = True
                 retval.install_auto = False
 
-        if opt == "--install-to":
+        if opt in ( "--install-to", "--recover"):
             retval.install_to = val.split(',')
             retval.install_all = False
             retval.install_auto = False
 
 
         if opt == "--install-auto":
-            if len(retval.args.install_to) == 0 and \
-                    not retval.args.install_all:
-                retval.args.install_auto = True
+            if len(retval.install_to) == 0 and \
+                    not retval.install_all:
+                retval.install_auto = True
 
 
     return retval
