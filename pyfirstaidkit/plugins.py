@@ -608,11 +608,11 @@ class PluginSystem(object):
                 # We see if the args line begins with any plugin name.
                 m = re.search("^%s "%plugin, value)
                 if m:
-                    args.append(value.strip(plugin).strip(" "))
+                    args.append(value.lstrip(plugin).strip(" "))
                 # We also want to be able to configure separate flows
                 m = re.search("^%s/%s "% (plugin, flowName), value)
                 if m:
-                    args.append(value.strip(plugin).strip(" "))
+                    args.append(value.lstrip(plugin+'/'+flowName).strip(" "))
 
         infosection = getattr(Info, plugin)
         infosection.unlock()

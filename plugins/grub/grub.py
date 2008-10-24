@@ -164,7 +164,7 @@ class Grub(Plugin):
 
                     # We see if we can install grub in device.
                     # FIXME: Create exception for failed bootloader search.
-                    if grubUtils.other_bootloader_present(Dname(dev)):
+                    if not grubUtils.other_bootloader_present(Dname(dev)):
                         self._reporting.info("Found no other bootloader in " \
                                 "%s device." % Dname.asPath(dev), \
                                 origin = self)
@@ -172,9 +172,9 @@ class Grub(Plugin):
 
                     # Now we see if we can install in the partitions.
                     for part in parts:
-                        if grubUtils.other_bootloader_present(Dname(part)):
-                            self._reporting.info("Found no other bootloader in " \
-                                "%s partition." % Dname.asPath(part), \
+                        if not grubUtils.other_bootloader_present(Dname(part)):
+                            self._reporting.info("Found no other bootloader " \
+                                    "in %s partition." % Dname.asPath(part), \
                                 origin = self)
                             self.install_grub_parts.append(Dname(part))
 
@@ -211,24 +211,11 @@ class Grub(Plugin):
         self.issue_grub_dir.set(checked = True, happened = False,
                 reporting = self._reporting, origin = self)
 
-        # At this point we know that we are going to reinstall the grub.  We
-        # inform the user about the state of the stage1 in the partitions but
-        # we do nothing else with this information.
-        if len(self.install_grub_parts) == 0:
-            self._reporting.info("No valid grub image was found in any " \
-                    "partition in the system.", origin = self)
-        if len(self.install_grub_devs) == 0:
-            self._reporting.info("No valid grub image was found in any " \
-                    "device in the system.", origin = self)
-
-        # Only if there is no recognizable image do we consider it to be
-        # an issue.
-        if len(self.install_grub_parts) == 0 and len(self.install_grub_devs) == 0:
-            self.issue_grub_image.set(checked = True, happened = True,
-                    reporting = self._reporting, origin = self)
-        else:
-            self.issue_grub_image.set(checked = True, happened = False,
-                    reporting = self._reporting, origin = self)
+        # Since we dont check the validity of the images in the mbr we consider
+        # all the drives to be in a faulty state.  FIXME: this defenetly has
+        # to change
+        self.issue_grub_image.set(checked = True, happened = True, \
+                reporting = self._reporting, origin = self)
 
         self._result = ReturnFailure
 
@@ -239,21 +226,22 @@ class Grub(Plugin):
         # partitions and devices that we will possibly modify.
 
         # Since we are going to install the stage1 grub image in all the
-        # devices, we will backup all of them.
+        # devices in self.install_grub_devs, we will backup all of them.
+        # FIXME: We have to modify the plugin to consider partitions.
         self._reporting.info("Going to backup all the first 446 bytes of " \
                 "all storage devices in the system.", origin = self)
         firstblockdict = {}
-        for (device, partitions) in self.devices.iteritems():
-            fd = os.open(Dname.asPath(device), os.O_RDONLY)
+        for device in self.install_grub_devs:
+        #for (device, partitions) in self.devices.iteritems():
+            fd = os.open(device.path(), os.O_RDONLY)
             first446btemp = os.read(fd, 446)
             os.close(fd)
-            firstblockdict[Dname.asName(device)] = [first446btemp, \
-                    Dname(device)]
+            firstblockdict[device.name()] = [first446btemp, device]
         self.backupSpace.backupValue( firstblockdict, "firstblockdict")
         self._result = ReturnSuccess
 
     def fix(self):
-        # We ar to fail if there is no dirs.
+        # We are to fail if there are no dirs.
         if len(self.grub_dir_parts) == 0:
             self._reporting.error("No grub directories where found... exiting.",
                     origin = self)
@@ -266,21 +254,24 @@ class Grub(Plugin):
             return
 
         # Choose and prepare one root in the system.
-        # FIXME: extend the root concept so it can handle varous roots in a
-        #        system.  For now we just select the first and hope it has
+        # FIXME: extend the grub root concept so it can handle varous roots in
+        #        a system.  For now we just select the first and hope it has
         #        everything.
+        # FIXME: Think of having grubroot as a class var, with some other name.
+        grubroot = grubUtils.find_grub_root(self.grub_dir_parts)
 
         # Install the grub in all devs pointing at the special root part.
-        for (drive, partitions) in self.devices.iteritems():
+        for drive in self.install_grub_devs:
+        #for (drive, partitions) in self.devices.iteritems():
             self._reporting.info("Trying to install grub on drive %s, " \
-                    "pointing to grub directory in %s."%(Dname.asName(drive), \
-                    self.grub_dir_parts[0].path()), origin = self)
+                    "pointing to grub directory in %s."%(drive.name(), \
+                    grubroot.path()), origin = self)
             try:
-                grubUtils.install_grub(self.grub_dir_parts[0], Dname(drive))
+                grubUtils.install_grub(grubroot, drive)
             except Exception, e:
                 self._reporting.error("Grub installation on drive %s, " \
                         "pointing to grub directory in %s has failed." % \
-                        (Dname.asName(drive), self.grub_dir_parts[0].path()), \
+                        (drive.path(), grubroot.path()), \
                         origin = self)
                 # If one installation fails its safer to just restore
                 # everything
@@ -288,29 +279,32 @@ class Grub(Plugin):
                 return
 
         self._reporting.info("Grub has successfully installed in all the " \
-                "devices.", origin = self)
+                "chosen devices.", origin = self)
         self._result = ReturnSuccess
 
     def restore(self):
-        self._reporting.info("Starting the restore process....", level=PLUGIN, \
-                origin = self)
-        for (device, partitions) in self.devices.iteritems():
-            self._reporting.info("Restoring data from device %s" % \
-                    Dname.asPath(device), origin = self)
+        firstblockdict = self.backupSpace.restoreValue("firstblockdict")
+        for (dev, val) in firstblockdict.iteritems():
+            devpath = val[1].path()
+            first446bytes = val[0]
+            self._reporting.info("Restoring changes for device %s." % devpath, \
+                    origin = self)
             try:
-                # Get the value from the backup space
-                first446btemp = self.backupSpace.restoreValue(
-                        Dname.asName(device))
-
-                # Copy the value over the existing stuff.
-                fd = os.open(Dname.asPath(device), os.O_WRONLY)
-                os.write(fd, first446btemp)
+                fd = os.open(devpath, os.O_WRONLY)
+                os.write(fd, first446bytes)
                 os.close(fd)
+            except IOError, ie:
+                self._reporting.debug("There was an error writing to %s, It is very " \
+                        "probable that this device is in an invalid state." \
+                        "Error: %s" % (devpath, ie), origin = self)
+                continue
             except Exception, e:
-                self._reporting.info("An error has occurred while trying to " \
-                        "recover %s device." % Dname.asName(device), \
+                self._reporting.debug("There was an unexpected error: %s" % e, \
                         origin = self)
                 continue
+
+            self._reporting.info("Successfully restored changes to device %s." % devpath, \
+                    origin = self)
         self._result = ReturnSuccess
 
     def clean(self):

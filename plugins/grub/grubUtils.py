@@ -335,6 +335,9 @@ def install_grub(root, setup):
 
     return out
 
+def find_grub_root(grub_dir_parts):
+    return grub_dir_parts[0]
+
 # Function to parse the user options.
 def get_grub_opts(args):
     """ Function to parse user options.
@@ -375,12 +378,12 @@ def get_grub_opts(args):
 
     for (opt, val) in opts:
 
-        if opt is "--install-all" and len(retval.install_to) == 0:
+        if opt == "--install-all" and len(retval.install_to) == 0:
             retval.install_all = True
 
-        if opt is "--install-to":
+        if opt == "--install-to":
             retval.install_all = False
-            retval.install_to = val.split()
+            retval.install_to = val.split(',')
 
     return retval
 
