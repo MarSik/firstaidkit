@@ -355,6 +355,8 @@ def get_grub_opts(args):
                                 this option, we will prefer the list
                                 described in install-to.
 
+    --install-auto : This will try to avoid overwriting other bootloaders.
+
     We will return a object with all de relative information.
     """
 
@@ -362,6 +364,7 @@ def get_grub_opts(args):
     class grub_args:
         install_all = False
         install_to = []
+        install_auto = False
     retval = grub_args()
 
     # Parse the args string
@@ -379,11 +382,21 @@ def get_grub_opts(args):
     for (opt, val) in opts:
 
         if opt == "--install-all" and len(retval.install_to) == 0:
-            retval.install_all = True
+            if len(retval.install_to) == 0
+                retval.install_all = True
+                retval.install_auto = False
 
         if opt == "--install-to":
-            retval.install_all = False
             retval.install_to = val.split(',')
+            retval.install_all = False
+            retval.install_auto = False
+
+
+        if opt == "--install-auto":
+            if len(retval.args.install_to) == 0 and \
+                    not retval.args.install_all:
+                retval.args.install_auto = True
+
 
     return retval
 

@@ -158,7 +158,7 @@ class Grub(Plugin):
                     for part in parts:
                         self.install_grub_parts.append(Dname(part))
 
-            else:
+            elif self.args.install_auto:
                 # Skip devices with other bootloader (default).
                 for (dev, parts) in self.devices.iteritems():
 
@@ -177,6 +177,11 @@ class Grub(Plugin):
                                     "in %s partition." % Dname.asPath(part), \
                                 origin = self)
                             self.install_grub_parts.append(Dname(part))
+            else:
+                # If not arguments where specified the right thing to do is to
+                # leave everything alone:)
+                self.install_grub_parts = []
+                self.install_grub_devs = []
 
             self._result = ReturnSuccess
         except Exception, e:
