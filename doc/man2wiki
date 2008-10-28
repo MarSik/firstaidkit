@@ -8,6 +8,7 @@
 #
 DEFAULT_CHANGE_FILES="
                 firstaidkit.1
+                firstaidkitrevert.1
                 firstaidkit-flags.1
                 firstaidkit-plugin.1
                 firstaidkit-reporting.1
