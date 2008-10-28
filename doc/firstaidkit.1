@@ -70,6 +70,9 @@ Get information fro a specific plugin.
 Location of configuration file.
 .IP "-r PATH, --root=PATH"
 Location of the root directory.
+.IP "-P PATH"
+Location of different plugin path.  This option can be used more than once.
+firstaidkit will look for plugins in all the paths specified by this option.
 .IP "-v, --verbose"
 Verbose mode.
 .IP "-l METHOD, --log=METHOD"
@@ -82,6 +85,20 @@ Select GUI as front end to show results.
 Show help.
 .IP "-F FLAG, --flag=FLAG"
 Setup startup flags.
+.IP "--nodeps"
+This makes firstaidkit ingore dependency between plugins.
+.IP "--plugin-args=ARGS"
+This is the way firstaidkit passes arguments to plugins.  You can actually
+specify plugin and flow.  Although flow is not necessary.  The arguments and
+their meaning are defined by the plugin.  Where ARGS is a space separated
+string that begins with the plugin name and/or the flow name.
+
+ARGS="plugin_name[/flow_name] arg1 arg2 arg3"
+
+So if you wanted to pass "--installto-devs=/dev/sda" to the grub plugin in the
+fix flow, you would pass the following arg to firstaidkit:
+
+--plugin-args="grub/fix --installto-devs=/dev/sda"
 
 .PP
 .SH "EXAMPLES"
@@ -106,6 +123,9 @@ Request a specific info from a plugin.
 .IP "firstaidkit -a -e xserver"
 Exclude a plugin from an action.  This will execute every plugin
 except the xserver.
+.IP "firstaidkit --plugin-args='grub/fix recover-devs=/dev/sda' -f grub fix"
+Runs the plugin plugin in the fix flow and passes it the
+"recover-devs=/dev/sda" argument.
 
 .PP
 .SH "BUGS"
