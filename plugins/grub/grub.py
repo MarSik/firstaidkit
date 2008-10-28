@@ -34,6 +34,7 @@ class Grub(Plugin):
     name = "Grub"
     version = "0.0.1"
     author = "Joel Andres Granados"
+    description = "Plugin to recover lost grub bootloader functionality"
 
     @classmethod
     def getDeps(cls):
@@ -82,9 +83,10 @@ class Grub(Plugin):
         self.install_grub_devs = []
 
         # Initialize our list of related issues.
-        self.issue_grub_dir = SimpleIssue(self.name, "Missing grub dir or " \
-                "dir files.")
-        self.issue_grub_image = SimpleIssue(self.name, "Bad grub stage1 image.")
+        self.issue_grub_dir = SimpleIssue(self.name+"_DIR", "Missing grub " \
+                "dir or dir files.")
+        self.issue_grub_image = SimpleIssue(self.name+"_IMAGE", "Bad grub " \
+                "stage1 image.")
 
         # Initialize the backup space.
         self.backupSpace = self._backups.getBackup( \
@@ -186,16 +188,18 @@ class Grub(Plugin):
                         if not grubUtils.other_bootloader_present(Dname(part)):
                             self._reporting.info("Found no other bootloader " \
                                     "in %s partition." % Dname.asPath(part), \
-                                origin = self)
+                                    origin = self)
                             self.install_grub_parts.append(Dname(part))
             else:
                 # If not arguments where specified the right thing to do is to
                 # leave everything alone:)
                 self.install_grub_parts = []
                 self.install_grub_devs = []
-                self._reporting.info("Grub will modify any drive. " \
+                self._reporting.info("Grub wont modify any drive. " \
                         "If you want grub to take action you must specify: " \
-                        "--install-to, --install-all or --install-auto.")
+                        "--installto-devs, --installto-parts, " \
+                        "--install-all or --install-auto.", \
+                        origin = self)
 
             self._result = ReturnSuccess
         except Exception, e:
@@ -247,14 +251,26 @@ class Grub(Plugin):
         # Since we are going to install the stage1 grub image in all the
         # devices in self.install_grub_devs, we will backup all of them.
         # FIXME: We have to modify the plugin to consider partitions.
-        self._reporting.info("Going to backup all the first 446 bytes of " \
-                "all storage devices in the system.", origin = self)
         firstblockdict = {}
+
+        if len(self.install_grub_devs) > 0:
+            self._reporting.info("Going to backup all the first 446 bytes of " \
+                    "%s." % self.install_grub_devs, origin = self)
         for device in self.install_grub_devs:
             fd = os.open(device.path(), os.O_RDONLY)
             first446btemp = os.read(fd, 446)
             os.close(fd)
             firstblockdict[device.name()] = [first446btemp, device]
+
+        if len(self.install_grub_parts) > 0:
+            self._reporting.info("Going to backup all the first 446 bytes of " \
+                    "%s." % self.install_grub_parts, origin = self)
+        for part in self.install_grub_parts:
+            fd = os.open(part.path(), os.O_RDONLY)
+            first446btemp = os.read(fd, 446)
+            os.close(fd)
+            firstblockdict[part.name()] = [first446btemp, part]
+
         self.backupSpace.backupValue( firstblockdict, "firstblockdict")
         self._result = ReturnSuccess
 
@@ -263,9 +279,17 @@ class Grub(Plugin):
         if len(self.grub_dir_parts) == 0:
             self._reporting.error("No grub directories where found... exiting.",
                     origin = self)
+            self.issue_grub_dir.set(fixed = False, \
+                    reporting = self._reporting, origin = self)
+            self._result = ReturnFailure
+            return
+
+        # We are to fail if there are no devs or parts to install to.
+        if len(self.install_grub_devs) + len(self.install_grub_parts) == 0:
+            self._reporting.error("No devices or partitions to install to.",
+                    origin = self)
             self.issue_grub_image.set(fixed = False, \
                     reporting = self._reporting, origin = self)
-
             self._result = ReturnFailure
             return
 

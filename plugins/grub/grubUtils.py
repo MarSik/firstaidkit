@@ -67,20 +67,24 @@ def get_all_devs():
             continue
 
         else:
-            # parted will provide us with all the partitions.
-            partitions = []
-            parteddev = parted.PedDevice.get(device["device"])
-            disk = parted.PedDisk.new(parteddev)
-            part = disk.next_partition()
-            while part:
-                if part.num > 0:
-                    partitions.append(
-                            Dname("%s%s"%(device["device"],part.num)))
-                part = disk.next_partition(part)
-            # The key will be the device name and it will contain a list of
-            # parts.  This is very unfortunate as the object would be better
-            # sutied as a key.
-            retval[Dname.asName(device["device"])] = partitions
+            try:
+                # parted will provide us with all the partitions.
+                partitions = []
+                parteddev = parted.PedDevice.get(device["device"])
+                disk = parted.PedDisk.new(parteddev)
+                part = disk.next_partition()
+                while part:
+                    if part.num > 0:
+                        partitions.append(
+                                Dname("%s%s"%(device["device"],part.num)))
+                    part = disk.next_partition(part)
+                # The key will be the device name and it will contain a list of
+                # parts.  This is very unfortunate as the object would be better
+                # sutied as a key.
+                retval[Dname.asName(device["device"])] = partitions
+            except:
+                # If there is a problem with this dev... jus continue.
+                continue
 
     return retval
 
