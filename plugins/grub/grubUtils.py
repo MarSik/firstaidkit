@@ -15,16 +15,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+import os, os.path, re, subprocess, tempfile, getopt
+import minihal, parted
 import pyfirstaidkit.utils as utils
-
-import os.path
-import re
-import subprocess
-import tempfile
-import getopt
-
-import minihal
-import parted
 
 # List of known or expected values for the system.
 #
@@ -249,6 +242,32 @@ def part_unmount(part, opts=None):
 def other_bootloader_present(dev):
     # Will allways say that no bootloader is present.
     def none_grub(dev):
+        return False
+
+    # Check for presence of windows bootloader.  This is taken out of
+    # http://en.wikipedia.org/wiki/Master_boot_record, if anyone can
+    # point me to a better source, please do.  Moreover, if anyone can
+    # come up with a better way of doing this please send patch.
+    windowsStrings = ["Invalid partition table", \
+                      "Error loading operating system" \
+                      "Missing operating system"]
+    def windows_boot_loader(dev):
+
+        # read the first 512 bytes of device.
+        fd = os.open(dev.path(), os.O_RDONLY)
+        first512b = os.read(fd, 512)
+        os.close(fd)
+
+        # Search for the strings that will give the windows partition away.
+        # We assert that its windows when all the strings are found.
+        foundstrings = 0
+        for string in windowsStrings:
+            if re.search(string, first512b) != None:
+                foundstrings = foundstrings + 1
+
+        if foundstrings == len(windowsStrings):
+            return True
+
         return False
 
     # We will have the list of all the tests in the tests variable.
