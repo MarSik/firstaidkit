@@ -345,20 +345,26 @@ def get_grub_opts(args):
     --install-all : This option will tell grub plugin that it must not ignore
                     any devices that have other bootloaders.  In other word
                     its telling the plugin to install in all possible places.
-                    In case --install-to is also defined allong side this
-                    options, we will choose the list from install-to
-
-    --install-to=dev1,dev2... : This tells the grub plugin the specific
-                                devices that should be considered for
-                                installation.  All other devices will be
-                                ignored.  If install-all is selected with
-                                this option, we will prefer the list
-                                described in install-to.
+                    In case --installto-devs is also defined allong side this
+                    options, we will choose the list from installto-devs
 
     --install-auto : This will try to avoid overwriting other bootloaders.
 
-    --recover=dev1,dev2 : Same as --install-to, just more intuitive for the
-                      user that does not know how grub works.
+    --installto-devs=dev1,dev2... : This tells the grub plugin the specific
+                                    devices that should be considered for
+                                    installation.  All other devices will be
+                                    ignored.  If install-all is selected with
+                                    this option, we will prefer the list
+                                    described in installto-devs.
+
+    --installto-parts=part1,part2... : The same as install to devs but give
+                                       a list of partitions.
+
+    --recover-devs=dev1,dev2 : Same as --installto-devs, just more intuitive
+                               for the user that does not know how grub works.
+
+    --recover-parts=part1,part2 : Same as recover-devs but specifies the
+                                  partitions to be recovered.
 
     We will return a object with all de relative information.
     """
@@ -366,13 +372,16 @@ def get_grub_opts(args):
     # Create the object with the argument decision.
     class grub_args:
         install_all = False
-        install_to = []
         install_auto = False
+        installto_devs = []
+        installto_parts = []
     retval = grub_args()
 
     # Parse the args string
     optsstr = ""
-    longopts = ["install-all", "install-to="]
+    longopts = ["install-all", "install-auto", \
+                "installto-devs=", "recover-devs=", \
+                "installto-parts=", "recover-parts="]
     try:
         (opts, vals) = getopt.getopt( args.split(), optsstr, longopts )
     except:
@@ -384,21 +393,27 @@ def get_grub_opts(args):
 
     for (opt, val) in opts:
 
-        if opt == "--install-all" and len(retval.install_to) == 0:
-            if len(retval.install_to) == 0:
-                retval.install_all = True
-                retval.install_auto = False
+        # install all will be considered if no devs or parts have been parsed.
+        if opt == "--install-all" and \
+                (len(retval.installto_devs) + len(retval.installto_parts) == 0):
+            retval.install_all = True
+            retval.install_auto = False
 
-        if opt in ( "--install-to", "--recover"):
-            retval.install_to = val.split(',')
+        # install auto is valid only when all other optiosn are not passed.
+        if opt == "--install-auto" and not retval.install_all and \
+                (len(retval.installto_devs) + len(retval.installto_parts) == 0):
+                retval.install_auto = True
+
+        if opt in ( "--installto-devs", "--recover-devs" ):
+            retval.installto_devs = val.split(',')
             retval.install_all = False
             retval.install_auto = False
 
+        if opt in ( "--installto-parts", "--recover-parts" ):
+            retval.installto_parts = val.split(',')
+            retval.install_all = False
+            retval.install_auto = False
 
-        if opt == "--install-auto":
-            if len(retval.install_to) == 0 and \
-                    not retval.install_all:
-                retval.install_auto = True
 
 
     return retval

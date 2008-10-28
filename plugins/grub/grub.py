@@ -144,12 +144,15 @@ class Grub(Plugin):
             self._reporting.info("Searching for locations in which to " \
                     "install grub.", origin = self)
 
-            if len(self.args.install_to) > 0:
+            if len(self.args.installto_devs)+len(self.args.installto_parts) > 0:
                 # We install to the selected devices.  Since grub-install
                 # will screat in case the device names are not valid, I think
                 # its not necesary to check here.
-                for dev in self.args.install_to:
+                for dev in self.args.installto_devs:
                     self.install_grub_devs.append(Dname(dev))
+
+                for part in self.args.installto_parts:
+                    self.install_grub_parts.append(Dname(part))
 
             elif self.args.install_all:
                 # We install to all the devices
@@ -268,7 +271,7 @@ class Grub(Plugin):
         # Install the grub in all devs pointing at the special root part.
         for drive in self.install_grub_devs:
             self._reporting.info("Trying to install grub on drive %s, " \
-                    "pointing to grub directory in %s."%(drive.name(), \
+                    "pointing to grub directory in %s."%(drive.path(), \
                     grubroot.path()), origin = self)
             try:
                 grubUtils.install_grub(grubroot, drive)
@@ -279,6 +282,20 @@ class Grub(Plugin):
                         origin = self)
                 # If one installation fails its safer to just restore
                 # everything
+                self._result = ReturnFailure
+                return
+
+        for part in self.install_grub_parts:
+            self._reporting.info("Trying to install grub on part %s, " \
+                    "pointing to grub directory in %s." % (part.path(), \
+                    grubroot.path()), origin = self)
+            try:
+                grubUtils.install_grub(grubroot, part)
+            except:
+                self._reporting.error("Grub installation on part %s, " \
+                        "pointing to grub directory in %s has failed." % \
+                        (part.path(), grubroot.path()), \
+                        origin = self)
                 self._result = ReturnFailure
                 return
 
