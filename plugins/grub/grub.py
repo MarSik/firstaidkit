@@ -93,6 +93,9 @@ class Grub(Plugin):
         # Parce the parameters passed to the plugin.
         self.args = grubUtils.get_grub_opts(self._args)
 
+        # Place where the grub files, kernel and initrd files are.
+        self.grubroot = None
+
     def prepare(self):
         self._reporting.info("Initializing the search for all the grub " \
                 "related elements.", origin = self)
@@ -122,6 +125,11 @@ class Grub(Plugin):
                                 "searching partition %s. Error: %s." % \
                                 (part.path(), e) ,origin = self)
 
+            # Out of all the dirs we found we select one.
+            # FIXME: extend the grub root concept so it can handle varous roots in
+            #        a system.  For now we just select the first and hope it has
+            #        everything.
+            self.grubroot = grubUtils.find_grub_root(self.grub_dir_parts)
 
             # We will search the devices and disks for the ones in which we can
             # install the grub binary.  There are three possibilities when
@@ -187,7 +195,7 @@ class Grub(Plugin):
                 self.install_grub_devs = []
                 self._reporting.info("Grub will modify any drive. " \
                         "If you want grub to take action you must specify: " \
-                        "--install-to, --install-all or --install-auto."
+                        "--install-to, --install-all or --install-auto.")
 
             self._result = ReturnSuccess
         except Exception, e:
@@ -261,24 +269,17 @@ class Grub(Plugin):
             self._result = ReturnFailure
             return
 
-        # Choose and prepare one root in the system.
-        # FIXME: extend the grub root concept so it can handle varous roots in
-        #        a system.  For now we just select the first and hope it has
-        #        everything.
-        # FIXME: Think of having grubroot as a class var, with some other name.
-        grubroot = grubUtils.find_grub_root(self.grub_dir_parts)
-
         # Install the grub in all devs pointing at the special root part.
         for drive in self.install_grub_devs:
             self._reporting.info("Trying to install grub on drive %s, " \
                     "pointing to grub directory in %s."%(drive.path(), \
-                    grubroot.path()), origin = self)
+                    self.grubroot.path()), origin = self)
             try:
-                grubUtils.install_grub(grubroot, drive)
+                grubUtils.install_grub(self.grubroot, drive)
             except Exception, e:
                 self._reporting.error("Grub installation on drive %s, " \
                         "pointing to grub directory in %s has failed." % \
-                        (drive.path(), grubroot.path()), \
+                        (drive.path(), self.grubroot.path()), \
                         origin = self)
                 # If one installation fails its safer to just restore
                 # everything
@@ -288,13 +289,13 @@ class Grub(Plugin):
         for part in self.install_grub_parts:
             self._reporting.info("Trying to install grub on part %s, " \
                     "pointing to grub directory in %s." % (part.path(), \
-                    grubroot.path()), origin = self)
+                    self.grubroot.path()), origin = self)
             try:
-                grubUtils.install_grub(grubroot, part)
+                grubUtils.install_grub(self.grubroot, part)
             except:
                 self._reporting.error("Grub installation on part %s, " \
                         "pointing to grub directory in %s has failed." % \
-                        (part.path(), grubroot.path()), \
+                        (part.path(), self.grubroot.path()), \
                         origin = self)
                 self._result = ReturnFailure
                 return
