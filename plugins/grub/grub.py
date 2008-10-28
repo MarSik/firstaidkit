@@ -182,6 +182,9 @@ class Grub(Plugin):
                 # leave everything alone:)
                 self.install_grub_parts = []
                 self.install_grub_devs = []
+                self._reporting.info("Grub will modify any drive. " \
+                        "If you want grub to take action you must specify: " \
+                        "--install-to, --install-all or --install-auto."
 
             self._result = ReturnSuccess
         except Exception, e:
@@ -237,7 +240,6 @@ class Grub(Plugin):
                 "all storage devices in the system.", origin = self)
         firstblockdict = {}
         for device in self.install_grub_devs:
-        #for (device, partitions) in self.devices.iteritems():
             fd = os.open(device.path(), os.O_RDONLY)
             first446btemp = os.read(fd, 446)
             os.close(fd)
@@ -250,8 +252,6 @@ class Grub(Plugin):
         if len(self.grub_dir_parts) == 0:
             self._reporting.error("No grub directories where found... exiting.",
                     origin = self)
-            self.issue_grub_image.set(fixed = False, \
-                    reporting = self._reporting, origin = self)
             self.issue_grub_image.set(fixed = False, \
                     reporting = self._reporting, origin = self)
 
@@ -267,7 +267,6 @@ class Grub(Plugin):
 
         # Install the grub in all devs pointing at the special root part.
         for drive in self.install_grub_devs:
-        #for (drive, partitions) in self.devices.iteritems():
             self._reporting.info("Trying to install grub on drive %s, " \
                     "pointing to grub directory in %s."%(drive.name(), \
                     grubroot.path()), origin = self)
@@ -299,16 +298,17 @@ class Grub(Plugin):
                 os.write(fd, first446bytes)
                 os.close(fd)
             except IOError, ie:
-                self._reporting.debug("There was an error writing to %s, It is very " \
-                        "probable that this device is in an invalid state." \
-                        "Error: %s" % (devpath, ie), origin = self)
+                self._reporting.debug("There was an error writing to %s, It " \
+                        " is very probable that this device is in an invalid " \
+                        "state. Error: %s" % (devpath, ie), origin = self)
                 continue
             except Exception, e:
                 self._reporting.debug("There was an unexpected error: %s" % e, \
                         origin = self)
                 continue
 
-            self._reporting.info("Successfully restored changes to device %s." % devpath, \
+            self._reporting.info("Successfully restored changes to device " \
+                    "%s." % devpath, \
                     origin = self)
         self._result = ReturnSuccess
 
