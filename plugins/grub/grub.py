@@ -133,24 +133,14 @@ class Grub(Plugin):
             #        everything.
             self.grubroot = grubUtils.find_grub_root(self.grub_dir_parts)
 
-            # We will search the devices and disks for the ones in which we can
-            # install the grub binary.  There are three possibilities when
-            # making this decision:
-            # 1. We find a grub in the mbr:  In this case we want to add it to
-            #       add it to the list because we will be reinstalling it.
-            # 2. We find no bootloader present:  In this case we also want
-            #       to add it because it wont hurt to have grub on a secto
-            #       that is not used anyway.  And there is a possibility that
-            #       installing it will fix the problem.
-            # 3. We find another bootloader:  In this case the default
-            #       behavior is to leave it alone.
-            # There will exist two override statements:
-            # 1. Dont ignore devices with other bootloaders.
-            # 2. Pass a list of devices in which the user wants to install the
-            #       grub.  In which case all checks are ignored.
+            # We decide to which devices the grub image will be installed.
+            # 1. If no arguments were passed, then no installation is done.
+            # 2. If the list of devices was passes we use that.
+            # 3. if the install_auto arg was passes we install were we dont
+            #    break anything.
+            # 4. If the install_all is passed we install in every device and
+            #    partition.
             #
-            # Be aware that the list of devices to install to could be empty.
-            # We must check for this whenever we finish.
             self._reporting.info("Searching for locations in which to " \
                     "install grub.", origin = self)
 
@@ -215,7 +205,7 @@ class Grub(Plugin):
         # the images found in the devices actually map correctly to the stuff
         # that we found on the directories.  This means that we will allways
         # reinstall grub in the mbr (the changes will be revertable so its
-        # not that bad) unless we don't find any directory.  If no dir is
+        # not that bad) unless we don't find any grub dir.  If no dir is
         # found, then we fail (fail in this case means postponing the decision
         # until the fix step to actually ReturnFailure)
         self._reporting.info("Diagnosing the current state of grub.",
@@ -234,11 +224,15 @@ class Grub(Plugin):
         self.issue_grub_dir.set(checked = True, happened = False,
                 reporting = self._reporting, origin = self)
 
-        # Since we dont check the validity of the images in the mbr we consider
-        # all the drives to be in a faulty state.  FIXME: this defenetly has
-        # to change
-        self.issue_grub_image.set(checked = True, happened = True, \
-                reporting = self._reporting, origin = self)
+        if len(self.install_grub_devs) + len(self.install_grub_parts) == 0:
+            # Since we dont check the validity of the images in the mbr we
+            # consider all the drives to be in a faulty state
+            # FIXME: this defenetly has to change
+            self.issue_grub_image.set(checked = True, happened = True, \
+                    reporting = self._reporting, origin = self)
+        else:
+            self.issue_grub_image.set(checking = False, happened = False, \
+                    reporting = self._reporting, origin = self)
 
         self._result = ReturnFailure
 
@@ -324,6 +318,8 @@ class Grub(Plugin):
                 self._result = ReturnFailure
                 return
 
+        self.issue_grub_image.set(fixed = True, reporting = self._reporting, \
+                origin = self)
         self._reporting.info("Grub has successfully installed in all the " \
                 "chosen devices.", origin = self)
         self._result = ReturnSuccess
