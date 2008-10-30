@@ -16,20 +16,24 @@ firstaidkit [options] --info <plugin>
 .BR
 .SH "DESCRIPTION"
 Firstaidkit executes simple and common recovery tasks in an automated way. The basic
-elements in the system are: backend plugin system, the plugins, the plugin
-flows and plugin tasks.  The plugins can be thought of as individual
-recovery processes.  There can be a plugin for password recovery for example.
-A plugin task is an individual step in the recovery proces of a given plugin.
-To continue with the password example, a task for this plugin could be a process
-that changes the root passwd or a process that checks if there is a password in
-/etc/passwd.  Finally we have the flows.  These are structures that organize the
-different tasks in a plugin.  There could be, for example, a "fast" flow that
-just changes the passwd without checking /etc/passwd, there could also be a
-"strict" flow that checks for the existence of /etc/passwd and modifies the
-passwd based on what it found in the first task.
+elements in the system are: backend plugin system, the plugins and the plugin
+flows.  The plugins can be thought of as individual recovery units.  Each unit
+having the possibility of holding varioius types of processes, but still focused
+on one specific subsystem.  There can be a plugin for password recovery for example.
+This plugin would take care of all the possible processes related to password
+recovery.  In the password recovery plugin there would only be one process: to recover
+the password.  But other plugins might need to executing more than
+one process.  Like if you would like to diagnose before actually fixing something.
 
-Firstaidkit also has a CLI that lets you control firstaidkits behavior. The execution
-of firstiadkit has 6 modes of operation:
+Plugin flows are structures that represent the different processes.  You will usually
+find two default flows in a plugin (with known exceptions): The diagnose flow and the
+fix flow.  When in diagnose no changes to the system should be done.  Only information
+should be taken from the system and output through the firstaidkit reporting system
+(this basically means a log file or stdout.  It all depends on the configuration
+parameters when executing firstaidkit).  When in fix mode an attempt will be made to
+modify the system to fix whatever was found to be missconfigured.
+
+Currently firstaidkit has 6 modes of operation:
 
 .IP "Automated Default. -a, --auto"
 This mode runs all the plugins that firstaidkit can detect in the paths
@@ -51,7 +55,7 @@ the default behavior, the plugin is ignored when the flow is not there.
 
 .IP "Flow Selection. -f PLUGIN FLOW, --flow PLUGIN FLOW"
 Basically lets you specify the plugin to run and the flow that you want to
-run on that plugin.
+run on that plugin.  This implies --nodeps.
 
 .IP "Print Configuration. --print-config"
 Lists the resulting configuration.  Firstaidkit allows you to specify configuration
@@ -110,8 +114,8 @@ option.
 .IP "firstaidkit -f xserver diagnose"
 Execute the diagnose flow in a specific plugin.  This line
 will execute the xserver plugin in diagnose mode.
-.IP "firstaidkit -a diagnose --nodeps"
-Execute all plugins without dependencies.  this will execute
+.IP "firstaidkit -a --nodeps"
+Execute all plugins without dependencies.  This will execute
 all plugins without looking at the dependencies between them.
 This is good if you want a general diagnose of the system.
 .IP "firstaidkit --print-config"
