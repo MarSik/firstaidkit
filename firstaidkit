@@ -123,7 +123,7 @@ def usage(name):
                                    flow.  If the plugin that is being run does
                                    not have <flow>, the plugin is ignored.
 
- firstaidkit [params] -f <plugin> <flow>
+ firstaidkit [params] -f <plugin> [flow]
                                  - runs <flow> for <plugin>.  If <flow> is not
                                    specified then it runs diagnose flow.  If
                                    <plugin> is not specified, its an error.
