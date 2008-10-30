@@ -117,11 +117,17 @@ class GuiOutput(Thread):
 
 def usage(name):
     print("""Usage:
- %s [params]
- %s [params] -a         - runs the automated default mode [diagnose]
- %s [params] -a <flow>  - runs the automated mode with specified flow
- %s [params] -a fix     - automated fixing sequence [using the fix flows]
- %s [params] -f <plugin> <flow>     - Implies --nodeps
+ firstaidkit [params]
+ firstaidkit [params] -a [flow]  - runs <flow> for every detected plugin.  If
+                                   <flow> is not specified it runs the diagnose
+                                   flow.  If the plugin that is being run does
+                                   not have <flow>, the plugin is ignored.
+
+ firstaidkit [params] -f <plugin> <flow>
+                                 - runs <flow> for <plugin>.  If <flow> is not
+                                   specified then it runs diagnose flow.  If
+                                   <plugin> is not specified, its an error.
+                                   Implies --nodeps
 
  params is none or more items from:
   -c <config file> - location of the config file
@@ -145,7 +151,7 @@ def usage(name):
   --nodeps         - do not use plugin dependencies
   --plugin-args=<plugin_name[/flow] args>
                    - optionally pass arguments to plugin_name
-""" % (name, name, name, name, name))
+""")
 
 if __name__=="__main__":
     try:
