@@ -1,0 +1,8 @@
+Backup system initialized
+Starting the Threads
+Do the work!
+INFO: You are not running the firstaidkit as root.  Some plugins may not be available. (Task interpreter)
+FAK_ERROR: No plugin by the name of "nonexistent" was found.
+Waiting for the Threads
+Done.
+Backup closed

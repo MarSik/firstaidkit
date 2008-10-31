@@ -1,0 +1,15 @@
+Backup system initialized
+Starting the Threads
+Do the work!
+INFO: You are not running the firstaidkit as root.  Some plugins may not be available. (Task interpreter)
+INFO: Entering the init phase... (Plugincli1)
+INFO: Entering the prepare phase... (Plugincli1)
+INFO: Entering the diagnose phase... (Plugincli1)
+INFO: Entering the backup phase... (Plugincli1)
+INFO: Entering the fix phase... (Plugincli1)
+INFO: Entering the clean phase... (Plugincli1)
+--- Info section ---
+--------------------
+Waiting for the Threads
+Backup closed
+Done.

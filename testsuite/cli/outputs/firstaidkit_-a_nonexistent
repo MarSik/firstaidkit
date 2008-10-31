@@ -1,0 +1,11 @@
+Backup system initialized
+Starting the Threads
+Do the work!
+INFO: You are not running the firstaidkit as root.  Some plugins may not be available. (Task interpreter)
+INFO: Plugin plugincli2 does not contain flow nonexistent (Task interpreter)
+INFO: Plugin plugincli1 does not contain flow nonexistent (Task interpreter)
+--- Info section ---
+--------------------
+Waiting for the Threads
+Backup closed
+Done.
