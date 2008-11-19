@@ -231,7 +231,7 @@ class Grub(Plugin):
             self.issue_grub_image.set(checked = True, happened = True, \
                     reporting = self._reporting, origin = self)
         else:
-            self.issue_grub_image.set(checking = False, happened = False, \
+            self.issue_grub_image.set(checked = False, happened = False, \
                     reporting = self._reporting, origin = self)
 
         self._result = ReturnFailure

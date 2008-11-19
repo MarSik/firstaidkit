@@ -124,7 +124,7 @@ This package contains the Gtk based FirstAidKit GUI
 
 %prep
 %setup -q
-#./test
+./test
 
 
 %build
