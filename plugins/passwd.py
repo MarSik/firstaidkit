@@ -42,6 +42,7 @@ class PasswdPlugin(Plugin):
     name = "Password plugin"
     version = "0.0.1"
     author = "Martin Sivak"
+    description = "Automates the recovery of the root system passwd"
 
     @classmethod
     def getDeps(cls):

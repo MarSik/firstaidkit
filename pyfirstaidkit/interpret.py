@@ -26,8 +26,6 @@ from utils import FileBackupStore
 from dependency import Dependencies
 from configuration import Info
 
-Logger=logging.getLogger("firstaidkit")
-
 class Tasker:
     """The main interpret of tasks described in Config object"""
 
@@ -180,8 +178,9 @@ class Tasker:
             try:
                 p = pluginSystem.getplugin(self._config.operation.params)
             except KeyError:
-                Logger.error("No such plugin '%s'" %
-                        (self._config.operation.params,))
+                self._reporting.info(message = "No such plugin '%s'" % \
+                        (self._config.operation.params,), level = TASKER, \
+                        origin = self)
                 return False
             flowinfo = [ (f, p.getFlow(f).description) for f in p.getFlows() ]
             rep = {"id": self._config.operation.params, "name": p.name,
@@ -194,7 +193,8 @@ class Tasker:
 
         # Any other case
         else:
-            Logger.error("Incorrect task specified")
+            self._reporting.info(message = "Incorrect task specified", \
+                    level = TASKER, origin = self)
             self._reporting.stop(level = TASKER, origin = self)
             return False
 

@@ -78,12 +78,14 @@ class FileBackupStore(BackupStoreInterface):
             self._metafile = "__meta.pickle"
             self._data = {} # name -> (stored as, origin)
             self._origin = {} # origin -> name
+            # Because the dir is suppose to be there when we are reverting.
             if not reverting:
                 os.makedirs(self._path)
 
         def saveMeta(self):
             f = open(os.path.join(self._path, self._metafile), "wb")
-            pickle.dump((self._id, self._data, self._origin), f, pickle.HIGHEST_PROTOCOL)
+            pickle.dump((self._id, self._data, self._origin), f, \
+                    pickle.HIGHEST_PROTOCOL)
             f.close()
             return True
 
@@ -96,7 +98,8 @@ class FileBackupStore(BackupStoreInterface):
                 self._data = data
                 self._origin = origin
             else:
-                raise BackupException("Loading metadata for different Backup (ID mismatch: '%s' and '%s')" % (self._id, id))
+                raise BackupException("Loading metadata for different Backup " \
+                        "(ID mismatch: '%s' and '%s')" % (self._id, id))
 
             return True
 

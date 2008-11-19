@@ -31,6 +31,7 @@ class MdadmConfig(Plugin):
     name = "mdadm configuration"
     version = "0.0.1"
     author = "Joel Andres Granados"
+    description = "Assess the validity and existence of the mdadm.conf file"
 
     @classmethod
     def getDeps(cls):

@@ -24,11 +24,18 @@ def initLogger(config=None):
     """We want to initialize loger when we have the filename."""
     Logger = logging.getLogger("firstaidkit")
     Logger.setLevel(logging.DEBUG)
+
     if config.log.method == "none":
-        Logger.addHandler(logging.FileHandler("/dev/null"))
+        handler = logging.FileHandler("/dev/null")
+
     elif config.log.method == "stdout" or config.log.method == None:
-        Logger.addHandler(logging.StreamHandler(sys.stdout))
+        handler = logging.StreamHandler(sys.stdout)
+
     else:
         # if nothing else matches we just put it into the file.
-        Logger.addHandler(logging.FileHandler(config.log.filename))
+        handler = logging.FileHandler(config.log.filename)
+
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
+    Logger.addHandler(handler)
 

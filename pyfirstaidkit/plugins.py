@@ -561,17 +561,21 @@ class PluginSystem(object):
             raise InvalidPluginNameException(plugin)
 
         plugindir = os.path.dirname(self._plugins[plugin].__file__)
-        Logger.info("Plugin information...")
-        Logger.info("name:%s , version:%s , author:%s " % pklass.info())
+        self._reporting.info(message = "Plugin information...", \
+                level = PLUGINSYSTEM, origin = self)
+        self._reporting.info(message = "name:%s , version:%s , author:%s " \
+                % pklass.info(), level = PLUGINSYSTEM, origin = self)
 
         flows = pklass.getFlows()
-        Logger.info("Provided flows : %s " % flows)
+        self._reporting.info(message = "Provided flows : %s " % flows, \
+                level = PLUGINSYSTEM, origin = self)
         if flow==None:
             flowName = pklass.default_flow
         else:
             flowName = flow
 
-        Logger.info("Using %s flow" % flowName)
+        self._reporting.info(message = "Using %s flow" % flowName, \
+                level = PLUGINSYSTEM, origin = self)
         if flowName not in flows:
             self._reporting.exception(message = "Flow %s does not exist in "
                     "plugin %s" % (flowName, plugin), level = PLUGINSYSTEM,
@@ -582,22 +586,26 @@ class PluginSystem(object):
         if dependencies:
             deps = pklass.getDeps()
             if len(deps)>0:
-                Logger.info("depends on: %s" % (", ".join(deps),))
+                self._reporting.info(message = "depends on: %s" % \
+                        (", ".join(deps),), level = PLUGINSYSTEM, \
+                        origin = self)
                 for d in deps:
                     if not self._deps.require(d):
-                        Logger.info("depends on unsatisfied condition: %s" %
-                                (d,))
+                        self._reporting.info(message = "depends on " \
+                                "unsatisfied condition: %s" % (d,), \
+                                level = PLUGINSYSTEM, origin = self)
                         self._reporting.stop(level = PLUGIN, origin = self,
                                 message = plugin)
                         return False
             deps = pklass.getConflicts()
             if len(deps)>0:
-                Logger.info("depends on flags to be unset: %s" %
-                        (", ".join(deps),))
+                self._reporting.info(message = "depends on flags to be unset: %s" % \
+                        (", ".join(deps),), level = PLUGINSYSTEM, origin = self)
                 for d in deps:
                     if self._deps.require(d):
-                        Logger.info("depends on condition to be UNset: %s" %
-                                (d,))
+                        self._reporting.info(message = "depends on condition to be " \
+                                "UNset: %s" % (d,), level = PLUGINSYSTEM, \
+                                origin = self)
                         self._reporting.stop(level = PLUGIN, origin = self,
                                 message = plugin)
                         return False
@@ -620,9 +628,11 @@ class PluginSystem(object):
                 dependencies = self._deps, backups = self._backups,
                 path = plugindir, info = infosection, args = " ".join(args))
         for (step, rv) in p: #autorun all the needed steps
-            Logger.info("Running step %s in plugin %s ...", step, plugin)
-            Logger.info("%s is current step and %s is result of that step." %
-                    (step, rv))
+            self._reporting.info(message = "Running step %s in plugin %s ..."% \
+                    (step, plugin), level = PLUGINSYSTEM, origin = self)
+            self._reporting.info(message = "%s is current step and %s is result " \
+                    "of that step." % (step, rv), level = PLUGINSYSTEM, \
+                    origin = self)
 
         self._reporting.stop(level = PLUGIN, origin = self, message = plugin)
         return True

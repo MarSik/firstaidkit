@@ -44,7 +44,7 @@ def createDefaultConfig(config):
     config.log.fallbacks = "firstaidkit.log,/tmp/firstaidkit.log,/dev/null"
     config.plugin.disabled = ""
     config.backup.method = "file"
-    config.backup.rootpath = "/tmp/fakbackup"
+    config.backup.rootpath = "/tmp"
     config.backup.fullpath = ""
     config.revert.all = "False"
     config.revert.dir = ""

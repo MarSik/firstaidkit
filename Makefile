@@ -18,10 +18,18 @@
 NAME := "firstaidkit"
 VERSION := $(shell awk '/Version:/ { print $$2 }' firstaidkit.spec)
 RELEASE := $(shell awk '/Release:/ { print $$2 }' firstaidkit.spec)
+DATADIR := $(shell rpm --eval "%_datadir")
 
 PLUGIN_PATH = plugins
 # all the plugins that have a make build to run
 PLUGIN_DIRS = undelparts
+
+build: subdirs about
+
+about:
+	@echo "[about]" >> etc/firstaidkit/about; \
+	echo "version=$(VERSION)" >> etc/firstaidkit/about; \
+	echo "copying=$(DATADIR)/doc/$(NAME)-$(VERSION)/COPYING" >> etc/firstaidkit/about
 
 tarball:
 	git-archive --format=tar --prefix=$(NAME)-$(VERSION)/ HEAD | bzip2 -f > $(NAME)-$(VERSION).tar.bz2
@@ -34,7 +42,7 @@ subdirs:
 	for d in $(PLUGIN_DIRS); do make -C $(PLUGIN_PATH)/$$d build; [ $$? == 0 ] || exit 1; done
 
 bumpver:
-	@MAYORVER=$$(echo $(VERSION) | cut -d . -f 0-2); \
+	@MAYORVER=$$(echo $(VERSION) | cut -d . -f 1-2); \
 	NEWSUBVER=$$((`echo $(VERSION) | cut -d . -f 3`+1)); \
 	sed -i "s/Version:        $(VERSION)/Version:        $$MAYORVER.$$NEWSUBVER/" firstaidkit.spec; \
 	sed -i "s/Release:        .*%/Release:        1%/" firstaidkit.spec; \
@@ -43,5 +51,4 @@ bumpver:
 
 newver:
 	make bumpver
-	git commit -a -m "new minor version"
 	make rpm-all

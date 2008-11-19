@@ -23,15 +23,7 @@ from pyfirstaidkit.issue import SimpleIssue
 from pyfirstaidkit import Config
 from pyfirstaidkit.errors import *
 
-import rhpxl.xserver
-import rhpl.keyboard
-import tempfile
-import subprocess
-import time
-import signal
-import os
-import os.path
-import shutil
+import tempfile, subprocess, time, signal, os, os.path, shutil
 
 class Xserver(Plugin):
     """ Plugin to detect an rescue faulty xserver configurations. """
@@ -48,6 +40,7 @@ class Xserver(Plugin):
     name = "X server"
     version = "0.0.1"
     author = "Joel Andres Granados"
+    description = "Automates recovery of the xserver"
 
     @classmethod
     def getDeps(cls):

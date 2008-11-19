@@ -14,15 +14,10 @@ Source0:        %{name}-%{version}.tar.bz2
 Source3:        %{name}.desktop
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
+BuildRequires:  desktop-file-utils
 BuildRequires:  python-devel
-# Take this away in the future. when f7 is gone.
-%if 0%{?fedora} >= 8
-BuildRequires: python-setuptools-devel
-%else
-BuildRequires: python-setuptools
-%endif
+BuildRequires:  python-setuptools-devel
 BuildArch:      noarch
-BuildRequires: desktop-file-utils
 
 %description
 A tool that automates simple and common system recovery tasks.
@@ -81,7 +76,6 @@ password.
 Group:          Applications/System
 Summary:        FirstAidKit plugin to recover xserver configuration files
 Requires:       %{name} = %{version}-%{release}
-Requires:       rhpl, rhpxl
 
 %description plugin-xserver
 This FirstAidKit plugin automates the recovery of the xserver
@@ -91,19 +85,12 @@ configuration file xorg.conf.
 Group:          Applications/System
 Summary:        FirstAidKit plugin to diagnose or repair the GRUB instalation
 Requires:       %{name} = %{version}-%{release}
-
 Requires:       dbus-python
 Requires:       grub
 Requires:       pyparted
 
 %description plugin-grub
 This FirstAidKit plugin automates the recovery from the GRUB bootloader problems.
-
-%package plugin-rpm
-Group:          Applications/System
-Summary:        FirstAidKit plugin to diagnose or repair the RPM packaging system
-Requires:       %{name} = %{version}-%{release}
-Requires:       rpm, rpm-python
 
 %package plugin-mdadm-conf
 Group:          Applications/System
@@ -114,6 +101,12 @@ Requires:       mdadm
 %description plugin-mdadm-conf
 This plugin will assess the validity and existence of the mdadm.conf file.
 The file will get replaced if any inconsistencies are found.
+
+%package plugin-rpm
+Group:          Applications/System
+Summary:        FirstAidKit plugin to diagnose or repair the RPM packaging system
+Requires:       %{name} = %{version}-%{release}
+Requires:       rpm, rpm-python
 
 %description plugin-rpm
 This FirstAidKit plugin automates the tasks related to RPM problems.
@@ -128,19 +121,16 @@ Requires:       pygtk2, pygtk2-libglade
 %description gui
 This package contains the Gtk based FirstAidKit GUI
 
+
 %prep
 %setup -q
-#execute the testsuite
-./test
+#./test
 
-#generate the about file with version and license path
-echo "[about]" >> etc/firstaidkit/about
-echo "version=%{version}" >> etc/firstaidkit/about
-echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 
 %build
 %{__python} setup.py build
-%{__make} subdirs
+%{__make} build
+
 
 %install
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -148,7 +138,9 @@ echo "copying=%{_docdir}/%{name}-%{version}/COPYING" >> etc/firstaidkit/about
 
 #docs
 %{__install} -d $RPM_BUILD_ROOT%{_mandir}/man1
+%{__install} -d $RPM_BUILD_ROOT%{_datadir}/doc/%name-%version
 %{__install} -p doc/firstaidkit-plugin.1 doc/firstaidkit.1 $RPM_BUILD_ROOT%{_mandir}/man1
+%{__install} -p COPYING $RPM_BUILD_ROOT%{_datadir}/doc/%name-%version/COPYING
 
 #examples
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/examples
@@ -193,6 +185,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %config(noreplace) %{_sysconfdir}/firstaidkit/firstaidkit.conf
 %{_sysconfdir}/firstaidkit/about
 %attr(0644,root,root) %{_mandir}/man1/firstaidkit.1.gz
+%attr(0644,root,root) %{_datadir}/doc/%name-%version/COPYING
 
 %files gui
 %{_libdir}/firstaidkit/frontend/*.py*
