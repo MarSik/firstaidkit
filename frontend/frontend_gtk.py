@@ -28,6 +28,7 @@ from pyfirstaidkit import reporting
 import pprint
 import os.path
 import thread
+import hashlib
 
 class CallbacksMainWindow(object):
     def __init__(self, dialog, cfg, tasker, glade, data):
@@ -152,6 +153,11 @@ class CallbacksMainWindow(object):
                 flags.remove("experimental")
             except KeyError, e:
                 pass
+        
+        #reset params
+        if self._cfg.has_section("plugin-args"):
+            self._cfg.remove_section("plugin-args")
+        self._cfg.add_section("plugin-args")
 
         self._cfg.operation.flags = " ".join(
                 map(lambda x: x.encode("string-escape"), flags))
@@ -201,6 +207,11 @@ class CallbacksMainWindow(object):
 
         self._cfg.operation.flags = " ".join(
                 map(lambda x: x.encode("string-escape"), flags))
+
+        #reset params
+        if self._cfg.has_section("plugin-args"):
+            self._cfg.remove_section("plugin-args")
+        self._cfg.add_section("plugin-args")
 
         self.execute()
         return True
@@ -253,14 +264,34 @@ class CallbacksMainWindow(object):
         plugins = []
         flows = []
 
+        #reset params
+        if self._cfg.has_section("plugin-args"):
+            self._cfg.remove_section("plugin-args")
+        self._cfg.add_section("plugin-args")
+
         for pname,iter in self._data.plugin_iter.iteritems():
+            #get/set plugin params
+            param = self._data.plugin_list_store.get_value(iter, 3)
+            if param.strip()!="":
+                val = "%s %s" % (pname, param)
+                self._cfg.set("plugin-args", hashlib.sha1(val).hexdigest(), val)
+
+            #get list of flows
             childiter = self._data.plugin_list_store.iter_children(iter)
             while childiter is not None:
                 #checkbox is checked
                 if self._data.plugin_list_store.get_value(childiter, 0):
                     plugins.append(pname)
-                    flows.append(self._data.plugin_list_store.get_value(
-                        childiter, 1))
+                    fname = self._data.plugin_list_store.get_value(
+                        childiter, 1)
+                    flows.append(fname)
+
+                    #get/set flow params
+                    param = self._data.plugin_list_store.get_value(childiter, 3)
+                    if param.strip()!="":
+                        val = "%s/%s %s" % (pname, fname, param)
+                        self._cfg.set("plugin-args",
+                                hashlib.sha1(val).hexdigest(), val)
                 childiter = self._data.plugin_list_store.iter_next(childiter)
 
         plugins = map(lambda x: x.encode("string-escape"), plugins)
@@ -338,6 +369,8 @@ class MainWindow(object):
         self.plugin_list.set_model(self.plugin_list_store)
 
         self.plugin_rend_text = gtk.CellRendererText()
+        self.plugin_rend_text_edit = gtk.CellRendererText()
+        self.plugin_rend_text_edit.set_property("editable", True)
         self.plugin_rend_toggle = gtk.CellRendererToggle()
         self.plugin_rend_toggle.set_radio(False)
         self.plugin_rend_toggle.set_property("activatable", False)
@@ -375,7 +408,12 @@ class MainWindow(object):
 
         def plugin_rend_toggle_cb(cell, path, data):
             model, col = data
-            model[path][0] = not model[path][col]
+            model[path][col] = not model[path][col]
+            return
+
+        def plugin_rend_edited_cb(cell, path, text, data):
+            model, col = data
+            model[path][col] = text
             return
 
         self.plugin_list_col_0 = gtk.TreeViewColumn('Use')
@@ -396,9 +434,11 @@ class MainWindow(object):
                 plugin_rend_text_func, 2)
 
         self.plugin_list_col_3 = gtk.TreeViewColumn('Parameters')
-        self.plugin_list_col_3.pack_start(self.plugin_rend_text, True)
-        self.plugin_list_col_3.set_cell_data_func(self.plugin_rend_text,
+        self.plugin_list_col_3.pack_start(self.plugin_rend_text_edit, True)
+        self.plugin_list_col_3.set_cell_data_func(self.plugin_rend_text_edit,
                 plugin_rend_text_func, 3)
+        self.plugin_rend_text_edit.connect("edited", plugin_rend_edited_cb,
+                (self.plugin_list_store, 3))
 
         self.plugin_list.append_column(self.plugin_list_col_0)
         self.plugin_list.append_column(self.plugin_list_col_1)
