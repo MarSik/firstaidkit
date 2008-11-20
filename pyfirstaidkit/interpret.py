@@ -86,6 +86,9 @@ class Tasker:
         self._reporting.start(level = TASKER, origin = self)
         pluginSystem = self.pluginSystem
 
+        # Reset the flag state
+        self._provide.reset()
+
         # Check the root privilegies
         if os.geteuid() == 0:
             self._reporting.info("You are running the firstaidkit as root.",
@@ -98,7 +101,6 @@ class Tasker:
             self._provide.unprovide("root")
 
         #initialize the startup set of flags
-        self._provide.reset()
         for flag in self._config.operation._list("flags"):
             self._provide.provide(flag)
 
