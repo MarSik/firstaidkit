@@ -35,7 +35,7 @@ class MdadmConfig(Plugin):
 
     @classmethod
     def getDeps(cls):
-        return set(["root", "experimental", "filesystem"])
+        return set(["root", "filesystem"])
 
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)

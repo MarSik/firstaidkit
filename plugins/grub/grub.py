@@ -38,7 +38,7 @@ class Grub(Plugin):
 
     @classmethod
     def getDeps(cls):
-        return set(["root", "experimental", "filesystem"])
+        return set(["root", "filesystem"])
 
     @classmethod
     def revert(cls, backup, report):
