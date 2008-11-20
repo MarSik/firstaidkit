@@ -36,13 +36,13 @@ Provides the examples and requires firstaidkit without plugins.
 Group:          Applications/System
 Summary:        All firstaidkit plugins, and the gui
 Requires:       %{name} = %{version}-%{release}
-Requires:       %{name}-plugin-undelete-partitions
 Requires:       %{name}-plugin-passwd
 Requires:       %{name}-plugin-xserver
 Requires:       %{name}-plugin-grub
-Requires:       %{name}-plugin-rpm
 Requires:       %{name}-gui
 Requires:       %{name}-plugin-mdadm-conf
+#Requires:       %{name}-plugin-undelete-partitions
+#Requires:       %{name}-plugin-rpm
 
 
 %description plugin-all
@@ -50,16 +50,14 @@ This package provides all the necessary firstaidkit plugins.  It
 probes the system and according to what it finds, it installs the
 needed firstaidkit plugins.
 
-
-%package plugin-undelete-partitions
+%package gui
 Group:          Applications/System
-Summary:        FirstAidKit plugin to recover erased partitions
-BuildRequires:  python-devel, parted-devel, pkgconfig
+Summary:        FirstAidKit GUI
 Requires:       %{name} = %{version}-%{release}
-Requires:       parted
+Requires:       pygtk2, pygtk2-libglade
 
-%description plugin-undelete-partitions
-This FirstAidKit plugin automates the recovery of erased partitions.
+%description gui
+This package contains the Gtk based FirstAidKit GUI
 
 
 %package plugin-passwd
@@ -81,6 +79,7 @@ Requires:       %{name} = %{version}-%{release}
 This FirstAidKit plugin automates the recovery of the xserver
 configuration file xorg.conf.
 
+
 %package plugin-grub
 Group:          Applications/System
 Summary:        FirstAidKit plugin to diagnose or repair the GRUB instalation
@@ -92,6 +91,7 @@ Requires:       pyparted
 %description plugin-grub
 This FirstAidKit plugin automates the recovery from the GRUB bootloader problems.
 
+
 %package plugin-mdadm-conf
 Group:          Applications/System
 Summary:        Firstaidkit plugin to diagnose software raid configuration file
@@ -102,24 +102,26 @@ Requires:       mdadm
 This plugin will assess the validity and existence of the mdadm.conf file.
 The file will get replaced if any inconsistencies are found.
 
-%package plugin-rpm
-Group:          Applications/System
-Summary:        FirstAidKit plugin to diagnose or repair the RPM packaging system
-Requires:       %{name} = %{version}-%{release}
-Requires:       rpm, rpm-python
 
-%description plugin-rpm
-This FirstAidKit plugin automates the tasks related to RPM problems.
-For example: corrupted database or important system packages missing.
-
-%package gui
-Group:          Applications/System
-Summary:        FirstAidKit GUI
-Requires:       %{name} = %{version}-%{release}
-Requires:       pygtk2, pygtk2-libglade
-
-%description gui
-This package contains the Gtk based FirstAidKit GUI
+#%package plugin-rpm
+#Group:          Applications/System
+#Summary:        FirstAidKit plugin to diagnose or repair the RPM packaging system
+#Requires:       %{name} = %{version}-%{release}
+#Requires:       rpm, rpm-python
+#
+#%description plugin-rpm
+#This FirstAidKit plugin automates the tasks related to RPM problems.
+#For example: corrupted database or important system packages missing.
+#
+#%package plugin-undelete-partitions
+#Group:          Applications/System
+#Summary:        FirstAidKit plugin to recover erased partitions
+#BuildRequires:  python-devel, parted-devel, pkgconfig
+#Requires:       %{name} = %{version}-%{release}
+#Requires:       parted
+#
+#%description plugin-undelete-partitions
+#This FirstAidKit plugin automates the recovery of erased partitions.
 
 
 %prep
@@ -159,18 +161,17 @@ This package contains the Gtk based FirstAidKit GUI
 desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applications %{SOURCE3}
 
 #plugins
-%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts
-%{__cp} -f plugins/undelparts/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts/
 %{__cp} -f plugins/passwd.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
 %{__cp} -f plugins/xserver.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
-%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm
-%{__cp} -f plugins/rpm/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm/
-%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm_lowlevel
-%{__cp} -f plugins/rpm_lowlevel/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm_lowlevel/
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
 %{__cp} -f plugins/grub/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
 %{__cp} -f plugins/mdadm_conf.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
-
+#%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts
+#%{__cp} -f plugins/undelparts/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts/
+#%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm
+#%{__cp} -f plugins/rpm/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm/
+#%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm_lowlevel
+#%{__cp} -f plugins/rpm_lowlevel/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm_lowlevel/
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -183,7 +184,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %{_bindir}/firstaidkit
 %{_bindir}/firstaidkitrevert
 %config(noreplace) %{_sysconfdir}/firstaidkit/firstaidkit.conf
-%{_sysconfdir}/firstaidkit/about
+%config(noreplace) %{_sysconfdir}/firstaidkit/about
 %attr(0644,root,root) %{_mandir}/man1/firstaidkit.1.gz
 %attr(0644,root,root) %{_datadir}/doc/%name-%version/COPYING
 
@@ -199,22 +200,22 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 %files plugin-all
 
-%files plugin-undelete-partitions
-%{_libdir}/firstaidkit/plugins/undelparts/*.py*
-%{_libdir}/firstaidkit/plugins/undelparts/*.so
-
 %files plugin-passwd
 %{_libdir}/firstaidkit/plugins/passwd.py*
 
 %files plugin-xserver
 %{_libdir}/firstaidkit/plugins/xserver.py*
 
-%files plugin-rpm
-%{_libdir}/firstaidkit/plugins/rpm_lowlevel/*
-%{_libdir}/firstaidkit/plugins/rpm/*
-
 %files plugin-grub
 %{_libdir}/firstaidkit/plugins/grub/*
 
 %files plugin-mdadm-conf
 %{_libdir}/firstaidkit/plugins/mdadm_conf.py*
+
+#%files plugin-undelete-partitions
+#%{_libdir}/firstaidkit/plugins/undelparts/*.py*
+#%{_libdir}/firstaidkit/plugins/undelparts/*.so
+#
+#%files plugin-rpm
+#%{_libdir}/firstaidkit/plugins/rpm_lowlevel/*
+#%{_libdir}/firstaidkit/plugins/rpm/*
