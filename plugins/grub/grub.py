@@ -45,7 +45,17 @@ class Grub(Plugin):
         """ Use the backup object to replace the first 446 bytes in all devs.
         """
         report.info("Entering revert...", origin = Grub)
-        firstblockdict = backup.restoreValue("firstblockdict")
+        try:
+            firstblockdict = backup.restoreValue("firstblockdict")
+        except:
+            report.debug("I found the grub backup dir empty", origin = Grub)
+            return
+
+        if len(firstblockdict) == 0:
+            report.info("I found a backup object but it had no elements to " \
+                    "backup, exiting...", origin = Grub)
+            return
+
         for (dev, val) in firstblockdict.iteritems():
             devpath = val[1].path()
             first446bytes = val[0]
