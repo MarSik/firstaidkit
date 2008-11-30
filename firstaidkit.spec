@@ -182,17 +182,22 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %{python_sitelib}/pyfirstaidkit
 %{python_sitelib}/%{name}-%{version}-py?.?.egg-info
 %{_bindir}/firstaidkit
+%dir %{_bindir}/firstaidkit
 %{_bindir}/firstaidkitrevert
 %config(noreplace) %{_sysconfdir}/firstaidkit/firstaidkit.conf
 %config(noreplace) %{_sysconfdir}/firstaidkit/about
 %attr(0644,root,root) %{_mandir}/man1/firstaidkit.1.gz
 %attr(0644,root,root) %{_datadir}/doc/%name-%version/COPYING
+%dir %{_libdir}/firstaidkit
+%dir %{_libdir}/firstaidkit/plugins
+%dir %{_datadir}/doc/%name-%version
 
 %files gui
 %{_libdir}/firstaidkit/frontend/*.py*
 %{_libdir}/firstaidkit/frontend/*.glade
 %{_libdir}/firstaidkit/frontend/*.gladep
 %{_datadir}/applications/*.desktop
+%dir %{_libdir}/firstaidkit/frontend
 
 %files devel
 %{_libdir}/firstaidkit/plugins/examples
@@ -208,6 +213,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 %files plugin-grub
 %{_libdir}/firstaidkit/plugins/grub/*
+%dir %{_libdir}/firstaidkit/plugins/grub/*
 
 %files plugin-mdadm-conf
 %{_libdir}/firstaidkit/plugins/mdadm_conf.py*
