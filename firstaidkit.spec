@@ -180,7 +180,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %defattr(-,root,root,-)
 # For noarch packages: sitelib
 %{python_sitelib}/pyfirstaidkit
-%{python_sitelib}/%{name}-%{version}-py2.5.egg-info
+%{python_sitelib}/%{name}-%{version}-py?.?.egg-info
 %{_bindir}/firstaidkit
 %{_bindir}/firstaidkitrevert
 %config(noreplace) %{_sysconfdir}/firstaidkit/firstaidkit.conf
