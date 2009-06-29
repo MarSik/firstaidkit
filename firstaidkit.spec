@@ -38,7 +38,9 @@ Summary:        All firstaidkit plugins, and the gui
 Requires:       %{name} = %{version}-%{release}
 Requires:       %{name}-plugin-passwd
 Requires:       %{name}-plugin-xserver
+%ifnarch s390 s390x ppc64 ppc
 Requires:       %{name}-plugin-grub
+%endif
 Requires:       %{name}-gui
 Requires:       %{name}-plugin-mdadm-conf
 #Requires:       %{name}-plugin-undelete-partitions
@@ -87,6 +89,7 @@ Requires:       %{name} = %{version}-%{release}
 Requires:       dbus-python
 Requires:       grub
 Requires:       pyparted
+ExcludeArch:    ppc ppc64 s390 s390x
 
 %description plugin-grub
 This FirstAidKit plugin automates the recovery from the GRUB bootloader problems.
