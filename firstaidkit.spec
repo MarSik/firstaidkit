@@ -3,7 +3,7 @@
 %define _unpackaged_files_terminate_build 0
 
 Name:           firstaidkit
-Version:        0.2.2
+Version:        0.2.3
 Release:        1%{?dist}
 Summary:        System Rescue Tool
 
@@ -18,6 +18,7 @@ BuildRequires:  desktop-file-utils
 BuildRequires:  python-devel
 BuildRequires:  python-setuptools-devel
 BuildArch:      noarch
+Requires:	dialog
 
 %description
 A tool that automates simple and common system recovery tasks.
@@ -38,7 +39,7 @@ Summary:        All firstaidkit plugins, and the gui
 Requires:       %{name} = %{version}-%{release}
 Requires:       %{name}-plugin-passwd
 Requires:       %{name}-plugin-xserver
-%ifnarch s390 s390x ppc64 ppc
+%ifnarch s390 s390x ppc64 ppc sparc
 Requires:       %{name}-plugin-grub
 %endif
 Requires:       %{name}-gui
@@ -89,7 +90,7 @@ Requires:       %{name} = %{version}-%{release}
 Requires:       dbus-python
 Requires:       grub
 Requires:       pyparted
-ExcludeArch:    ppc ppc64 s390 s390x
+ExcludeArch:    ppc ppc64 s390 s390x sparc
 
 %description plugin-grub
 This FirstAidKit plugin automates the recovery from the GRUB bootloader problems.
@@ -185,6 +186,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %{python_sitelib}/pyfirstaidkit
 %{python_sitelib}/%{name}-%{version}-py?.?.egg-info
 %{_bindir}/firstaidkit
+%{_bindir}/firstaidkit-qs
 %dir %{_bindir}/firstaidkit
 %{_bindir}/firstaidkitrevert
 %config(noreplace) %{_sysconfdir}/firstaidkit/firstaidkit.conf

@@ -1,0 +1,42 @@
+#!/bin/sh
+
+function pause()
+{
+  echo "Press enter to continue"
+  read a
+}
+
+if [ "$DISPLAY" == "" ]; then
+  DIALOG="dialog"
+else
+  DIALOG="xdialog"
+fi
+
+OPTION=""
+TMPFILE="/tmp/$0-$$.item"
+MENU="\
+shell Start shell\
+fakd Run diagnostic\
+reboot Reboot\
+"
+
+WIDTH="30"
+HEIGHT="12"
+MENUHEIGHT="8"
+
+while [ "x$OPTION" != "x" ]; do
+  $DIALOG --menu $HEIGHT $WIDTH $MENUHEIGHT $MENU 2>$TMPFILE
+  OPTION=$(cat $TMPFILE)
+
+  if [ "x$OPTION" == "xshell" ]; then
+    echo "Starting shell..."
+    bash
+  elif [ "x$OPTION" == "xfakd" ]; then
+    echo "Running diagnostic..."
+    firstaidkit -a
+    pause
+  elif [ "x$OPTION" == "xreboot" ]; then
+    reboot
+  fi
+
+done
