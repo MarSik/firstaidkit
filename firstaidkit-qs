@@ -19,9 +19,14 @@ TITLE="First Aid Kit quickstart menu"
 WIDTH="45"
 HEIGHT="15"
 MENUHEIGHT="12"
+TIMEOUT=60
 
-#while [ "x$OPTION" == "x" ]; do
-  $DIALOG --menu "$TITLE" "$HEIGHT" "$WIDTH" "$MENUHEIGHT" shell "Start shell" fakd "Run diagnostic" reboot "Reboot"  2>$TMPFILE
+while [ "x$OPTION" == "x" ]; do
+  $DIALOG --timeout "$TIMEOUT" --menu "$TITLE" "$HEIGHT" "$WIDTH" "$MENUHEIGHT" shell "Start shell" fakd "Run diagnostic" reboot "Reboot"  2>$TMPFILE
+  if [ "$?" -ne 0 ]; then
+    exit 1
+  fi
+
   OPTION=$(cat $TMPFILE)
 
   if [ "x$OPTION" == "xshell" ]; then
@@ -35,4 +40,4 @@ MENUHEIGHT="12"
     reboot
   fi
 
-#done
+done
