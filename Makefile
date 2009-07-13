@@ -22,7 +22,7 @@ DATADIR := $(shell rpm --eval "%_datadir")
 
 PLUGIN_PATH = plugins
 # all the plugins that have a make build to run
-PLUGIN_DIRS = undelparts
+PLUGIN_DIRS = 
 
 build: subdirs about
 
