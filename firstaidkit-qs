@@ -9,23 +9,19 @@ function pause()
 if [ "$DISPLAY" == "" ]; then
   DIALOG="dialog"
 else
-  DIALOG="xdialog"
+  DIALOG="dialog"
 fi
 
 OPTION=""
 TMPFILE="/tmp/$0-$$.item"
-MENU="\
-shell Start shell\
-fakd Run diagnostic\
-reboot Reboot\
-"
+TITLE="First Aid Kit quickstart menu"
 
-WIDTH="30"
-HEIGHT="12"
-MENUHEIGHT="8"
+WIDTH="45"
+HEIGHT="15"
+MENUHEIGHT="12"
 
-while [ "x$OPTION" != "x" ]; do
-  $DIALOG --menu $HEIGHT $WIDTH $MENUHEIGHT $MENU 2>$TMPFILE
+#while [ "x$OPTION" == "x" ]; do
+  $DIALOG --menu "$TITLE" "$HEIGHT" "$WIDTH" "$MENUHEIGHT" shell "Start shell" fakd "Run diagnostic" reboot "Reboot"  2>$TMPFILE
   OPTION=$(cat $TMPFILE)
 
   if [ "x$OPTION" == "xshell" ]; then
@@ -39,4 +35,4 @@ while [ "x$OPTION" != "x" ]; do
     reboot
   fi
 
-done
+#done
