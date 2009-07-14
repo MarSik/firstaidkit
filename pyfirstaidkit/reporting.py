@@ -20,6 +20,8 @@ import logging
 import thread
 import weakref
 
+from errors import *
+
 Logger = logging.getLogger("firstaidkit")
 
 #semantics values
@@ -41,7 +43,11 @@ EXCEPTION = 5
 TABLE = 6 #types for arbitrary table-like organized iterables
 TREE = 7  #nested iterables organized as tree
 ISSUE = 8  #New issue object was created or changed
-QUESTION = 999 #type of message which contains respond-to field
+CHOICE_QUESTION = 990 #a Question object, "reply" specifies a Reports object
+TEXT_QUESTION = 991
+FILENAME_QUESTION = 992
+PASSWORD_QUESTION = 993
+ANSWER = 999 #Data sent in reply to a *_QUESTION
 END = 1000 #End of operations, final message
 
 class Origin(object):
@@ -52,11 +58,51 @@ class Origin(object):
     def __init__(self, name):
         self.name = name
 
+class Question(object):
+    """A pending question to the user.
+
+    Object identity is used to match questions and replies."""
+
+    def __init__(self, prompt):
+        self.prompt = prompt
+
+    def send_answer(self, question_message, answer, origin = None):
+        assert question_message["message"] is self
+        question_message["reply"].put \
+            (answer, origin, FIRSTAIDKIT, ANSWER,
+             importance = question_message["importance"], inreplyto = self)
+        question_message["reply"].end(level = FIRSTAIDKIT)
+
+class ChoiceQuestion(Question):
+    """A question that offers multiple options.
+
+    Each option is a tuple of (return value, description)."""
+
+    def __init__(self, prompt, options):
+        super(ChoiceQuestion, self).__init__(prompt)
+        assert len(options) > 0
+        self.options = options
+
+class TextQuestion(Question):
+    """A question that asks for a string."""
+    pass # No special behavior
+
+class FilenameQuestion(TextQuestion):
+    """A question that asks for a file name."""
+    pass # No special behavior
+
+class PasswordQuestion(Question):
+    """A question that asks for a password."""
+
+    def __init__(self, prompt, confirm):
+        super(PasswordQuestion, self).__init__(prompt)
+        self.confirm = confirm
+
 class Reports(object):
     """Instances of this class are used as reporting mechanism by which the
     plugins can comminucate back to whatever frontend we are using.
 
-    Message has four parts:
+    Message has the following parts:
     origin - who sent the message (instance of the plugin, Pluginsystem, ...)
     level - which level of First Aid Kit sent the message (PLUGIN, TASKER, ..)
     action - what action does the message describe
@@ -69,7 +115,9 @@ class Reports(object):
                 (on step x from y steps) or None to hide the progress
               for START and STOP, there is no mandatory message and the
                 importance specifies the level
-    reply - the instance of Queue.Queue, which should receive the replies
+              for *_QUESTION, this is a Qustion object
+    reply - an instance of Reports that should receive the replies
+    inreplyto - in replies, "message" from the associated question message
     title - title of the message
     """
 
@@ -223,3 +271,58 @@ class Reports(object):
         return self.put(message, origin, level, EXCEPTION,
                 importance = importance, inreplyto = inreplyto)
 
+    def __blocking_question(self, fn, args, kwargs):
+        mb = self.openMailbox()
+        try:
+            question = fn(mb, *args, **kwargs)
+            r = mb.get()
+            assert r["action"] in (ANSWER, END)
+            if r["action"] == END:
+                raise NoAnswerException()
+            assert r["inreplyto"] is question
+            answer = r["message"]
+            r = mb.get()
+            assert r["action"] == END
+        finally:
+            mb.closeMailbox()
+        return answer
+
+    def choice_question(self, reply_mb, prompt, options, origin, level = PLUGIN,
+                        importance = logging.ERROR):
+        q = ChoiceQuestion(prompt, options)
+        self.put(q, origin, level, CHOICE_QUESTION, importance = importance,
+                 reply = reply_mb)
+        return q
+
+    def choice_question_wait(self, *args, **kwargs):
+        return self.__blocking_question(self.choice_question, args, kwargs)
+
+    def text_question(self, reply_mb, prompt, origin, level = PLUGIN,
+                      importance = logging.ERROR):
+        q = TextQuestion(prompt)
+        self.put(q, origin, level, TEXT_QUESTION, importance = importance,
+                 reply = reply_mb)
+        return q
+
+    def text_question_wait(self, *args, **kwargs):
+        return self.__blocking_question(self.text_question, args, kwargs)
+
+    def password_question(self, reply_mb, prompt, origin, level = PLUGIN,
+                          importance = logging.ERROR, confirm = False):
+        q = PasswordQuestion(prompt, confirm)
+        self.put(q, origin, level, PASSWORD_QUESTION, importance = importance,
+                 reply = reply_mb)
+        return q
+
+    def password_question_wait(self, *args, **kwargs):
+        return self.__blocking_question(self.password_question, args, kwargs)
+
+    def filename_question(self, reply_mb, prompt, origin, level = PLUGIN,
+                          importance = logging.ERROR):
+        q = FilenameQuestion(prompt)
+        self.put(q, origin, level, FILENAME_QUESTION, importance = importance,
+                 reply = reply_mb)
+        return q
+
+    def filename_question_wait(self, *args, **kwargs):
+        return self.__blocking_question(self.filename_question, args, kwargs)

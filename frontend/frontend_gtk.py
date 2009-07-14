@@ -351,6 +351,9 @@ class CallbacksFlagList(object):
         return True
 
 class MainWindow(object):
+    _cancel_answer = object()
+    _no_answer = object()
+
     def __init__(self, cfg, tasker, importance = logging.INFO, dir=""):
         self._importance = importance
         self._cfg = cfg
@@ -569,8 +572,11 @@ class MainWindow(object):
         if message["action"]==reporting.END:
             gobject.idle_add(_o, self._window.destroy)
 
-        elif message["action"]==reporting.QUESTION:
-            print("FIXME: Questions not implemented yet")
+        elif message["action"] in (reporting.CHOICE_QUESTION,
+                                   reporting.TEXT_QUESTION,
+                                   reporting.FILENAME_QUESTION,
+                                   reporting.PASSWORD_QUESTION):
+            gobject.idle_add(_o, self._answer_question, message)
 
         elif message["action"]==reporting.START:
             if self._importance<=message["importance"]:
@@ -648,6 +654,118 @@ class MainWindow(object):
     def run(self):
         gtk.gdk.threads_init()
         gtk.main()
+
+    def _answer_question(self, message):
+        question = message["message"]
+        while True:
+            answer = self._get_answer(message, question)
+            if answer is self._cancel_answer:
+                message["reply"].end(level = reporting.FIRSTAIDKIT)
+                break
+            elif answer is not self._no_answer:
+                question.send_answer(message, answer, origin = self)
+                break
+
+    def _get_answer(self, message, question):
+        """Return the user's answer.
+
+        Return self._no_answer on invalid answer,
+        self._cancel_answer if the user wants to cancel.
+
+        """
+        dir = os.path.dirname(self._glade.relative_file("."))
+        if message["action"]==reporting.CHOICE_QUESTION:
+            glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"),
+                                  "ChoiceQuestionDialog")
+            dlg = glade.get_widget("ChoiceQuestionDialog")
+            try:
+                glade.get_widget("choice_question_label"). \
+                    set_text(question.prompt)
+                vbox = glade.get_widget("choice_question_vbox")
+                radio_map = {}
+                group = None
+                for (value, name) in question.options:
+                    r = gtk.RadioButton(group, name, False)
+                    radio_map[r] = value
+                    r.show()
+                    vbox.pack_start(r)
+                    if group is None:
+                        group = r
+                if dlg.run()!=gtk.RESPONSE_OK:
+                    res = self._cancel_answer
+                else:
+                    for r in radio_map:
+                        if r.get_active():
+                            res = radio_map[r]
+                            break
+                    else:
+                        res = self._no_answer
+            finally:
+                dlg.destroy()
+            return res
+
+        elif message["action"]==reporting.FILENAME_QUESTION:
+            # STOCK_OK is neutral enough so that we don't need to distinguish
+            # between "open" and "save" mode for now.
+            dlg = gtk.FileChooserDialog(title = question.prompt,
+                                        parent = self._window,
+                                        action = gtk.FILE_CHOOSER_ACTION_SAVE,
+                                        buttons = (gtk.STOCK_CANCEL,
+                                                   gtk.RESPONSE_REJECT,
+                                                   gtk.STOCK_OK,
+                                                   gtk.RESPONSE_ACCEPT))
+            try:
+                if dlg.run()==gtk.RESPONSE_ACCEPT:
+                    res = dlg.get_filename()
+                else:
+                    res = self._cancel_answer
+            finally:
+                dlg.destroy()
+            return res
+
+        elif (message["action"]==reporting.TEXT_QUESTION or
+              (message["action"]==reporting.PASSWORD_QUESTION and
+               not question.confirm)):
+            glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"),
+                                  "TextQuestionDialog")
+            dlg = glade.get_widget("TextQuestionDialog")
+            try:
+                glade.get_widget("text_question_label"). \
+                    set_text(question.prompt)
+                entry = glade.get_widget("text_question_entry")
+                if isinstance(question, reporting.PasswordQuestion):
+                    entry.set_visibility(False)
+                if dlg.run()==gtk.RESPONSE_OK:
+                    res = entry.get_text()
+                else:
+                    res = self._cancel_answer
+            finally:
+                dlg.destroy()
+            return res
+
+        elif message["action"]==reporting.PASSWORD_QUESTION:
+            assert question.confirm
+            glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"),
+                                  "TwoPasswordDialog")
+            dlg = glade.get_widget("TwoPasswordDialog")
+            try:
+                glade.get_widget("two_password_label1"). \
+                    set_text(question.prompt)
+                glade.get_widget("two_password_label2"). \
+                    set_text("Confirm: %s " % (question.prompt,))
+                entry1 = glade.get_widget("two_password_entry1")
+                entry2 = glade.get_widget("two_password_entry2")
+                if dlg.run()!=gtk.RESPONSE_OK:
+                    res = self._cancel_answer
+                elif entry1.get_text()==entry2.get_text():
+                    res = entry1.get_text()
+                else:
+                    res = self._no_answer
+            finally:
+                dlg.destroy()
+            return res
+
+        raise AssertionError("Unsupported question type %s" % message["action"])
 
 class FlagList(object):
     def __init__(self, cfg, flags, dir=""):

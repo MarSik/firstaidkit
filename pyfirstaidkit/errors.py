@@ -44,3 +44,7 @@ class GeneralPluginException(FAKException):
     def __init__(self, plugin, message):
         self.message="There was an exception in plugin %s with message %s"% \
                 (plugin,message)
+
+class NoAnswerException(FAKException):
+    def __init__(self):
+        self.message="No answer provided by user."

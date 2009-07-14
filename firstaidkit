@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import sys, getopt, os, pprint, logging, re, hashlib
+import sys, getopt, getpass, os, pprint, logging, re, readline, hashlib
 from threading import Thread
 from pyfirstaidkit import Tasker
 from pyfirstaidkit import Config
@@ -32,11 +32,15 @@ class Flags:
 
 
 class Output(Thread):
-    def __init__(self, queue, importance = logging.INFO, *args, **kwargs):
+    _no_answer = object()
+
+    def __init__(self, queue, importance = logging.INFO, interactive = True,
+                 *args, **kwargs):
         Thread.__init__(self, *args, **kwargs)
         self._running = True
         self._queue = queue
         self._importance = importance
+        self._interactive = interactive
         self.levelstack = []
 
     def run(self):
@@ -49,8 +53,19 @@ class Output(Thread):
         if message["action"]==reporting.END:
             self._running = False
             return
-        elif message["action"]==reporting.QUESTION:
-            print("FIXME: Questions not implemented yet")
+        elif message["action"] in (reporting.CHOICE_QUESTION,
+                                   reporting.TEXT_QUESTION,
+                                   reporting.FILENAME_QUESTION,
+                                   reporting.PASSWORD_QUESTION):
+            if not self._interactive:
+                return
+            question = message["message"]
+            while True:
+                answer = self._get_answer(message, question)
+                if answer is not self._no_answer:
+                    question.send_answer(message, answer, origin = self)
+                    break
+            return
 
         elif message["action"]==reporting.START:
             if self._importance<=message["importance"]:
@@ -105,6 +120,42 @@ class Output(Thread):
         else:
             print("FIXME: Unknown message action %d!!" % (message["action"],))
             print(message)
+
+    def _get_answer(self, message, question):
+        """Return an answer, or self._no_answer if the answer was invalid."""
+        if message["action"]==reporting.CHOICE_QUESTION:
+            print("QUESTION: %s (%s)" % (question.prompt,
+                                         message["origin"].name))
+            for (idx, (unused_value, name)) in enumerate(question.options):
+                print("%4s. %s" % (idx + 1, name))
+            answer = raw_input("Your choice? ")
+            try:
+                answer = int(answer) - 1
+            except ValueError:
+                return self._no_answer
+            if answer >= 0 and answer < len(question.options):
+                return question.options[answer][0]
+            return self._no_answer
+
+        elif message["action"] in (reporting.TEXT_QUESTION,
+                                   reporting.FILENAME_QUESTION):
+            print("QUESTION: (%s)" % (message["origin"].name,))
+            return raw_input(question.prompt)
+
+        elif message["action"]==reporting.PASSWORD_QUESTION:
+            print("QUESTION: (%s)" % (message["origin"].name,))
+            if not question.confirm:
+                return getpass.getpass(question.prompt)
+            else:
+                p1 = getpass.getpass(question.prompt)
+                p2 = getpass.getpass("Confirm: %s" % (question.prompt,))
+                if p1==p2:
+                    return p1
+                else:
+                    print("Passwords do not match.")
+                    return self._no_answer
+
+        raise AssertionError("Unsupported question type %s" % message["action"])
 
 class GuiOutput(Thread):
     def __init__(self, cfg, tasker, dir, importance = logging.INFO,
@@ -315,12 +366,14 @@ if __name__=="__main__":
         sys.exit(1)
 
     if Config.operation.verbose=="False":
-        outputThread = Output(singlerun.reporting())
+        outputThread = Output(singlerun.reporting(),
+                              interactive = Config.operation.gui!="gtk")
         if Config.operation.gui=="gtk":
             outputThreadGui = GuiOutput(Config, singlerun,
                     dir = os.path.dirname(frontend_gtk.__file__))
     else:
-        outputThread = Output(singlerun.reporting(), importance = 0)
+        outputThread = Output(singlerun.reporting(), importance = 0,
+                              interactive = Config.operation.gui!="gtk")
         if Config.operation.gui=="gtk":
             outputThreadGui = GuiOutput(Config, singlerun, importance = 0,
                     dir = os.path.dirname(frontend_gtk.__file__))
