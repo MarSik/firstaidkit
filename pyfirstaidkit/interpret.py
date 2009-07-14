@@ -18,7 +18,7 @@
 import os
 import sys
 from plugins import PluginSystem
-from reporting import Reports, TASKER, PLUGINSYSTEM
+from reporting import Reports, TASKER, PLUGINSYSTEM, FIRSTAIDKIT
 import logging
 import copy
 from errors import *
@@ -80,7 +80,7 @@ class Tasker:
 
     def end(self):
         """Signalize end of operations to all necessary places"""
-        self._reporting.end()
+        self._reporting.end(level = FIRSTAIDKIT)
 
     def run(self):
         self._reporting.start(level = TASKER, origin = self)

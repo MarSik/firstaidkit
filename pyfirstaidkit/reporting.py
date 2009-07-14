@@ -107,7 +107,7 @@ class Reports(object):
         return self._notify_all.append((cb, args, kwargs))
 
     def put(self, message, origin, level, action, importance = logging.INFO,
-            reply = None, title = "", destination = None):
+            reply = None, inreplyto = None, title = "", destination = None):
         """destination hold reference to another Reporting object"""
 
         if destination is not None:
@@ -115,7 +115,7 @@ class Reports(object):
         
         data = {"level": level, "origin": origin, "action": action,
                 "importance": importance, "message": message,
-                "reply": reply, "title": title}
+                "reply": reply, "inreplyto": inreplyto, "title": title}
 
         destination = self._queue
         try:
@@ -190,53 +190,53 @@ class Reports(object):
             self._parent.notifyAll(data, sender, *args, **kwargs)
 
     #There will be helper methods inspired by logging module
-    def end(self):
-        return self.put(None, FIRSTAIDKIT, None, END, importance = 1000)
+    def end(self, level = PLUGIN):
+        return self.put(None, level, None, END, importance = 1000)
 
-    def error(self, message, origin, level = PLUGIN, action = INFO):
+    def error(self, message, origin, inreplyto = None, level = PLUGIN, action = INFO):
         Logger.error(origin.name+": "+message)
         return self.put(message, origin, level, action,
-                importance = logging.ERROR)
+                importance = logging.ERROR, inreplyto = inreplyto)
 
-    def start(self, origin, level = PLUGIN, message = ""):
+    def start(self, origin, inreplyto = None, level = PLUGIN, message = ""):
         return self.put(message, origin, level, START,
-                importance = logging.DEBUG)
-    def stop(self, origin, level = PLUGIN, message = ""):
+                importance = logging.DEBUG, inreplyto = inreplyto)
+    def stop(self, origin, inreplyto = None, level = PLUGIN, message = ""):
         return self.put(message, origin, level, STOP,
-                importance = logging.DEBUG)
+                importance = logging.DEBUG, inreplyto = inreplyto)
 
-    def progress(self, position, maximum, origin, level = PLUGIN,
+    def progress(self, position, maximum, origin, inreplyto = None, level = PLUGIN,
             importance = logging.INFO):
         return self.put((position, maximum), origin, level, PROGRESS,
-                importance = importance)
+                importance = importance, inreplyto = inreplyto)
 
-    def issue(self, issue, origin, level = PLUGIN, importance = logging.INFO):
+    def issue(self, issue, origin, inreplyto = None, level = PLUGIN, importance = logging.INFO):
         Logger.debug(origin.name+": issue changed state to "+str(issue))
-        return self.put(issue, origin, level, ISSUE, importance = importance)
+        return self.put(issue, origin, level, ISSUE, inreplyto = None, importance = importance, inreplyto = inreplyto)
 
-    def info(self, message, origin, level = PLUGIN, importance = logging.INFO):
+    def info(self, message, origin, inreplyto = None, level = PLUGIN, importance = logging.INFO):
         Logger.info(origin.name+": "+message)
-        return self.put(message, origin, level, INFO, importance = importance)
+        return self.put(message, origin, level, INFO, importance = importance, inreplyto = inreplyto)
 
-    def debug(self, message, origin, level = PLUGIN, importance = logging.DEBUG):
+    def debug(self, message, origin, inreplyto = None, level = PLUGIN, importance = logging.DEBUG):
         Logger.debug(origin.name+": "+message)
-        return self.put(message, origin, level, INFO, importance = importance)
+        return self.put(message, origin, level, INFO, importance = importance, inreplyto = inreplyto)
 
-    def tree(self, message, origin, level = PLUGIN, importance = logging.INFO,
+    def tree(self, message, origin, inreplyto = None, level = PLUGIN, importance = logging.INFO,
             title = ""):
         return self.put(message, origin, level, TREE, importance = importance,
-                title = title)
+                title = title, inreplyto = inreplyto)
 
-    def table(self, message, origin, level = PLUGIN, importance = logging.INFO,
+    def table(self, message, origin, inreplyto = None, level = PLUGIN, importance = logging.INFO,
             title = ""):
         return self.put(message, origin, level, TABLE,
-                importance = importance, title = title)
+                importance = importance, title = title, inreplyto = inreplyto)
 
-    def alert(self, message, origin, level = PLUGIN, importance = logging.WARNING):
-        return self.put(message, origin, level, ALERT, importance = importance)
+    def alert(self, message, origin, inreplyto = None, level = PLUGIN, importance = logging.WARNING):
+        return self.put(message, origin, level, ALERT, importance = importance, inreplyto = inreplyto)
 
-    def exception(self, message, origin, level = PLUGIN, importance = logging.ERROR):
+    def exception(self, message, origin, inreplyto = None, level = PLUGIN, importance = logging.ERROR):
         Logger.error(origin.name+": "+message)
         return self.put(message, origin, level, EXCEPTION,
-                importance = importance)
+                importance = importance, inreplyto = inreplyto)
 
