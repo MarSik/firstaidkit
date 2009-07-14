@@ -46,9 +46,13 @@ class CallbacksMainWindow(object):
         def _o(pages, stopbutton):
             """Always return False -> remove from the idle queue after first
             execution"""
-            for i in range(pages.get_n_pages()):
-                pages.get_nth_page(i).set_sensitive(True)
-            stopbutton.set_sensitive(False)
+            gtk.gdk.threads_enter()
+            try:
+                for i in range(pages.get_n_pages()):
+                    pages.get_nth_page(i).set_sensitive(True)
+                stopbutton.set_sensitive(False)
+            finally:
+                gtk.gdk.threads_leave()
             return False
 
         def worker(*args):
@@ -537,7 +541,11 @@ class MainWindow(object):
         def _o(func, *args, **kwargs):
             """Always return False -> remove from the idle queue after first
             execution"""
-            func(*args, **kwargs)
+            try:
+                gtk.gdk.threads_enter()
+                func(*args, **kwargs)
+            finally:
+                gtk.gdk.threads_leave()
             return False
 
         def issue_state(self):
