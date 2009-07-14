@@ -533,7 +533,7 @@ class MainWindow(object):
         self.result_list.append_column(self.result_list_col_3)
         self.result_list.set_search_column(0)
 
-    def update(self, message):
+    def update(self, mailbox, message):
         def _o(func, *args, **kwargs):
             """Always return False -> remove from the idle queue after first
             execution"""

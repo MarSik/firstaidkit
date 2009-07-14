@@ -73,7 +73,7 @@ class Reports(object):
     title - title of the message
     """
 
-    def __init__(self, maxsize=-1, round = False):
+    def __init__(self, maxsize=-1, round = False, parent  = None, name = None):
         """round - is this a round buffer?
         maxsize - size of the buffer"""
         self._queue = Queue.Queue(maxsize = maxsize)
@@ -81,22 +81,41 @@ class Reports(object):
         self._round = round
         self._mailboxes = []
         self._notify = []
+        self._notify_all = []
+        self._parent  = parent
+        if not name:
+            self._name = "Reporting"
+        else:
+            self._name = name
+
 
     def notify(self, cb, *args, **kwargs):
         """When putting anything new into the Queue, run notifications
         callbacks. Usefull for Gui and single-thread reporting.
-        The notification function has parameters: message recorded to the
-        queue, any parameters provided when registering"""
+        The notification function has parameters: reporting object,
+        message recorded to the queue, any parameters provided
+        when registering"""
         return self._notify.append((cb, args, kwargs))
+    
+    def notify_all(self, cb, *args, **kwargs):
+        """When putting anything new into the Queue or mailboxes
+        belonging to this Reporting object, run notifications
+        callbacks. Usefull for logging.
+        The notification function has parameters: reporting object,
+        message recorded to the queue, any parameters provided
+        when registering"""
+        return self._notify_all.append((cb, args, kwargs))
 
     def put(self, message, origin, level, action, importance = logging.INFO,
             reply = None, title = "", destination = None):
+        """destination hold reference to another Reporting object"""
+
+        if destination is not None:
+            return destination.put(message, origin, level, action, importance, reply, title)
+        
         data = {"level": level, "origin": origin, "action": action,
                 "importance": importance, "message": message,
                 "reply": reply, "title": title}
-
-        if destination is not None:
-            return destination.put(data)
 
         destination = self._queue
         try:
@@ -114,16 +133,20 @@ class Reports(object):
 
         #call all the notify callbacks
         for func, args, kwargs in self._notify:
-            func(data, *args, **kwargs)
+            func(self, data, *args, **kwargs)
+        
+        #call all the notify-all callbacks
+        self.notifyAll(self, data)
 
         return ret
 
     def get(self, mailbox = None, *args, **kwargs):
-        if mailbox is None:
-            mailbox = self._queue
+        if mailbox is not None:
+            return mailbox.get(*args, **kwargs)
+        
         try:
             self._queue_lock.acquire()
-            ret = mailbox.get(*args, **kwargs)
+            ret = self._queue.get(*args, **kwargs)
         finally:
             self._queue_lock.release()
 
@@ -131,13 +154,40 @@ class Reports(object):
 
     def openMailbox(self, maxsize=-1):
         """Allocate new mailbox for replies"""
-        mb = Queue.Queue(maxsize = maxsize)
-        self._mailboxes.append(mb)
+
+        mb = None
+        try:
+            self._queue_lock.acquire()
+            mb = Reports(maxsize = maxsize, parent = self)
+            self._mailboxes.append(mb)
+        finally:
+            self._queue_lock.release()
+
         return mb
 
-    def closeMailbox(self, mb):
+    def removeMailbox(self, mb):
+        """Remove mailbox from the mailbox list"""
+        try:
+            self._queue_lock.acquire()
+            self._mailboxes.remove(mb)
+            mb._parent = None
+        finally:
+            self._queue_lock.release()
+
+    def closeMailbox(self):
         """Close mailbox when not needed anymore"""
-        self._mailboxes.remove(mb)
+        self._parent.removeMailbox(self)
+
+    def notifyAll(self, data, sender=None):
+        if sender is None:
+            sender = self
+
+        #call all the notify-all callbacks
+        for func, args, kwargs in self._notify_all:
+            func(sender, data, *args, **kwargs)
+
+        if self._parent:
+            self._parent.notifyAll(data, sender, *args, **kwargs)
 
     #There will be helper methods inspired by logging module
     def end(self):

@@ -43,9 +43,9 @@ class Output(Thread):
 
         while self._running:
             message = self._queue.get()
-            self.process_message(message)
+            self.process_message(self._queue, message)
 
-    def process_message(self, message):
+    def process_message(self, mailbox, message):
         if message["action"]==reporting.END:
             self._running = False
             return
