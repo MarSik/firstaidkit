@@ -32,7 +32,7 @@ about:
 	echo "copying=$(DATADIR)/doc/$(NAME)-$(VERSION)/COPYING" >> etc/firstaidkit/about
 
 tarball:
-	git-archive --format=tar --prefix=$(NAME)-$(VERSION)/ HEAD | bzip2 -f > $(NAME)-$(VERSION).tar.bz2
+	git archive --format=tar --prefix=$(NAME)-$(VERSION)/ HEAD | bzip2 -f > $(NAME)-$(VERSION).tar.bz2
 
 rpm-all: tarball
 	rpmbuild -ta $(NAME)-$(VERSION).tar.bz2
