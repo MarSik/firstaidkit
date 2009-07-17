@@ -44,6 +44,7 @@ Requires:       %{name}-plugin-grub
 %endif
 Requires:       %{name}-gui
 Requires:       %{name}-plugin-mdadm-conf
+Requires:       %{name}-plugin-key-recovery
 #Requires:       %{name}-plugin-undelete-partitions
 #Requires:       %{name}-plugin-rpm
 
@@ -106,6 +107,15 @@ Requires:       mdadm
 This plugin will assess the validity and existence of the mdadm.conf file.
 The file will get replaced if any inconsistencies are found.
 
+%package plugin-key-recovery
+Group:          Applications/System
+Summary:        Firstaidkit plugin to recover key encryption keys
+Requires:       %{name} = %{version}-%{release}
+Requires:       python-volume_key, python-nss
+
+%description plugin-key-recovery
+This plugin help recover encryption keys using a previously created escrow
+packet.
 
 #%package plugin-rpm
 #Group:          Applications/System
@@ -170,6 +180,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
 %{__cp} -f plugins/grub/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
 %{__cp} -f plugins/mdadm_conf.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
+%{__cp} -f plugins/key_recovery.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
 #%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts
 #%{__cp} -f plugins/undelparts/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts/
 #%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm
@@ -220,6 +231,9 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 %files plugin-mdadm-conf
 %{_libdir}/firstaidkit/plugins/mdadm_conf.py*
+
+%files plugin-key-recovery
+%{_libdir}/firstaidkit/plugins/key_recovery.py*
 
 #%files plugin-undelete-partitions
 #%{_libdir}/firstaidkit/plugins/undelparts/*.py*
