@@ -187,7 +187,7 @@ class Reports(object):
             func(sender, data, *args, **kwargs)
 
         if self._parent:
-            self._parent.notifyAll(data, sender, *args, **kwargs)
+            self._parent.notifyAll(data, sender)
 
     #There will be helper methods inspired by logging module
     def end(self, level = PLUGIN):
