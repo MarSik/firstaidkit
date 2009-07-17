@@ -111,7 +111,7 @@ class Reports(object):
         """destination hold reference to another Reporting object"""
 
         if destination is not None:
-            return destination.put(message, origin, level, action, importance, reply, title)
+            return destination.put(message = message, origin = origin, level = level, action = action, importance = importance, reply = reply, title = title, inreplyto = inreplyto)
         
         data = {"level": level, "origin": origin, "action": action,
                 "importance": importance, "message": message,
@@ -212,7 +212,7 @@ class Reports(object):
 
     def issue(self, issue, origin, inreplyto = None, level = PLUGIN, importance = logging.INFO):
         Logger.debug(origin.name+": issue changed state to "+str(issue))
-        return self.put(issue, origin, level, ISSUE, inreplyto = None, importance = importance, inreplyto = inreplyto)
+        return self.put(issue, origin, level, ISSUE, importance = importance, inreplyto = inreplyto)
 
     def info(self, message, origin, inreplyto = None, level = PLUGIN, importance = logging.INFO):
         Logger.info(origin.name+": "+message)
