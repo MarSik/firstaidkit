@@ -73,12 +73,12 @@ class Reports(object):
     title - title of the message
     """
 
-    def __init__(self, maxsize=-1, round = False, parent  = None, name = None):
-        """round - is this a round buffer?
+    def __init__(self, maxsize=-1, silent = False, parent  = None, name = None):
+        """silent - silently discard messages that don't fit in the queue
         maxsize - size of the buffer"""
         self._queue = Queue.Queue(maxsize = maxsize)
         self._queue_lock = thread.allocate_lock()
-        self._round = round
+        self._silent = silent
         self._mailboxes = []
         self._notify = []
         self._notify_all = []
@@ -117,19 +117,11 @@ class Reports(object):
                 "importance": importance, "message": message,
                 "reply": reply, "inreplyto": inreplyto, "title": title}
 
-        destination = self._queue
         try:
-            self._queue_lock.acquire()
-            ret=destination.put(data, block = False)
-        except Queue.Full, e:
-            if not self._round:
+            self._queue.put(data, block = False)
+        except Queue.Full:
+            if not self._silent:
                 raise
-            #Queue is full and it is a round buffer.. remove the oldest item
-            #and use the free space to put the new item
-            destination.get()
-            ret=destination.put(data)
-        finally:
-            self._queue_lock.release()
 
         #call all the notify callbacks
         for func, args, kwargs in self._notify:
@@ -138,27 +130,18 @@ class Reports(object):
         #call all the notify-all callbacks
         self.notifyAll(self, data)
 
-        return ret
-
     def get(self, mailbox = None, *args, **kwargs):
         if mailbox is not None:
             return mailbox.get(*args, **kwargs)
-        
-        try:
-            self._queue_lock.acquire()
-            ret = self._queue.get(*args, **kwargs)
-        finally:
-            self._queue_lock.release()
 
-        return ret
+        return self._queue.get(*args, **kwargs)
 
     def openMailbox(self, maxsize=-1):
         """Allocate new mailbox for replies"""
 
-        mb = None
+        mb = Reports(maxsize = maxsize, parent = self)
+        self._queue_lock.acquire()
         try:
-            self._queue_lock.acquire()
-            mb = Reports(maxsize = maxsize, parent = self)
             self._mailboxes.append(mb)
         finally:
             self._queue_lock.release()
@@ -167,12 +150,12 @@ class Reports(object):
 
     def removeMailbox(self, mb):
         """Remove mailbox from the mailbox list"""
+        self._queue_lock.acquire()
         try:
-            self._queue_lock.acquire()
             self._mailboxes.remove(mb)
-            mb._parent = None
         finally:
             self._queue_lock.release()
+        mb._parent = None
 
     def closeMailbox(self):
         """Close mailbox when not needed anymore"""

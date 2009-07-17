@@ -303,7 +303,7 @@ if __name__=="__main__":
                 usage(sys.argv[0])
                 sys.exit(1)
 
-    report = reporting.Reports(maxsize = 1, round = True)
+    report = reporting.Reports(maxsize = 1, silent = True)
     try:
         singlerun = Tasker(Config, reporting = report)
     except BackupException, be:
