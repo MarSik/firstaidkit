@@ -13,7 +13,7 @@ else
 fi
 
 OPTION=""
-TMPFILE="/tmp/$0-$$.item"
+TMPFILE="/tmp/$(basename $0)-$$.item"
 TITLE="First Aid Kit quickstart menu"
 
 WIDTH="45"
@@ -32,12 +32,15 @@ while [ "x$OPTION" == "x" ]; do
   if [ "x$OPTION" == "xshell" ]; then
     echo "Starting shell..."
     bash
+    OPTION=""
   elif [ "x$OPTION" == "xfakd" ]; then
     echo "Running diagnostic..."
     firstaidkit -a
     pause
+    OPTION=""
   elif [ "x$OPTION" == "xreboot" ]; then
     reboot
+    OPTION=""
   fi
 
 done
