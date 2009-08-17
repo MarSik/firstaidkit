@@ -3,7 +3,7 @@
 %define _unpackaged_files_terminate_build 0
 
 Name:           firstaidkit
-Version:        0.2.4
+Version:        0.2.5
 Release:        1%{?dist}
 Summary:        System Rescue Tool
 
