@@ -70,14 +70,14 @@ def get_all_devs():
             try:
                 # parted will provide us with all the partitions.
                 partitions = []
-                parteddev = parted.PedDevice.get(device["device"])
-                disk = parted.PedDisk.new(parteddev)
-                part = disk.next_partition()
-                while part:
-                    if part.num > 0:
+                parteddev = parted.getDevice(device["device"])
+                disk = parted.Disk(parteddev)
+                for part in disk.partitions:
+                    if part.type == parted.PARTITION_EXTENDED \
+                            or part.type == parted.PARTITION_NORMAL \
+                            or part.type == parted.PARTITION_LOGICAL:
                         partitions.append(
-                                Dname("%s%s"%(device["device"],part.num)))
-                    part = disk.next_partition(part)
+                                Dname("%s%s"%(device["device"],part.number)))
                 # The key will be the device name and it will contain a list of
                 # parts.  This is very unfortunate as the object would be better
                 # sutied as a key.
