@@ -114,7 +114,7 @@ Requires:       %{name} = %{version}-%{release}
 Requires:       python-volume_key, python-nss
 
 %description plugin-key-recovery
-This plugin help recover encryption keys using a previously created escrow
+This plugin helps recover encryption keys using a previously created escrow
 packet.
 
 #%package plugin-rpm
