@@ -198,6 +198,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %{python_sitelib}/%{name}-%{version}-py?.?.egg-info
 %{_bindir}/firstaidkit
 %{_bindir}/firstaidkit-qs
+%dir %{_bindir}/firstaidkit
 %{_bindir}/firstaidkitrevert
 %config(noreplace) %{_sysconfdir}/firstaidkit/firstaidkit.conf
 %config(noreplace) %{_sysconfdir}/firstaidkit/about
@@ -227,7 +228,8 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %{_libdir}/firstaidkit/plugins/xserver.py*
 
 %files plugin-grub
-%{_libdir}/firstaidkit/plugins/grub
+%{_libdir}/firstaidkit/plugins/grub/*
+%dir %{_libdir}/firstaidkit/plugins/grub/*
 
 %files plugin-mdadm-conf
 %{_libdir}/firstaidkit/plugins/mdadm_conf.py*
