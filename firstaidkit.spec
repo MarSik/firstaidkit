@@ -18,7 +18,7 @@ BuildRequires:  desktop-file-utils
 BuildRequires:  python-devel
 BuildRequires:  python-setuptools-devel
 BuildArch:      noarch
-Requires:	dialog
+Requires:	newt
 
 %description
 A tool that automates simple and common system recovery tasks.
@@ -58,7 +58,7 @@ needed firstaidkit plugins.
 Group:          Applications/System
 Summary:        FirstAidKit GUI
 Requires:       %{name} = %{version}-%{release}
-Requires:       pygtk2, pygtk2-libglade
+Requires:       pygtk2, pygtk2-libglade, zenity
 
 %description gui
 This package contains the Gtk based FirstAidKit GUI
