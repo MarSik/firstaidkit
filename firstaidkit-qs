@@ -17,8 +17,8 @@ TMPFILE="/tmp/$(basename $0)-$$.item"
 TITLE="First Aid Kit quickstart menu"
 
 WIDTH="45"
-HEIGHT="15"
-MENUHEIGHT="12"
+HEIGHT="18"
+MENUHEIGHT="10"
 TIMEOUT=60
 
 while [ "x$OPTION" == "x" ]; do
