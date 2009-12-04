@@ -9,8 +9,8 @@ Summary:        System Rescue Tool
 
 Group:          Applications/System
 License:        GPLv2+
-URL:            http://fedorahosted.org/firstaidkit
-Source0:        %{name}-%{version}.tar.bz2
+Url:            http://git.fedorahosted.org/git/?p=firstaidkit.git;a=snapshot;h=%{name}-%{version};sf=tgz
+Source0:        %{name}-%{version}.tar.gz
 Source3:        %{name}.desktop
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 

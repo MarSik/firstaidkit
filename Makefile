@@ -32,11 +32,11 @@ about:
 	echo "copying=$(DATADIR)/doc/$(NAME)-$(VERSION)/COPYING" >> etc/firstaidkit/about
 
 tarball:
-	git archive --format=tar --prefix=$(NAME)-$(VERSION)/ HEAD | bzip2 -f > $(NAME)-$(VERSION).tar.bz2
+	git archive --format=tar --prefix=$(NAME)-$(VERSION)/ HEAD | gzip -9 > $(NAME)-$(VERSION).tar.gz
 
 rpm-all: tarball
-	rpmbuild -ta $(NAME)-$(VERSION).tar.bz2
-	rm -f $(NAME)-$(VERSION).tar.bz2
+	rpmbuild -ta $(NAME)-$(VERSION).tar.gz
+	rm -f $(NAME)-$(VERSION).tar.gz
 
 subdirs:
 	for d in $(PLUGIN_DIRS); do make -C $(PLUGIN_PATH)/$$d build; [ $$? == 0 ] || exit 1; done
