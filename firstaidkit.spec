@@ -86,7 +86,7 @@ configuration file xorg.conf.
 
 %package plugin-grub
 Group:          Applications/System
-Summary:        FirstAidKit plugin to diagnose or repair the GRUB instalation
+Summary:        FirstAidKit plugin to diagnose or repair the GRUB installation
 Requires:       %{name} = %{version}-%{release}
 Requires:       dbus-python
 Requires:       grub
