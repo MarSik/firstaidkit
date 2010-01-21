@@ -3,13 +3,13 @@
 %define _unpackaged_files_terminate_build 0
 
 Name:           firstaidkit
-Version:        0.2.7
+Version:        0.2.8
 Release:        1%{?dist}
 Summary:        System Rescue Tool
 
 Group:          Applications/System
 License:        GPLv2+
-Url:            http://git.fedorahosted.org/git/?p=firstaidkit.git;a=snapshot;h=%{name}-%{version};sf=tgz
+Url:            http://git.fedorahosted.org/git/?p=firstaidkit.git;a=snapshot;h=%{name}-%{version}-%{release};sf=tgz
 Source0:        %{name}-%{version}.tar.gz
 Source3:        %{name}.desktop
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -17,7 +17,6 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:  desktop-file-utils
 BuildRequires:  python-devel
 BuildRequires:  python-setuptools-devel
-BuildArch:      noarch
 Requires:	newt
 
 %description
