@@ -4,7 +4,7 @@
 
 Name:           firstaidkit
 Version:        0.2.8
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        System Rescue Tool
 
 Group:          Applications/System
