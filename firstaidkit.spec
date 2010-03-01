@@ -18,15 +18,27 @@ BuildRequires:  desktop-file-utils
 BuildRequires:  python-devel
 BuildRequires:  python-setuptools-devel
 Requires:	newt
+Requires:       %{name}-engine
+Requires:       %{name}-plugin-all
 
 %description
 A tool that automates simple and common system recovery tasks.
 
 
+%package engine
+Group:          Applications/System
+Summary:        Core engine for firstaidkit
+Requires:       %{name} = %{version}-%{release}
+BuildArch:      noarch
+
+%description engine
+Base engine files needed for the firstaidkit to work
+
 %package devel
 Group:          Applications/System
 Summary:        Devel package for firstaidkit
 Requires:       %{name} = %{version}-%{release}
+BuildArch:      noarch
 
 %description devel
 Provides the examples and requires firstaidkit without plugins.
@@ -58,6 +70,7 @@ Group:          Applications/System
 Summary:        FirstAidKit GUI
 Requires:       %{name} = %{version}-%{release}
 Requires:       pygtk2, pygtk2-libglade, zenity
+BuildArch:      noarch
 
 %description gui
 This package contains the Gtk based FirstAidKit GUI
@@ -67,6 +80,7 @@ This package contains the Gtk based FirstAidKit GUI
 Group:          Applications/System
 Summary:        FirstAidKit plugin to manipulate passwd system
 Requires:       %{name} = %{version}-%{release}
+BuildArch:      noarch
 
 %description plugin-passwd
 This FirstAidKit plugin automates the recovery of the root system
@@ -77,6 +91,7 @@ password.
 Group:          Applications/System
 Summary:        FirstAidKit plugin to recover xserver configuration files
 Requires:       %{name} = %{version}-%{release}
+BuildArch:      noarch
 
 %description plugin-xserver
 This FirstAidKit plugin automates the recovery of the xserver
@@ -102,6 +117,7 @@ Group:          Applications/System
 Summary:        Firstaidkit plugin to diagnose software raid configuration file
 Requires:       %{name} = %{version}-%{release}
 Requires:       mdadm
+BuildArch:      noarch
 
 %description plugin-mdadm-conf
 This plugin will assess the validity and existence of the mdadm.conf file.
@@ -112,6 +128,7 @@ Group:          Applications/System
 Summary:        Firstaidkit plugin to recover key encryption keys
 Requires:       %{name} = %{version}-%{release}
 Requires:       python-volume_key, python-nss
+BuildArch:      noarch
 
 %description plugin-key-recovery
 This plugin helps recover encryption keys using a previously created escrow
@@ -122,6 +139,7 @@ packet.
 #Summary:        FirstAidKit plugin to diagnose or repair the RPM packaging system
 #Requires:       %{name} = %{version}-%{release}
 #Requires:       rpm, rpm-python
+#BuildArch:      noarch
 #
 #%description plugin-rpm
 #This FirstAidKit plugin automates the tasks related to RPM problems.
@@ -158,96 +176,107 @@ packet.
 %{__install} -p doc/firstaidkit-plugin.1 doc/firstaidkit.1 $RPM_BUILD_ROOT%{_mandir}/man1
 %{__install} -p COPYING $RPM_BUILD_ROOT%{_datadir}/doc/%name-%version/COPYING
 
-#examples
-%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/examples
-%{__mv} -f plugins/plugin_examples $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/examples
-
 #configuration
 %{__install} -d $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
 %{__install} -p etc/firstaidkit/firstaidkit.conf $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
 %{__install} -p etc/firstaidkit/about $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
 
 #gui
-%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend
-%{__install} -p frontend/*.py  $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend/
-%{__install} -p frontend/*.glade  $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend/
-%{__install} -p frontend/*.gladep  $RPM_BUILD_ROOT%{_libdir}/firstaidkit/frontend/
+%{__install} -d $RPM_BUILD_ROOT/usr/lib/firstaidkit/frontend
+%{__install} -p frontend/*.py  $RPM_BUILD_ROOT/usr/lib/firstaidkit/frontend/
+%{__install} -p frontend/*.glade  $RPM_BUILD_ROOT/usr/lib/firstaidkit/frontend/
+%{__install} -p frontend/*.gladep  $RPM_BUILD_ROOT/usr/lib/firstaidkit/frontend/
 desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applications %{SOURCE3}
 
-#plugins
-%{__cp} -f plugins/passwd.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
-%{__cp} -f plugins/xserver.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
+#examples
+%{__install} -d $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/examples
+%{__mv} -f plugins/plugin_examples $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/examples
+
+#plugins arch independent and dependent
+%{__install} -d $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins
+%{__install} -d $RPM_BUILD_ROOT%{libdir}/firstaidkit/plugins
+
+%{__cp} -f plugins/passwd.py $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/
+%{__cp} -f plugins/xserver.py $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
 %{__cp} -f plugins/grub/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
-%{__cp} -f plugins/mdadm_conf.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
-%{__cp} -f plugins/key_recovery.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/
+%{__cp} -f plugins/mdadm_conf.py $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/
+%{__cp} -f plugins/key_recovery.py $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/
+
 #%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts
 #%{__cp} -f plugins/undelparts/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts/
-#%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm
-#%{__cp} -f plugins/rpm/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm/
-#%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm_lowlevel
-#%{__cp} -f plugins/rpm_lowlevel/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/rpm_lowlevel/
+#%{__install} -d $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/rpm
+#%{__cp} -f plugins/rpm/*.py $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/rpm/
+#%{__install} -d $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/rpm_lowlevel
+#%{__cp} -f plugins/rpm_lowlevel/*.py $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/rpm_lowlevel/
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
+%dir %{_libdir}/firstaidkit
+%dir %{_libdir}/firstaidkit/plugins
+%dir /usr/lib/firstaidkit
+%dir /usr/lib/firstaidkit/plugins
+
+%files engine
+%config %{_sysconfdir}/firstaidkit/about
 # For noarch packages: sitelib
 %{python_sitelib}/pyfirstaidkit
 %{python_sitelib}/%{name}-%{version}-py?.?.egg-info
 %{_bindir}/firstaidkit
 %{_bindir}/firstaidkit-qs
-%dir %{_bindir}/firstaidkit
 %{_bindir}/firstaidkitrevert
 %config(noreplace) %{_sysconfdir}/firstaidkit/firstaidkit.conf
-%config(noreplace) %{_sysconfdir}/firstaidkit/about
 %attr(0644,root,root) %{_mandir}/man1/firstaidkit.1.gz
 %attr(0644,root,root) %{_datadir}/doc/%name-%version/COPYING
-%dir %{_libdir}/firstaidkit
-%dir %{_libdir}/firstaidkit/plugins
 %dir %{_datadir}/doc/%name-%version
 
 %files gui
-%{_libdir}/firstaidkit/frontend/*.py*
-%{_libdir}/firstaidkit/frontend/*.glade
-%{_libdir}/firstaidkit/frontend/*.gladep
+/usr/lib/firstaidkit/frontend/*.py*
+/usr/lib/firstaidkit/frontend/*.glade
+/usr/lib/firstaidkit/frontend/*.gladep
 %{_datadir}/applications/*.desktop
-%dir %{_libdir}/firstaidkit/frontend
+%dir /usr/lib/firstaidkit/frontend
 
 %files devel
-%{_libdir}/firstaidkit/plugins/examples
+/usr/lib/firstaidkit/plugins/examples
 %attr(0644,root,root) %{_mandir}/man1/firstaidkit-plugin.1.gz
 
 %files plugin-all
 
 %files plugin-passwd
-%{_libdir}/firstaidkit/plugins/passwd.py*
+/usr/lib/firstaidkit/plugins/passwd.py*
 
 %files plugin-xserver
-%{_libdir}/firstaidkit/plugins/xserver.py*
+/usr/lib/firstaidkit/plugins/xserver.py*
 
 %ifnarch s390 s390x ppc64 ppc sparc
 %files plugin-grub
 %{_libdir}/firstaidkit/plugins/grub/*
-%dir %{_libdir}/firstaidkit/plugins/grub/*
+%dir %{_libdir}/firstaidkit/plugins/grub
 %endif
 
 %files plugin-mdadm-conf
-%{_libdir}/firstaidkit/plugins/mdadm_conf.py*
+/usr/lib/firstaidkit/plugins/mdadm_conf.py*
 
 %files plugin-key-recovery
-%{_libdir}/firstaidkit/plugins/key_recovery.py*
+/usr/lib/firstaidkit/plugins/key_recovery.py*
 
 #%files plugin-undelete-partitions
 #%{_libdir}/firstaidkit/plugins/undelparts/*.py*
 #%{_libdir}/firstaidkit/plugins/undelparts/*.so
 #
 #%files plugin-rpm
-#%{_libdir}/firstaidkit/plugins/rpm_lowlevel/*
+#/usr/lib/firstaidkit/plugins/rpm_lowlevel/*
 #
 
 %changelog
+* Mon Mar 01 2010 Martin Sivak <msivak@redhat.com> - 0.2.9-1
+- Make most of the subpackages arch independent as they
+  contain only python code
+
 * Thu Jan 21 2010 Martin Sivak <msivak@redhat.com> - 0.2.8-6
 - use ifnarch for ackages section too
   Related: rhbz#557202
