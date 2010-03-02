@@ -17,9 +17,8 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:  desktop-file-utils
 BuildRequires:  python-devel
 BuildRequires:  python-setuptools-devel
-Requires:	newt
+Requires:       newt
 Requires:       %{name}-engine
-Requires:       %{name}-plugin-all
 
 %description
 A tool that automates simple and common system recovery tasks.
@@ -182,33 +181,33 @@ packet.
 %{__install} -p etc/firstaidkit/about $RPM_BUILD_ROOT%{_sysconfdir}/firstaidkit
 
 #gui
-%{__install} -d $RPM_BUILD_ROOT/usr/lib/firstaidkit/frontend
-%{__install} -p frontend/*.py  $RPM_BUILD_ROOT/usr/lib/firstaidkit/frontend/
-%{__install} -p frontend/*.glade  $RPM_BUILD_ROOT/usr/lib/firstaidkit/frontend/
-%{__install} -p frontend/*.gladep  $RPM_BUILD_ROOT/usr/lib/firstaidkit/frontend/
+%{__install} -d $RPM_BUILD_ROOT/usr/share/firstaidkit/frontend
+%{__install} -p frontend/*.py  $RPM_BUILD_ROOT/usr/share/firstaidkit/frontend/
+%{__install} -p frontend/*.glade  $RPM_BUILD_ROOT/usr/share/firstaidkit/frontend/
+%{__install} -p frontend/*.gladep  $RPM_BUILD_ROOT/usr/share/firstaidkit/frontend/
 desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applications %{SOURCE3}
 
 #examples
-%{__install} -d $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/examples
-%{__mv} -f plugins/plugin_examples $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/examples
+%{__install} -d $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/examples
+%{__mv} -f plugins/plugin_examples $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/examples
 
 #plugins arch independent and dependent
-%{__install} -d $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins
+%{__install} -d $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins
 %{__install} -d $RPM_BUILD_ROOT%{libdir}/firstaidkit/plugins
 
-%{__cp} -f plugins/passwd.py $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/
-%{__cp} -f plugins/xserver.py $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/
+%{__cp} -f plugins/passwd.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
+%{__cp} -f plugins/xserver.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
 %{__cp} -f plugins/grub/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
-%{__cp} -f plugins/mdadm_conf.py $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/
-%{__cp} -f plugins/key_recovery.py $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/
+%{__cp} -f plugins/mdadm_conf.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
+%{__cp} -f plugins/key_recovery.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
 
 #%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts
 #%{__cp} -f plugins/undelparts/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts/
-#%{__install} -d $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/rpm
-#%{__cp} -f plugins/rpm/*.py $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/rpm/
-#%{__install} -d $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/rpm_lowlevel
-#%{__cp} -f plugins/rpm_lowlevel/*.py $RPM_BUILD_ROOT/usr/lib/firstaidkit/plugins/rpm_lowlevel/
+#%{__install} -d $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/rpm
+#%{__cp} -f plugins/rpm/*.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/rpm/
+#%{__install} -d $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/rpm_lowlevel
+#%{__cp} -f plugins/rpm_lowlevel/*.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/rpm_lowlevel/
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -217,10 +216,11 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %defattr(-,root,root,-)
 %dir %{_libdir}/firstaidkit
 %dir %{_libdir}/firstaidkit/plugins
-%dir /usr/lib/firstaidkit
-%dir /usr/lib/firstaidkit/plugins
+%dir /usr/share/firstaidkit
+%dir /usr/share/firstaidkit/plugins
 
 %files engine
+%defattr(-,root,root,-)
 %config %{_sysconfdir}/firstaidkit/about
 # For noarch packages: sitelib
 %{python_sitelib}/pyfirstaidkit
@@ -234,42 +234,52 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %dir %{_datadir}/doc/%name-%version
 
 %files gui
-/usr/lib/firstaidkit/frontend/*.py*
-/usr/lib/firstaidkit/frontend/*.glade
-/usr/lib/firstaidkit/frontend/*.gladep
+%defattr(-,root,root,-)
+/usr/share/firstaidkit/frontend/*.py*
+/usr/share/firstaidkit/frontend/*.glade
+/usr/share/firstaidkit/frontend/*.gladep
 %{_datadir}/applications/*.desktop
-%dir /usr/lib/firstaidkit/frontend
+%dir /usr/share/firstaidkit/frontend
 
 %files devel
-/usr/lib/firstaidkit/plugins/examples
+%defattr(-,root,root,-)
+/usr/share/firstaidkit/plugins/examples
 %attr(0644,root,root) %{_mandir}/man1/firstaidkit-plugin.1.gz
 
 %files plugin-all
+%defattr(-,root,root,-)
 
 %files plugin-passwd
-/usr/lib/firstaidkit/plugins/passwd.py*
+%defattr(-,root,root,-)
+/usr/share/firstaidkit/plugins/passwd.py*
 
 %files plugin-xserver
-/usr/lib/firstaidkit/plugins/xserver.py*
+%defattr(-,root,root,-)
+/usr/share/firstaidkit/plugins/xserver.py*
 
 %ifnarch s390 s390x ppc64 ppc sparc
 %files plugin-grub
+%defattr(-,root,root,-)
 %{_libdir}/firstaidkit/plugins/grub/*
 %dir %{_libdir}/firstaidkit/plugins/grub
 %endif
 
 %files plugin-mdadm-conf
-/usr/lib/firstaidkit/plugins/mdadm_conf.py*
+%defattr(-,root,root,-)
+/usr/share/firstaidkit/plugins/mdadm_conf.py*
 
 %files plugin-key-recovery
-/usr/lib/firstaidkit/plugins/key_recovery.py*
+%defattr(-,root,root,-)
+/usr/share/firstaidkit/plugins/key_recovery.py*
 
 #%files plugin-undelete-partitions
+#%defattr(-,root,root,-)
 #%{_libdir}/firstaidkit/plugins/undelparts/*.py*
 #%{_libdir}/firstaidkit/plugins/undelparts/*.so
 #
 #%files plugin-rpm
-#/usr/lib/firstaidkit/plugins/rpm_lowlevel/*
+#%defattr(-,root,root,-)
+#/usr/share/firstaidkit/plugins/rpm_lowlevel/*
 #
 
 %changelog
