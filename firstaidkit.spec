@@ -283,6 +283,10 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 #
 
 %changelog
+* Tue Mar 02 2010 Martin Sivak <msivak@redhat.com> - 0.2.10-1
+- Change placement of architecture independent files
+  Related: rhbz#510346
+
 * Mon Mar 01 2010 Martin Sivak <msivak@redhat.com> - 0.2.9-1
 - Make most of the subpackages arch independent as they
   contain only python code
