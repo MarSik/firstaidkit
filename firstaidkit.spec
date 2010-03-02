@@ -276,6 +276,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 * Mon Mar 01 2010 Martin Sivak <msivak@redhat.com> - 0.2.9-1
 - Make most of the subpackages arch independent as they
   contain only python code
+  Related: rhbz#557202
 
 * Thu Jan 21 2010 Martin Sivak <msivak@redhat.com> - 0.2.8-6
 - use ifnarch for ackages section too
