@@ -1,6 +1,7 @@
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 #I don't want the unpackaged file check
 %define _unpackaged_files_terminate_build 0
+%define debug_package %{nil}
 
 Name:           firstaidkit
 Version:        0.2.10
