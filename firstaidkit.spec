@@ -1,16 +1,23 @@
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
-#I don't want the unpackaged file check
+# I don't want the unpackaged file check
 %define _unpackaged_files_terminate_build 0
 %define debug_package %{nil}
 
 Name:           firstaidkit
 Version:        0.2.10
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        System Rescue Tool
 
 Group:          Applications/System
 License:        GPLv2+
-Url:            http://git.fedorahosted.org/git/?p=firstaidkit.git;a=snapshot;h=%{name}-%{version}-%{release};sf=tgz
+Url:            http://firstaidkit.fedorahosted.org
+
+# Get the source from:
+#
+# http://git.fedorahosted.org/git/?p=firstaidkit.git;a=snapshot;h=%{name}-%{version}-%{release};sf=tgz
+#  or
+# git clone git://git.fedorahosted.org/firstaidkit.git && make tarball
+
 Source0:        %{name}-%{version}.tar.gz
 Source3:        %{name}.desktop
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -134,27 +141,6 @@ BuildArch:      noarch
 This plugin helps recover encryption keys using a previously created escrow
 packet.
 
-#%package plugin-rpm
-#Group:          Applications/System
-#Summary:        FirstAidKit plugin to diagnose or repair the RPM packaging system
-#Requires:       %{name} = %{version}-%{release}
-#Requires:       rpm, rpm-python
-#BuildArch:      noarch
-#
-#%description plugin-rpm
-#This FirstAidKit plugin automates the tasks related to RPM problems.
-#For example: corrupted database or important system packages missing.
-#
-#%package plugin-undelete-partitions
-#Group:          Applications/System
-#Summary:        FirstAidKit plugin to recover erased partitions
-#BuildRequires:  python-devel, parted-devel, pkgconfig
-#Requires:       %{name} = %{version}-%{release}
-#Requires:       parted
-#
-#%description plugin-undelete-partitions
-#This FirstAidKit plugin automates the recovery of erased partitions.
-
 
 %prep
 %setup -q
@@ -202,13 +188,6 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %{__cp} -f plugins/grub/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
 %{__cp} -f plugins/mdadm_conf.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
 %{__cp} -f plugins/key_recovery.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
-
-#%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts
-#%{__cp} -f plugins/undelparts/{*.py,_undelpart.so} $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/undelparts/
-#%{__install} -d $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/rpm
-#%{__cp} -f plugins/rpm/*.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/rpm/
-#%{__install} -d $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/rpm_lowlevel
-#%{__cp} -f plugins/rpm_lowlevel/*.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/rpm_lowlevel/
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -273,17 +252,11 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %defattr(-,root,root,-)
 /usr/share/firstaidkit/plugins/key_recovery.py*
 
-#%files plugin-undelete-partitions
-#%defattr(-,root,root,-)
-#%{_libdir}/firstaidkit/plugins/undelparts/*.py*
-#%{_libdir}/firstaidkit/plugins/undelparts/*.so
-#
-#%files plugin-rpm
-#%defattr(-,root,root,-)
-#/usr/share/firstaidkit/plugins/rpm_lowlevel/*
-#
 
 %changelog
+* Mon Mar 29 2010 Martin Sivak <msivak@redhat.com> - 0.2.10-2
+- Spec file cleanup
+
 * Tue Mar 02 2010 Martin Sivak <msivak@redhat.com> - 0.2.10-1
 - Change placement of architecture independent files
   Related: rhbz#510346
@@ -424,4 +397,4 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 * Wed Jan 02 2008 Joel Granados <jgranado@redhat.com> 0.1.0-1
 - Initial spec
-%{_libdir}/firstaidkit/plugins/rpm/*
+- {_libdir}/firstaidkit/plugins/rpm/*
