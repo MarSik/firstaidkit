@@ -4,8 +4,8 @@
 %define debug_package %{nil}
 
 Name:           firstaidkit
-Version:        0.2.10
-Release:        2%{?dist}
+Version:        0.2.11
+Release:        1%{?dist}
 Summary:        System Rescue Tool
 
 Group:          Applications/System
@@ -254,6 +254,11 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Tue Mar 30 2010 Martin Sivak <msivak@redhat.com> - 0.2.11-1
+- Add missing files to configuration and docs
+- Use full sized buttons in text-mode firstaidkit-qs
+  Resolves: rhbz#576110
+
 * Mon Mar 29 2010 Martin Sivak <msivak@redhat.com> - 0.2.10-2
 - Spec file cleanup
 
