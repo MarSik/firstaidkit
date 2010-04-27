@@ -335,6 +335,10 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 - Use full sized buttons in text-mode firstaidkit-qs
   Resolves: rhbz#576110
 
+* Mon Apr 27 2010 Martin Sivak <msivak@redhat.com> - 0.2.10-3
+- Do not build debuginfo
+  Related: rhbz#564482
+
 * Mon Mar 29 2010 Martin Sivak <msivak@redhat.com> - 0.2.10-2
 - Spec file cleanup
 
