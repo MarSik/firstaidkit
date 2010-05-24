@@ -5,7 +5,7 @@
 
 Name:           firstaidkit
 Version:        0.2.11
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        System Rescue Tool
 
 Group:          Applications/System
@@ -172,6 +172,8 @@ packet.
 %{__install} -p frontend/*.py  $RPM_BUILD_ROOT/usr/share/firstaidkit/frontend/
 %{__install} -p frontend/*.glade  $RPM_BUILD_ROOT/usr/share/firstaidkit/frontend/
 %{__install} -p frontend/*.gladep  $RPM_BUILD_ROOT/usr/share/firstaidkit/frontend/
+%{__install} -d $RPM_BUILD_ROOT/usr/share/icons
+%{__install} -p images/FAK-bandaid.png $RPM_BUILD_ROOT/usr/share/icons/firstaidkit.png
 desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applications %{SOURCE3}
 
 #examples
@@ -218,6 +220,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 /usr/share/firstaidkit/frontend/*.py*
 /usr/share/firstaidkit/frontend/*.glade
 /usr/share/firstaidkit/frontend/*.gladep
+/usr/share/icons/*.png
 %{_datadir}/applications/*.desktop
 %dir /usr/share/firstaidkit/frontend
 
@@ -254,6 +257,10 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Mon May 22 2010 Martin Sivak <msivak@redhat.com> - 0.2.11-2
+- Add menu icon
+  Resolves: rhbz#587903
+
 * Tue Mar 30 2010 Martin Sivak <msivak@redhat.com> - 0.2.11-1
 - Add missing files to configuration and docs
 - Use full sized buttons in text-mode firstaidkit-qs

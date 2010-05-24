@@ -7,4 +7,4 @@ Exec=firstaidkit -g gtk
 Comment=System rescue and recovery tool
 Categories=System;
 Terminal=false
-
+Icon=firstaidkit
