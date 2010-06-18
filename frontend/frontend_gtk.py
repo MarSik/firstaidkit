@@ -123,51 +123,6 @@ class CallbacksMainWindow(object):
                 dir = os.path.dirname(self._glade.relative_file(".")))
         return True
 
-    #simple mode callbacks
-    def on_b_StartSimple_activate(self, widget, *args):
-        print("on_b_StartSimple_activate")
-
-        flags = set(self._cfg.operation._list("flags"))
-
-        #check fix
-        if self._glade.get_widget("check_Simple_Fix").get_active():
-            self._cfg.operation.mode = "auto-flow"
-            self._cfg.operation.flow = "fix"
-        else:
-            self._cfg.operation.mode = "auto-flow"
-            self._cfg.operation.flow = "diagnose"
-
-        #check interactive
-        if self._glade.get_widget("check_Simple_Interactive").get_active():
-            self._cfg.operation.interactive = "True"
-        else:
-            self._cfg.operation.interactive = "False"
-
-        #check verbose
-        if self._glade.get_widget("check_Simple_Verbose").get_active():
-            self._cfg.operation.verbose = "True"
-        else:
-            self._cfg.operation.verbose = "False"
-
-        #check experimental
-        if self._glade.get_widget("check_Simple_Experimental").get_active():
-            flags.add("experimental")
-        else:
-            try:
-                flags.remove("experimental")
-            except KeyError, e:
-                pass
-        
-        #reset params
-        if self._cfg.has_section("plugin-args"):
-            self._cfg.remove_section("plugin-args")
-        self._cfg.add_section("plugin-args")
-
-        self._cfg.operation.flags = " ".join(
-                map(lambda x: x.encode("string-escape"), flags))
-        self.execute()
-        return True
-
     #advanced mode callbacks
     def on_b_StartAdvanced_activate(self, widget, *args):
         print("on_b_StartAdvanced_activate")
@@ -204,10 +159,10 @@ class CallbacksMainWindow(object):
             self._cfg.operation.interactive = "False"
 
         #check dependency
-        if self._glade.get_widget("check_Advanced_Dependency").get_active():
-            self._cfg.operation.dependencies = "True"
-        else:
+        if self._glade.get_widget("check_Advanced_NoDependency").get_active():
             self._cfg.operation.dependencies = "False"
+        else:
+            self._cfg.operation.dependencies = "True"
 
         self._cfg.operation.flags = " ".join(
                 map(lambda x: x.encode("string-escape"), flags))
@@ -259,10 +214,10 @@ class CallbacksMainWindow(object):
             self._cfg.operation.interactive = "False"
 
         #check dependency
-        if self._glade.get_widget("check_Expert_Dependency").get_active():
-            self._cfg.operation.dependencies = "True"
-        else:
+        if self._glade.get_widget("check_Expert_NoDependency").get_active():
             self._cfg.operation.dependencies = "False"
+        else:
+            self._cfg.operation.dependencies = "True"
 
         #get the plugin & flow list
         plugins = []
@@ -469,16 +424,16 @@ class MainWindow(object):
                 self.flow_list_data.add(n)
 
         self.flow_list_rend_text = gtk.CellRendererText()
-        self.flow_list_store = gtk.ListStore(gobject.TYPE_STRING)
+        self.flow_list_store = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_STRING)
         self.flow_list_store_diagnose = -1
         for idx,n in enumerate(sorted(self.flow_list_data)):
-            self.flow_list_store.append([n])
+            self.flow_list_store.append([n, n])
             if n=="diagnose":
                 self.flow_list_store_diagnose = idx
         self.flow_list = self._glade.get_widget("combo_Advanced_Flows")
         self.flow_list.set_model(self.flow_list_store)
         self.flow_list.pack_start(self.flow_list_rend_text, True)
-        self.flow_list.add_attribute(self.flow_list_rend_text, 'text', 0)
+        self.flow_list.add_attribute(self.flow_list_rend_text, 'text', 1)
         self.flow_list.set_active(self.flow_list_store_diagnose)
 
         # results
