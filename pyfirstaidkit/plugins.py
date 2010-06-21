@@ -110,7 +110,7 @@ class Plugin(object):
 
     default_flow = "diagnose"
 
-    def __init__(self, flow, reporting, dependencies, path = None,
+    def __init__(self, flow, reporting, dependencies, interpret = None, path = None,
             backups = None, info = None, args = None):
         """ Initialize the instance.
 
@@ -129,6 +129,7 @@ class Plugin(object):
         self._backups = backups
         self._info = info
         self._args = args
+        self._interpret = interpret
 
         self.provide = dependencies.provide
         self.unprovide = dependencies.unprovide
@@ -148,6 +149,12 @@ class Plugin(object):
         # Choose the flow for the instance.
         #
         self.defineFlow(flow)
+
+    def continuing(self):
+        if self._interpret:
+            return self._interpret.continuing()
+        else:
+            return True
 
     def call(self, step):
         """call one step from plugin"""
@@ -471,12 +478,13 @@ class PluginSystem(object):
 
     name = "Plugin System"
 
-    def __init__(self, reporting, dependencies, config=Config, backups=None):
+    def __init__(self, interpret, reporting, dependencies, config=Config, backups=None):
         self._paths = Config.paths.valueItems()
         self._backups = backups
         self._reporting = reporting
         self._reporting.start(level = PLUGINSYSTEM, origin = self)
         self._deps = dependencies
+        self._interpret = interpret
         self._plugins = {}
 
         for path in self._paths:
@@ -624,7 +632,7 @@ class PluginSystem(object):
 
         infosection = getattr(Info, plugin)
         infosection.unlock()
-        p = pklass(flowName, reporting = self._reporting,
+        p = pklass(flowName, interpret = self._interpret, reporting = self._reporting,
                 dependencies = self._deps, backups = self._backups,
                 path = plugindir, info = infosection, args = " ".join(args))
         for (step, rv) in p: #autorun all the needed steps

@@ -28,6 +28,11 @@ class DialoguePlugin(Plugin):
     name = "DialoguePlugin"
     version = "0.0.1"
     author = "Miloslav Trmač"
+
+    @classmethod
+    def getDeps(cls):
+        return set(["experimental", "broken"])
+
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
         self._issue = SimpleIssue(self.name, self.description)

@@ -58,7 +58,7 @@ class Tasker:
             self._backups = backups
 
         if pluginsystem is None:
-            self.pluginSystem = PluginSystem(reporting = self._reporting,
+            self.pluginSystem = PluginSystem(interpret = self, reporting = self._reporting,
                     dependencies = self._provide, backups = self._backups)
         else:
             self.pluginSystem = pluginsystem
@@ -68,6 +68,9 @@ class Tasker:
         self._reporting.info("You sent an interrupt signal to "
                 "Tasker! This is not recommended.", level = TASKER,
                 origin = self, importance = logging.WARNING)
+
+    def continuing(self):
+        return self._running
 
     def flags(self):
         return self._provide
@@ -131,6 +134,10 @@ class Tasker:
                 oldlist = copy.copy(actlist)
 
                 for plugin,flow in oldlist:
+                    #If interruption was requested, stop
+                    if not self._running:
+                        break
+                    
                     #If plugin does not contain the automated flow or if
                     #it ran correctly, remove it from list
                     if ((flow and
@@ -152,10 +159,11 @@ class Tasker:
                         actlist.remove((plugin, flow))
 
             #some plugins may not be called because of unfavorable flags
-            for plugin in set(map(lambda x: x[0], actlist)):
-                self._reporting.info("Plugin %s was not called because of "
-                        "unsatisfied dependencies"% (plugin,), level = TASKER, \
-                        origin = self, importance = logging.WARNING)
+            if self._running:
+                for plugin in set(map(lambda x: x[0], actlist)):
+                    self._reporting.info("Plugin %s was not called because of "
+                                         "unsatisfied dependencies"% (plugin,), level = TASKER, \
+                                         origin = self, importance = logging.WARNING)
 
         # For the flags case
         elif self._config.operation.mode == "flags":

@@ -46,13 +46,11 @@ class CallbacksMainWindow(object):
         def _o(pages, stopbutton):
             """Always return False -> remove from the idle queue after first
             execution"""
-            gtk.gdk.threads_enter()
-            try:
-                for i in range(pages.get_n_pages()):
-                    pages.get_nth_page(i).set_sensitive(True)
-                stopbutton.set_sensitive(False)
-            finally:
-                gtk.gdk.threads_leave()
+            
+            for i in range(pages.get_n_pages()):
+                pages.get_nth_page(i).set_sensitive(True)
+            stopbutton.set_sensitive(False)
+            
             return False
 
         def worker(*args):
@@ -444,19 +442,23 @@ class MainWindow(object):
         self.result_list_iter = {}
 
         def result_rend_text_func(column, cell_renderer, tree_model, iter,
-                user_data):
+                (use_state_fg, use_state_bg, col)):
             colors = [
-                    gtk.gdk.Color(red=50000, green=50000, blue=50000),
-                    gtk.gdk.Color(red=10000, green=50000, blue=10000),
-                    gtk.gdk.Color(red=50000, green=10000, blue=10000),
-                    gtk.gdk.Color(red=30000, green=45000, blue=65500)
+                    None,
+                    gtk.gdk.Color(red=40000, green=62000, blue=40000),
+                    gtk.gdk.Color(red=62000, green=40000, blue=40000),
+                    gtk.gdk.Color(red=50000, green=55000, blue=65500)
                     ]
+
             state = tree_model.get_value(iter, 3)
 
-            cell_renderer.set_property("cell-background-set", True)
-            cell_renderer.set_property("cell-background-gdk", colors[state])
+            if colors[state] and use_state_bg:
+                cell_renderer.set_property("cell-background-set", True)
+                cell_renderer.set_property("cell-background-gdk", colors[state])
+            else:
+                cell_renderer.set_property("cell-background-set", False)
 
-            if user_data==2 and state!=2:
+            if use_state_fg and state!=2:
                 cell_renderer.set_property("foreground-set", True)
                 cell_renderer.set_property("foreground-gdk",
                         gtk.gdk.Color(red=40000, green=40000, blue=40000))
@@ -464,7 +466,7 @@ class MainWindow(object):
                 cell_renderer.set_property("foreground-set", False)
 
             cell_renderer.set_property("text",
-                    tree_model.get_value(iter, user_data))
+                    tree_model.get_value(iter, col))
             return
 
         self.result_rend_text = gtk.CellRendererText()
@@ -472,17 +474,17 @@ class MainWindow(object):
         self.result_list_col_0 = gtk.TreeViewColumn('Name')
         self.result_list_col_0.pack_start(self.result_rend_text, True)
         self.result_list_col_0.set_cell_data_func(self.result_rend_text,
-                result_rend_text_func, 0)
+                result_rend_text_func, (False, False, 0))
 
         self.result_list_col_1 = gtk.TreeViewColumn('Status')
         self.result_list_col_1.pack_start(self.result_rend_text, True)
         self.result_list_col_1.set_cell_data_func(self.result_rend_text,
-                result_rend_text_func, 1)
+                result_rend_text_func, (False, True, 1))
 
         self.result_list_col_2 = gtk.TreeViewColumn('Description')
         self.result_list_col_2.pack_start(self.result_rend_text, True)
         self.result_list_col_2.set_cell_data_func(self.result_rend_text,
-                result_rend_text_func, 2)
+                result_rend_text_func, (True, False, 2))
 
         self.result_list_col_3 = gtk.TreeViewColumn('Status ID')
         self.result_list_col_3.pack_start(self.result_rend_text, True)
@@ -499,11 +501,8 @@ class MainWindow(object):
         def _o(func, *args, **kwargs):
             """Always return False -> remove from the idle queue after first
             execution"""
-            try:
-                gtk.gdk.threads_enter()
-                func(*args, **kwargs)
-            finally:
-                gtk.gdk.threads_leave()
+
+            func(*args, **kwargs)
             return False
 
         def issue_state(self):
