@@ -20,6 +20,7 @@ from pyfirstaidkit.reporting import PLUGIN
 from pyfirstaidkit.returns import *
 from pyfirstaidkit.issue import SimpleIssue
 import openscap
+import time
 
 class OpenSCAPPlugin(Plugin):
     """Performs security audit according to the SCAP policy"""
@@ -29,14 +30,21 @@ class OpenSCAPPlugin(Plugin):
 
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
+        #self._oval = "/home/msivak/Downloads/scap-rhel5-oval.xml"
         self._oval = "/usr/share/openscap/scap-fedora12-oval.xml"
         self._issues = {}
     
     def prepare(self):
         self._model = openscap.oval_definition_model_import(self._oval)
-        self._session = openscap.oval_agent_new_session(self._model)
-        self._reporting.info("OpenSCAP initialized", origin = self, level = PLUGIN)
-        self._result=ReturnSuccess
+        if self._model:
+            self._session = openscap.oval_agent_new_session(self._model)
+            
+        if self._model is None or self._session is None:
+            self._result=ReturnFailure
+            self._reporting.error("OpenSCAP failed to load definition", origin = self, level = PLUGIN)
+        else:
+            self._result=ReturnSuccess
+            self._reporting.info("OpenSCAP initialized", origin = self, level = PLUGIN)
 
     def backup(self):
         self._result=ReturnSuccess
@@ -44,27 +52,31 @@ class OpenSCAPPlugin(Plugin):
     def restore(self):
         self._result=ReturnSuccess
 
-    def oscap_callback(Id, Result, Plugin):
-        Issue = Plugin._issues.get(Id, None)
-        if Issue is None:
-            title = openscap.oval_definition_get_title(Plugin._model, Id)
-            description = openscap.oval_definition_get_description(Plugin._model, Id)
-            Issue = SimpleIssue(Id, title)
-            Issue.set(reporting  = Plugin._reporting, origin = Plugin, level = PLUGIN)
-            Plugin._issues[Id] = Issue
+    def oscap_callback(self, Id, Result, Plugin):
+        try:
+            Issue = Plugin._issues.get(Id, None)
+            if Issue is None:
+                definition = openscap.oval_definition_model_get_definition(Plugin._model, Id)
+                title = openscap.oval_definition_get_title(definition)
+                description = openscap.oval_definition_get_description(definition)
+                Issue = SimpleIssue(Id, title)
+                Issue.set(reporting  = Plugin._reporting, origin = Plugin, level = PLUGIN)
+                Plugin._issues[Id] = Issue
+                
+                Issue.set(checked = (Result in (openscap.OVAL_RESULT_FALSE, openscap.OVAL_RESULT_TRUE)),
+                                happened = (Result == openscap.OVAL_RESULT_FALSE),
+                                fixed = False,
+                                reporting  = Plugin._reporting,
+                                origin = Plugin,
+                                level = PLUGIN)
+        except Exception, e:
+            print e
 
-        self._issue.set(checked = (Result in (openscap.OVAL_RESULT_FALSE, openscap.OVAL_RESULT_TRUE)),
-                        happened = (Result == openscap.OVAL_RESULT_FALSE),
-                        fixed = False,
-                        reporting  = self._reporting,
-                        origin = self,
-                        level = PLUGIN)
+        return Plugin.continuing()
 
     def diagnose(self):
-        self._result=ReturnSuccess
         openscap.oval_agent_eval_system_py(self._session, self.oscap_callback, self)
-        
-        self._issue.set(checked = True, happened = False, reporting  = self._reporting, origin = self, level = PLUGIN)
+        self._result=ReturnSuccess
         
     def fix(self):
         self._result=ReturnFailure
