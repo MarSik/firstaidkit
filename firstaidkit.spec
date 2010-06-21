@@ -57,6 +57,7 @@ Summary:        All firstaidkit plugins, and the gui
 Requires:       %{name} = %{version}-%{release}
 Requires:       %{name}-plugin-passwd
 Requires:       %{name}-plugin-xserver
+Requires:       %{name}-plugin-openscap
 %ifnarch s390 s390x ppc64 ppc sparc
 Requires:       %{name}-plugin-grub
 %endif
@@ -92,6 +93,16 @@ BuildArch:      noarch
 %description plugin-passwd
 This FirstAidKit plugin automates the recovery of the root system
 password.
+
+%package plugin-openscap
+Group:          Applications/System
+Summary:        OpenSCAP plugin for FirstAidKit
+Requires:       %{name} = %{version}-%{release}
+Requires:       openscap >= 0.5.12-1
+BuildArch:      noarch
+
+%description plugin-openscap
+This FirstAidKit plugin interfaces the OpenSCAP library, which can be used to perform a security/configuration audit of running machine.
 
 
 %package plugin-xserver
@@ -185,6 +196,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %{__install} -d $RPM_BUILD_ROOT%{libdir}/firstaidkit/plugins
 
 %{__cp} -f plugins/passwd.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
+%{__cp} -f plugins/openscap_plugin.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
 %{__cp} -f plugins/xserver.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
 %{__cp} -f plugins/grub/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
@@ -235,6 +247,10 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %files plugin-passwd
 %defattr(-,root,root,-)
 /usr/share/firstaidkit/plugins/passwd.py*
+
+%files plugin-openscap
+%defattr(-,root,root,-)
+/usr/share/firstaidkit/plugins/openscap_plugin.py*
 
 %files plugin-xserver
 %defattr(-,root,root,-)
