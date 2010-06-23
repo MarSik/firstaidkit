@@ -29,10 +29,6 @@ class DialoguePlugin(Plugin):
     version = "0.0.1"
     author = "Miloslav Trmač"
 
-    @classmethod
-    def getDeps(cls):
-        return set(["experimental", "broken"])
-
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
         self._issue = SimpleIssue(self.name, self.description)
@@ -50,9 +46,6 @@ class DialoguePlugin(Plugin):
 
     def diagnose(self):
         self._result=ReturnSuccess
-        self._issue.set(checked = True, happened = False,
-                        reporting = self._reporting, origin = self,
-                        level = PLUGIN)
         self._reporting.info("DialoguePlugin in diagnose task", origin = self,
                              level = PLUGIN)
         tea = self._reporting.choice_question_wait \
@@ -83,6 +76,10 @@ class DialoguePlugin(Plugin):
                                                    level = PLUGIN)
         self._reporting.info("File name: %s" % repr(s), origin = self,
                              level = PLUGIN)
+        self._issue.set(checked = True, happened = False,
+                        reporting = self._reporting, origin = self,
+                        level = PLUGIN)
+
     def fix(self):
         self._result=ReturnSuccess
 

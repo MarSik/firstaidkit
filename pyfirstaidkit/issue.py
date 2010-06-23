@@ -30,6 +30,7 @@ class SimpleIssue(object):
         self._checked = False
         self._happened = False
         self._fixed = False
+        self._exception = None
 
     def set(self, happened = None, fixed = None, checked = None,
             reporting = None, **kwreportingargs):

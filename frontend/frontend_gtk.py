@@ -30,6 +30,14 @@ import os.path
 import thread
 import hashlib
 
+def _o(func, *args, **kwargs):
+    """Always return False -> remove from the idle queue after first
+    execution"""
+    
+    func(*args, **kwargs)
+    return False
+
+
 class CallbacksMainWindow(object):
     def __init__(self, dialog, cfg, tasker, glade, data):
         self._dialog = dialog
@@ -43,7 +51,7 @@ class CallbacksMainWindow(object):
         if not self._running_lock.acquire(0):
             return
 
-        def _o(pages, stopbutton):
+        def _o2(pages, stopbutton):
             """Always return False -> remove from the idle queue after first
             execution"""
             
@@ -57,7 +65,7 @@ class CallbacksMainWindow(object):
             self._cfg.lock()
             self._tasker.run()
             self._cfg.unlock()
-            gobject.idle_add(_o, *args)
+            gobject.idle_add(_o2, *args)
             self._running_lock.release()
 
         self._data.pages.set_current_page(-1)
@@ -447,7 +455,8 @@ class MainWindow(object):
                     None,
                     gtk.gdk.Color(red=40000, green=62000, blue=40000),
                     gtk.gdk.Color(red=62000, green=40000, blue=40000),
-                    gtk.gdk.Color(red=50000, green=55000, blue=65500)
+                    gtk.gdk.Color(red=50000, green=55000, blue=65500),
+                    gtk.gdk.Color(red=0, green=0, blue=0)
                     ]
 
             state = tree_model.get_value(iter, 3)
@@ -455,6 +464,10 @@ class MainWindow(object):
             if colors[state] and use_state_bg:
                 cell_renderer.set_property("cell-background-set", True)
                 cell_renderer.set_property("cell-background-gdk", colors[state])
+                if state==4:
+                    cell_renderer.set_property("foreground-set", True)
+                    cell_renderer.set_property("foreground-gdk",
+                        gtk.gdk.Color(red=50000, green=50000, blue=50000))
             else:
                 cell_renderer.set_property("cell-background-set", False)
 
@@ -498,15 +511,11 @@ class MainWindow(object):
         self.result_list.set_search_column(0)
 
     def update(self, mailbox, message):
-        def _o(func, *args, **kwargs):
-            """Always return False -> remove from the idle queue after first
-            execution"""
-
-            func(*args, **kwargs)
-            return False
 
         def issue_state(self):
-            if self._fixed:
+            if self._exception:
+                return ("Exception", 4)
+            elif self._fixed:
                 return ("Fixed", 3)
             elif self._happened and self._checked:
                 return ("Detected", 2)
@@ -526,11 +535,17 @@ class MainWindow(object):
         if message["action"]==reporting.END:
             gobject.idle_add(_o, self._window.destroy)
 
-        elif message["action"] in (reporting.CHOICE_QUESTION,
-                                   reporting.TEXT_QUESTION,
-                                   reporting.FILENAME_QUESTION,
-                                   reporting.PASSWORD_QUESTION):
-            gobject.idle_add(_o, self._answer_question, message)
+        elif message["action"]==reporting.CHOICE_QUESTION:
+            gobject.idle_add(_o, self.choice_question, message)
+
+        elif message["action"]==reporting.FILENAME_QUESTION:
+            gobject.idle_add(_o, self.filename_question, message)
+
+        elif message["action"]==reporting.PASSWORD_QUESTION and message["message"].confirm:
+            gobject.idle_add(_o, self.password_question, message)
+
+        elif message["action"] in (reporting.TEXT_QUESTION, reporting.PASSWORD_QUESTION):
+            gobject.idle_add(_o, self.text_question, message)
 
         elif message["action"]==reporting.START:
             if self._importance<=message["importance"]:
@@ -607,60 +622,75 @@ class MainWindow(object):
 
     def run(self):
         gtk.gdk.threads_init()
+        gtk.gdk.threads_enter()
         gtk.main()
+        gtk.gdk.threads_leave()
 
-    def _answer_question(self, message):
-        question = message["message"]
-        while True:
-            answer = self._get_answer(message, question)
-            if answer is self._cancel_answer:
-                message["reply"].end(level = reporting.FIRSTAIDKIT)
-                break
-            elif answer is not self._no_answer:
-                question.send_answer(message, answer, origin = self)
-                break
+    def _get_dialog(self, Id):
+        dir = os.path.dirname(self._glade.relative_file("."))
+        glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"), Id)
+        dlg = glade.get_widget(Id)
+        return glade, dlg
 
-    def _get_answer(self, message, question):
+    def choice_question(self, message):
         """Return the user's answer.
 
         Return self._no_answer on invalid answer,
         self._cancel_answer if the user wants to cancel.
 
         """
-        dir = os.path.dirname(self._glade.relative_file("."))
-        if message["action"]==reporting.CHOICE_QUESTION:
-            glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"),
-                                  "ChoiceQuestionDialog")
-            dlg = glade.get_widget("ChoiceQuestionDialog")
-            try:
-                glade.get_widget("choice_question_label"). \
-                    set_text(question.prompt)
-                vbox = glade.get_widget("choice_question_vbox")
-                radio_map = {}
-                group = None
-                for (value, name) in question.options:
-                    r = gtk.RadioButton(group, name, False)
-                    radio_map[r] = value
-                    r.show()
-                    vbox.pack_start(r)
-                    if group is None:
-                        group = r
+        try:
+            gtk.gdk.threads_enter()
+            
+            # prepare the dialog content
+            glade, dlg = self._get_dialog("ChoiceQuestionDialog")
+            question = message["message"]
+            glade.get_widget("choice_question_label").set_text(question.prompt)
+            vbox = glade.get_widget("choice_question_vbox")
+            radio_map = {}
+            group = None
+            for (value, name) in question.options:
+                r = gtk.RadioButton(group, name, False)
+                radio_map[r] = value
+                r.show()
+                vbox.pack_start(r)
+                if group is None:
+                    group = r
+
+            # run the dialog and send the response
+            while True:
                 if dlg.run()!=gtk.RESPONSE_OK:
-                    res = self._cancel_answer
+                    message["reply"].end(level = reporting.FIRSTAIDKIT)
+                    break
                 else:
+                    res = self._no_answer
                     for r in radio_map:
                         if r.get_active():
                             res = radio_map[r]
                             break
-                    else:
-                        res = self._no_answer
-            finally:
-                dlg.destroy()
-            return res
+                    if res!=self._no_answer:
+                        question.send_answer(message, res, origin = self)
+                        break
+                            
+        finally:
+            # schedule dialog destroy
+            dlg.destroy()
+            gtk.gdk.flush()
+            gtk.gdk.threads_leave()
+                            
+    def filename_question(self, message):
+        """Return the user's answer.
 
-        elif message["action"]==reporting.FILENAME_QUESTION:
-            # STOCK_OK is neutral enough so that we don't need to distinguish
-            # between "open" and "save" mode for now.
+        Return self._no_answer on invalid answer,
+        self._cancel_answer if the user wants to cancel.
+
+        """
+        # STOCK_OK is neutral enough so that we don't need to distinguish
+        # between "open" and "save" mode for now.
+        try:
+            gtk.gdk.threads_enter()
+
+            question = message["message"]
             dlg = gtk.FileChooserDialog(title = question.prompt,
                                         parent = self._window,
                                         action = gtk.FILE_CHOOSER_ACTION_SAVE,
@@ -668,58 +698,83 @@ class MainWindow(object):
                                                    gtk.RESPONSE_REJECT,
                                                    gtk.STOCK_OK,
                                                    gtk.RESPONSE_ACCEPT))
-            try:
-                if dlg.run()==gtk.RESPONSE_ACCEPT:
-                    res = dlg.get_filename()
-                else:
-                    res = self._cancel_answer
-            finally:
-                dlg.destroy()
-            return res
+            
+            if dlg.run()==gtk.RESPONSE_ACCEPT:
+                question.send_answer(message, dlg.get_filename(), origin = self)
+            else:
+                message["reply"].end(level = reporting.FIRSTAIDKIT)
+        finally:
+            # schedule dialog destroy
+            dlg.destroy()
+            gtk.gdk.flush()
+            gtk.gdk.threads_leave()
+        
 
-        elif (message["action"]==reporting.TEXT_QUESTION or
-              (message["action"]==reporting.PASSWORD_QUESTION and
-               not question.confirm)):
-            glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"),
-                                  "TextQuestionDialog")
-            dlg = glade.get_widget("TextQuestionDialog")
-            try:
-                glade.get_widget("text_question_label"). \
-                    set_text(question.prompt)
-                entry = glade.get_widget("text_question_entry")
-                if isinstance(question, reporting.PasswordQuestion):
-                    entry.set_visibility(False)
-                if dlg.run()==gtk.RESPONSE_OK:
-                    res = entry.get_text()
-                else:
-                    res = self._cancel_answer
-            finally:
-                dlg.destroy()
-            return res
+    def text_question(self, message):
+        """Return the user's answer.
 
-        elif message["action"]==reporting.PASSWORD_QUESTION:
+        Return self._no_answer on invalid answer,
+        self._cancel_answer if the user wants to cancel.
+
+        """
+        
+        try:
+            gtk.gdk.threads_enter()
+            
+            glade, dlg = self._get_dialog("TextQuestionDialog")
+            question = message["message"]
+
+            glade.get_widget("text_question_label"). \
+                                                     set_text(question.prompt)
+            entry = glade.get_widget("text_question_entry")
+            if isinstance(question, reporting.PasswordQuestion):
+                entry.set_visibility(False)
+                
+            if dlg.run()==gtk.RESPONSE_OK:
+                question.send_answer(message, entry.get_text(), origin = self)
+            else:
+                message["reply"].end(level = reporting.FIRSTAIDKIT)
+        finally:
+            # schedule dialog destroy
+            dlg.destroy()
+            gtk.gdk.flush()
+            gtk.gdk.threads_leave()
+            
+    def password_question(self, message):
+        """Return the user's answer.
+
+        Return self._no_answer on invalid answer,
+        self._cancel_answer if the user wants to cancel.
+
+        """
+
+        try:
+            gtk.gdk.threads_enter()
+
+            glade, dlg = self._get_dialog("TwoPasswordDialog")
+            question = message["message"]
             assert question.confirm
-            glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"),
-                                  "TwoPasswordDialog")
-            dlg = glade.get_widget("TwoPasswordDialog")
-            try:
-                glade.get_widget("two_password_label1"). \
-                    set_text(question.prompt)
-                glade.get_widget("two_password_label2"). \
-                    set_text("Confirm: %s " % (question.prompt,))
-                entry1 = glade.get_widget("two_password_entry1")
-                entry2 = glade.get_widget("two_password_entry2")
-                if dlg.run()!=gtk.RESPONSE_OK:
-                    res = self._cancel_answer
-                elif entry1.get_text()==entry2.get_text():
-                    res = entry1.get_text()
-                else:
-                    res = self._no_answer
-            finally:
-                dlg.destroy()
-            return res
 
-        raise AssertionError("Unsupported question type %s" % message["action"])
+            glade.get_widget("two_password_label1"). \
+                                                     set_text(question.prompt)
+            glade.get_widget("two_password_label2"). \
+                                                     set_text("Confirm: %s " % (question.prompt,))
+            entry1 = glade.get_widget("two_password_entry1")
+            entry2 = glade.get_widget("two_password_entry2")
+            while True:
+                if dlg.run()!=gtk.RESPONSE_OK:
+                    message["reply"].end(level = reporting.FIRSTAIDKIT)
+                    break
+                elif entry1.get_text()==entry2.get_text():
+                    question.send_answer(message, entry1.get_text(), origin = self)
+                    break
+                else:
+                    continue
+        finally:
+            # schedule dialog destroy
+            dlg.destroy()
+            gtk.gdk.flush()
+            gtk.gdk.threads_leave()
 
 class FlagList(object):
     def __init__(self, cfg, flags, dir=""):
