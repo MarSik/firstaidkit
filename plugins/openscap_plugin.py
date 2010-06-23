@@ -28,6 +28,10 @@ class OpenSCAPPlugin(Plugin):
     version = "0.0.1"
     author = "Martin Sivak <msivak@redhat.com>"
 
+    flows = Flow.init(Plugin)
+    del flows["fix"]
+    flows["diagnose"].description = "Performs a security and configuration audit of running system"               
+
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
         #self._oval = "/home/msivak/Downloads/scap-rhel5-oval.xml"
