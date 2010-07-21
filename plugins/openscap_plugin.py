@@ -19,7 +19,7 @@ from pyfirstaidkit.plugins import Plugin,Flow
 from pyfirstaidkit.reporting import PLUGIN
 from pyfirstaidkit.returns import *
 from pyfirstaidkit.issue import SimpleIssue
-import openscap
+import openscap_api as openscap
 import time
 
 class OpenSCAPPlugin(Plugin):
@@ -34,18 +34,30 @@ class OpenSCAPPlugin(Plugin):
 
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
-        #self._oval = "/home/msivak/Downloads/scap-rhel5-oval.xml"
-        self._oval = "/usr/share/openscap/scap-fedora12-oval.xml"
+        self._oval = "/usr/share/openscap/oval.xml"
+        self._xccdf = "/usr/share/openscap/xccdf.xml"
         self._issues = {}
     
     def prepare(self):
-        self._model = openscap.oval_definition_model_import(self._oval)
+        # Initialize OVAL data
+        self._model = openscap.oval.definition_model_import(self._oval)
         if self._model:
-            self._session = openscap.oval_agent_new_session(self._model)
+            self._session = openscap.oval.agent.new_session(self._model)
+
+        # Initialize XCCDF policies, callbacks and enable OVAL backend
+        self._xccdf_model = openscap.xccdf.benchmark_import(self._xccdf)
+        self._policy = None
+        
+        if self._session and self._xccdf_model:
+            self._xccdf_policy_model = openscap.xccdf.policy_model(self._xccdf_model)
+            self._xccdf_policy_model.register_output_callback(self.oscap_callback, self)
+            self._xccdf_policy_model.register_engine_oval(self._session)
+            # Select the first available policy
+            self._policy = self._xccdf_policy_model.policies.next()
             
-        if self._model is None or self._session is None:
+        if self._policy is None:
             self._result=ReturnFailure
-            self._reporting.error("OpenSCAP failed to load definition", origin = self, level = PLUGIN)
+            self._reporting.error("OpenSCAP failed to initialize", origin = self, level = PLUGIN)
         else:
             self._result=ReturnSuccess
             self._reporting.info("OpenSCAP initialized", origin = self, level = PLUGIN)
@@ -56,19 +68,20 @@ class OpenSCAPPlugin(Plugin):
     def restore(self):
         self._result=ReturnSuccess
 
-    def oscap_callback(self, Id, Result, Plugin):
+    def oscap_callback(self, Msg, Plugin):
         try:
+            Id = Msg.user1str
             Issue = Plugin._issues.get(Id, None)
             if Issue is None:
-                definition = openscap.oval_definition_model_get_definition(Plugin._model, Id)
-                title = openscap.oval_definition_get_title(definition)
-                description = openscap.oval_definition_get_description(definition)
+                title = Msg.user3str
+                description = Msg.string
+                result = Msg.user2num
                 Issue = SimpleIssue(Id, title)
                 Issue.set(reporting  = Plugin._reporting, origin = Plugin, level = PLUGIN)
                 Plugin._issues[Id] = Issue
                 
-                Issue.set(checked = (Result in (openscap.OVAL_RESULT_FALSE, openscap.OVAL_RESULT_TRUE)),
-                                happened = (Result == openscap.OVAL_RESULT_FALSE),
+                Issue.set(checked = (result in (openscap.OSCAP.OVAL_RESULT_FALSE, openscap.OSCAP.OVAL_RESULT_TRUE)),
+                                happened = (result == openscap.OSCAP.OVAL_RESULT_FALSE),
                                 fixed = False,
                                 reporting  = Plugin._reporting,
                                 origin = Plugin,
@@ -79,15 +92,15 @@ class OpenSCAPPlugin(Plugin):
         return Plugin.continuing()
 
     def diagnose(self):
-        openscap.oval_agent_eval_system_py(self._session, self.oscap_callback, self)
+        self._policy.evaluate()
         self._result=ReturnSuccess
         
     def fix(self):
         self._result=ReturnFailure
         
     def clean(self):
-        openscap.oval_agent_destroy_session(self._session)
-        openscap.oval_definition_model_free(self._model)
+        openscap.oval.agent.destroy_session(self._session)
+        openscap.oval.definition_model_free(self._model)
         openscap.oscap_cleanup()
         self._reporting.info("OpenSCAP deinitialized", origin = self, level = PLUGIN)
         self._result=ReturnSuccess
