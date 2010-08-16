@@ -34,8 +34,9 @@ from cStringIO import StringIO
 Logger = logging.getLogger("firstaidkit")
 
 class Flow(dict):
-    def __init__(self, rules, description="", *args, **kwargs):
+    def __init__(self, rules, description="", title="", *args, **kwargs):
         self.description = description
+        self.title = title
         dict.__init__(self, rules, *args, **kwargs)
 
     @staticmethod
@@ -486,6 +487,7 @@ class PluginSystem(object):
         self._deps = dependencies
         self._interpret = interpret
         self._plugins = {}
+        self._flow_titles = {}
 
         for path in self._paths:
             if not os.path.isdir(path):
@@ -544,11 +546,43 @@ class PluginSystem(object):
                             (m, str(e)), level = PLUGINSYSTEM, origin = self)
                 finally:
                     imp.release_lock()
-
+            
+        #initialize gettext
+        trans = None
+        try:
+            import gettext
+            trans = gettext.translation('firstaidkit')
+        except Exception as e:
+            pass
+            
+        #get flow titles from plugins
+        for m in self._plugins:
+            plugin = self.getplugin(m)
+            for flowname in plugin.getFlows():
+                flow = plugin.getFlow(flowname)
+                
+                #we already have title
+                if flowname in self._flow_titles and self._flow_titles[flowname]:
+                    continue
+                
+                #get best title
+                gt = trans.lgettext(flowname) if trans else flowname
+                title = gt if gt != flowname else flow.title
+                
+                self._flow_titles[flowname] = title
+        
+        #set title for flow with no title
+        for flow, title in self._flow_titles.iteritems():
+            if not title:
+                self._flow_titles[flow] = flow
 
     def list(self):
         """Return the list of imported plugins"""
         return self._plugins.keys()
+        
+    def get_title(self, flow):
+        """Return flow title"""
+        return self._flow_titles[flow]
 
     def autorun(self, plugin, flow = None, dependencies = True):
         """Perform automated run of plugin with condition checking
