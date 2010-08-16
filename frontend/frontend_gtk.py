@@ -433,7 +433,7 @@ class MainWindow(object):
         self.flow_list_store = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_STRING)
         self.flow_list_store_diagnose = -1
         for idx,n in enumerate(sorted(self.flow_list_data)):
-            self.flow_list_store.append([n, n])
+            self.flow_list_store.append([n, pluginsystem.get_title(n)])
             if n=="diagnose":
                 self.flow_list_store_diagnose = idx
         self.flow_list = self._glade.get_widget("combo_Advanced_Flows")
