@@ -25,6 +25,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:  desktop-file-utils
 BuildRequires:  python-devel
 BuildRequires:  python-setuptools-devel
+BuildRequires:  python-tools
 Requires:       newt
 Requires:       %{name}-engine
 
