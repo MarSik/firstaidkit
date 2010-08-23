@@ -311,6 +311,54 @@ class CallbacksFlagList(object):
         self._dialog.destroy()
         return True
 
+class ListDialog(object):
+    def __init__(self, title, description, items, dir=""):
+        gtkb = gtk.Builder()
+        gtkb.add_from_file(os.path.join(dir, "gtk-list.xml"))
+        self._dialog = gtkb.get_object("listdialog")
+        self._dialog.set_title(title)
+        self._store = gtkb.get_object("store")
+        self._label = gtkb.get_object("label")
+        self._label.set_text(description)
+        self._view = gtkb.get_object("view")
+
+        rend_text = gtk.CellRendererText()
+        rend_text_edit = gtk.CellRendererText()
+        rend_text_edit.set_property("editable", True)
+        rend_text_edit.connect('edited', self.edited_cb, self._store)
+
+        col_0 = gtk.TreeViewColumn('Key', rend_text, text = 1)
+        col_1 = gtk.TreeViewColumn('Value', rend_text_edit, text = 2)
+        self._view.append_column(col_0)
+        self._view.append_column(col_1)
+
+        map(self._store.append, items)
+
+        gtkb.connect_signals(self)
+
+    def items(self):
+        F = lambda row: (row[0], row[2])
+        return map(F, self._store)
+
+    def run(self):
+        self._dialog.show_all()
+        return self._dialog.run()
+
+    def edited_cb(self, cell, path, new_data, store):
+        store[path][2] = new_data
+
+    def destroy(self):
+        self._dialog.destroy()
+
+    def cb_ok(self, data):
+        self._dialog.response(gtk.RESPONSE_ACCEPT)
+
+    def cb_cancel(self, data):
+        self._dialog.response(gtk.RESPONSE_CANCEL)
+
+    def cb_close(self, data):
+        self._dialog.response(gtk.RESPONSE_CANCEL)
+
 class MainWindow(object):
     _cancel_answer = object()
     _no_answer = object()
@@ -538,6 +586,9 @@ class MainWindow(object):
         elif message["action"]==reporting.CHOICE_QUESTION:
             gobject.idle_add(_o, self.choice_question, message)
 
+        elif message["action"]==reporting.CONFIG_QUESTION:
+            gobject.idle_add(_o, self.config_question, message)
+
         elif message["action"]==reporting.FILENAME_QUESTION:
             gobject.idle_add(_o, self.filename_question, message)
 
@@ -709,6 +760,40 @@ class MainWindow(object):
             gtk.gdk.flush()
             gtk.gdk.threads_leave()
         
+    def config_question(self, message):
+        """Return the user's answers.
+
+        Return self._no_answer on invalid answer,
+        self._cancel_answer if the user wants to cancel.
+
+        """
+
+        try:
+            gtk.gdk.threads_enter()
+
+            question = message["message"]
+            dlg = ListDialog(title = question.title,
+                             description = question.description,
+                             items = question.items,
+                             dir = os.path.dirname(self._glade.relative_file("."))
+                             )
+
+            res = dlg.run()
+
+            print "Dlg: ", res
+
+            if res==gtk.RESPONSE_ACCEPT:
+                print dlg.items()
+                question.send_answer(message, dlg.items(), origin = self)
+            elif res==gtk.RESPONSE_CANCEL:
+                question.send_answer(message, [], origin = self)
+            else:
+                message["reply"].end(level = reporting.FIRSTAIDKIT)
+        finally:
+            # schedule dialog destroy
+            dlg.destroy()
+            gtk.gdk.flush()
+            gtk.gdk.threads_leave()
 
     def text_question(self, message):
         """Return the user's answer.

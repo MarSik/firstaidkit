@@ -26,8 +26,8 @@ from pyfirstaidkit.issue import SimpleIssue
 class DialoguePlugin(Plugin):
     """This plugin demonstrates asking the user for information."""
     name = "DialoguePlugin"
-    version = "0.0.1"
-    author = "Miloslav Trmač"
+    version = "0.0.2"
+    author = "Miloslav Trmač & Martin Sivák"
 
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
@@ -76,6 +76,20 @@ class DialoguePlugin(Plugin):
                                                    level = PLUGIN)
         self._reporting.info("File name: %s" % repr(s), origin = self,
                              level = PLUGIN)
+
+        config_options = [
+            ("id:1", "PL", "5", "Password length"),
+            ("id:2", "PS", "C", "Password strength"),
+            ("id:3", "PL", "aA0.", "Password chars"),
+            ]
+
+        s = self._reporting.config_question_wait("Setup choices",
+                                                 "Set preferred values",
+                                                 config_options, origin = self,
+                                                 level = PLUGIN)
+        self._reporting.info("Options: %s" % repr(s), origin = self,
+                             level = PLUGIN)
+
         self._issue.set(checked = True, happened = False,
                         reporting = self._reporting, origin = self,
                         level = PLUGIN)

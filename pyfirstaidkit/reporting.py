@@ -47,6 +47,7 @@ CHOICE_QUESTION = 990 #a Question object, "reply" specifies a Reports object
 TEXT_QUESTION = 991
 FILENAME_QUESTION = 992
 PASSWORD_QUESTION = 993
+CONFIG_QUESTION = 994
 ANSWER = 999 #Data sent in reply to a *_QUESTION
 END = 1000 #End of operations, final message
 
@@ -72,6 +73,18 @@ class Question(object):
             (answer, origin, FIRSTAIDKIT, ANSWER,
              importance = question_message["importance"], inreplyto = self)
         question_message["reply"].end(level = FIRSTAIDKIT)
+
+class ConfigQuestion(Question):
+    """A question that allows list of configurable variables
+
+    Each item is a tuple (id, title, value, tooltip)"""
+    
+    def __init__(self, title, description, items):
+        super(ConfigQuestion, self).__init__(title)
+        assert len(items) > 0
+        self.title = title
+        self.description = description
+        self.items = items
 
 class ChoiceQuestion(Question):
     """A question that offers multiple options.
@@ -326,3 +339,13 @@ class Reports(object):
 
     def filename_question_wait(self, *args, **kwargs):
         return self.__blocking_question(self.filename_question, args, kwargs)
+
+    def config_question(self, reply_mb, title, description, items, origin, level = PLUGIN,
+                          importance = logging.ERROR):
+        q = ConfigQuestion(title, description, items)
+        self.put(q, origin, level, CONFIG_QUESTION, importance = importance,
+                 reply = reply_mb)
+        return q
+
+    def config_question_wait(self, *args, **kwargs):
+        return self.__blocking_question(self.config_question, args, kwargs)
