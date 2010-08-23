@@ -41,7 +41,7 @@ class Flow(dict):
 
     @staticmethod
     def init(parent):
-        flows = copy(parent.flows)
+        flows = deepcopy(parent.flows)
         return flows
 
 class Plugin(object):
@@ -568,7 +568,7 @@ class PluginSystem(object):
                 #get best title
                 gt = trans.lgettext(flowname) if trans else flowname
                 title = gt if gt != flowname else flow.title
-                
+
                 self._flow_titles[flowname] = title
         
         #set title for flow with no title
