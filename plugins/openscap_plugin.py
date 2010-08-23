@@ -30,38 +30,54 @@ class OpenSCAPPlugin(Plugin):
 
     flows = Flow.init(Plugin)
     del flows["fix"]
-    flows["diagnose"].description = "Performs a security and configuration audit of running system"               
+    flows["oscap_scan"] = flows["diagnose"]
+    del flows["diagnose"]
+    flows["oscap_scan"].description = "Performs a security and configuration audit of running system"
+    flows["oscap_scan"].title = "Security Audit"
 
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
         self._oval = "/usr/share/openscap/oval.xml"
-        self._xccdf = "/usr/share/openscap/xccdf.xml"
+        self._xccdf = "/usr/share/openscap/scap-xccdf.xml"
         self._issues = {}
     
     def prepare(self):
-        # Initialize OVAL data
-        self._model = openscap.oval.definition_model_import(self._oval)
-        if self._model:
-            self._session = openscap.oval.agent.new_session(self._model)
-
-        # Initialize XCCDF policies, callbacks and enable OVAL backend
-        self._xccdf_model = openscap.xccdf.benchmark_import(self._xccdf)
+        self._objs = openscap.xccdf.init(self._xccdf)
+        self._xccdf_policy_model = self._objs["policy_model"]
         self._policy = None
         
-        if self._session and self._xccdf_model:
-            self._xccdf_policy_model = openscap.xccdf.policy_model(self._xccdf_model)
-            self._xccdf_policy_model.register_output_callback(self.oscap_callback, self)
-            self._xccdf_policy_model.register_engine_oval(self._session)
-            # Select the first available policy
-            self._policy = self._xccdf_policy_model.policies.next()
+        self._xccdf_policy_model.register_output_callback(self.oscap_callback, self)
+        # Select the last available policy
+        self._policy = self._xccdf_policy_model.policies[-1]
             
         if self._policy is None:
             self._result=ReturnFailure
             self._reporting.error("OpenSCAP failed to initialize", origin = self, level = PLUGIN)
+            return
         else:
-            self._result=ReturnSuccess
             self._reporting.info("OpenSCAP initialized", origin = self, level = PLUGIN)
 
+        tailor_items = self._policy.get_tailor_items()
+        preproces_tailor_items = lambda i: (i["id"], i["titles"][0][1] or "", i["selected"][1] or "", len(i["descs"]) and i["descs"][0][1] or "")
+        tailor_items = map(preproces_tailor_items, tailor_items)
+
+        self._reporting.info("Pre Options: %s" % repr(tailor_items), origin = self,
+                             level = PLUGIN)
+
+        s = self._reporting.config_question_wait("Setup OpenScap policy",
+                                                 "Set preferred values and press OK",
+                                                 tailor_items, origin = self,
+                                                 level = PLUGIN)
+
+        preprocess_s = lambda v: {"id": v[0], "value": v[1]}
+        s = map(preprocess_s, s)
+        self._reporting.info("Options: %s" % repr(s), origin = self,
+                             level = PLUGIN)
+        
+        self._policy.set_tailor_items(s)
+        
+        self._result=ReturnSuccess
+            
     def backup(self):
         self._result=ReturnSuccess
 
@@ -89,7 +105,10 @@ class OpenSCAPPlugin(Plugin):
         except Exception, e:
             print e
 
-        return Plugin.continuing()
+        if Plugin.continuing():
+            return 0
+        else:
+            return 1
 
     def diagnose(self):
         self._policy.evaluate()
@@ -99,9 +118,7 @@ class OpenSCAPPlugin(Plugin):
         self._result=ReturnFailure
         
     def clean(self):
-        openscap.oval.agent.destroy_session(self._session)
-        openscap.oval.definition_model_free(self._model)
-        openscap.oscap_cleanup()
+        #openscap.xccdf.destroy(self._objs)
         self._reporting.info("OpenSCAP deinitialized", origin = self, level = PLUGIN)
         self._result=ReturnSuccess
 
