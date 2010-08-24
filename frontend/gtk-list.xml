@@ -12,10 +12,16 @@
       <column type="gchararray"/>
       <!-- column-name tooltip -->
       <column type="gchararray"/>
+      <!-- column-name regexp -->
+      <column type="gpointer"/>
+      <!-- column-name validator_error -->
+      <column type="gchararray"/>
     </columns>
   </object>
   <object class="GtkDialog" id="listdialog">
     <property name="border_width">5</property>
+    <property name="default_width">640</property>
+    <property name="default_height">480</property>
     <property name="type_hint">normal</property>
     <property name="has_separator">False</property>
     <signal name="close" handler="cb_close"/>

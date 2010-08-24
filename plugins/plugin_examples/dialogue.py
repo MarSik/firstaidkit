@@ -78,9 +78,9 @@ class DialoguePlugin(Plugin):
                              level = PLUGIN)
 
         config_options = [
-            ("id:1", "PL", "5", "Password length"),
-            ("id:2", "PS", "C", "Password strength"),
-            ("id:3", "PL", "aA0.", "Password chars"),
+            ("id:1", "PL", "5", "Password length", "[1-9][0-9]*", "The length must be a valid number bigger than 0."),
+            ("id:2", "PS", "C", "Password strength", "[A-F]", "Use strength indicator A, B, C, D, E or F"),
+            ("id:3", "PL", "aA0.", "Password chars", ".*", "Any allowed characters.."),
             ]
 
         s = self._reporting.config_question_wait("Setup choices",

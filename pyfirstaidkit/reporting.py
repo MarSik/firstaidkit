@@ -19,6 +19,7 @@ import Queue
 import logging
 import thread
 import weakref
+import re
 
 from errors import *
 
@@ -77,14 +78,16 @@ class Question(object):
 class ConfigQuestion(Question):
     """A question that allows list of configurable variables
 
-    Each item is a tuple (id, title, value, tooltip)"""
+    Each item is a tuple (id, title, value,
+                          tooltip, regexp_validator, validator_error_msg)"""
     
     def __init__(self, title, description, items):
         super(ConfigQuestion, self).__init__(title)
         assert len(items) > 0
         self.title = title
         self.description = description
-        self.items = items
+        self.items = map(lambda x: (x[0], x[1], x[2], x[3],
+                                    re.compile("^"+x[4]+"$"), x[5]), items)
 
 class ChoiceQuestion(Question):
     """A question that offers multiple options.

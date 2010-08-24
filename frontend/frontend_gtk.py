@@ -129,6 +129,11 @@ class CallbacksMainWindow(object):
                 dir = os.path.dirname(self._glade.relative_file(".")))
         return True
 
+    def on_mainmenu_expert_activate(self, widget, *args):
+        self._glade.get_widget("expert_page").show()
+        self._data.pages.set_current_page(1)
+        return True
+        
     #advanced mode callbacks
     def on_b_StartAdvanced_activate(self, widget, *args):
         print("on_b_StartAdvanced_activate")
@@ -317,10 +322,16 @@ class ListDialog(object):
         gtkb.add_from_file(os.path.join(dir, "gtk-list.xml"))
         self._dialog = gtkb.get_object("listdialog")
         self._dialog.set_title(title)
-        self._store = gtkb.get_object("store")
+        self._store = gtk.ListStore(gobject.TYPE_STRING,
+                                    gobject.TYPE_STRING,
+                                    gobject.TYPE_STRING,
+                                    gobject.TYPE_STRING,
+                                    gobject.TYPE_PYOBJECT,
+                                    gobject.TYPE_STRING)
         self._label = gtkb.get_object("label")
         self._label.set_text(description)
         self._view = gtkb.get_object("view")
+        self._view.set_model(self._store)
 
         rend_text = gtk.CellRendererText()
         rend_text_edit = gtk.CellRendererText()
@@ -328,7 +339,11 @@ class ListDialog(object):
         rend_text_edit.connect('edited', self.edited_cb, self._store)
 
         col_0 = gtk.TreeViewColumn('Key', rend_text, text = 1)
+        col_0.set_resizable(True)
+        col_0.set_expand(False)
         col_1 = gtk.TreeViewColumn('Value', rend_text_edit, text = 2)
+        col_1.set_resizable(True)
+        col_1.set_expand(True)
         self._view.append_column(col_0)
         self._view.append_column(col_1)
 
@@ -345,7 +360,14 @@ class ListDialog(object):
         return self._dialog.run()
 
     def edited_cb(self, cell, path, new_data, store):
-        store[path][2] = new_data
+        res = store[path][4].match(new_data)
+        if res is not None:
+            store[path][2] = new_data
+        else:
+            err = gtk.MessageDialog(type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK)
+            err.set_property("text", store[path][5])
+            err.run()
+            err.destroy()
 
     def destroy(self):
         self._dialog.destroy()
