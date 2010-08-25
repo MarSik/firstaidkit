@@ -802,15 +802,13 @@ class MainWindow(object):
 
             res = dlg.run()
 
-            print "Dlg: ", res
-
             if res==gtk.RESPONSE_ACCEPT:
-                print dlg.items()
                 question.send_answer(message, dlg.items(), origin = self)
             elif res==gtk.RESPONSE_CANCEL:
                 question.send_answer(message, [], origin = self)
             else:
-                message["reply"].end(level = reporting.FIRSTAIDKIT)
+                raise Exception("Unknown value %s")
+
         finally:
             # schedule dialog destroy
             dlg.destroy()
