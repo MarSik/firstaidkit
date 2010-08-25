@@ -57,12 +57,36 @@ class OpenSCAPPlugin(Plugin):
         else:
             self._reporting.info("OpenSCAP initialized", origin = self, level = PLUGIN)
 
-        tailor_items = self._policy.get_tailor_items()
-        preproces_tailor_items = lambda i: (i["id"], i["titles"][0][1] or "", i["selected"][1] or "", len(i["descs"]) and i["descs"][0][1] or "")
-        tailor_items = map(preproces_tailor_items, tailor_items)
-
-        self._reporting.info("Pre Options: %s" % repr(tailor_items), origin = self,
+        all_rules = self._policy.get_rules()
+        preprocess_rules = lambda x: (x.item,
+                                      self._policy.model.benchmark.get_item(x.item).title[0].text,
+                                      x.selected and 1 or 0,
+                                      self._policy.model.benchmark.get_item(x.item).description[0].text,
+                                      "0|1",
+                                      "Use 0 or 1 to disable or enable rule"
+                                      )
+        all_rules = map(preprocess_rules, all_rules)
+        s = self._reporting.config_question_wait("Setup OpenScap rules",
+                                                 "Enable or disable rules and press OK",
+                                                 all_rules, origin = self,
+                                                 level = PLUGIN)
+        enabled_rules = []
+        for r in s:
+            if r[1] == "1":
+                enabled_rules.append(r[0])
+        self._reporting.info("Enabled rules: %s" % repr(enabled_rules), origin = self,
                              level = PLUGIN)
+        
+        self._policy.set_rules(enabled_rules)
+
+        tailor_items = self._policy.get_tailor_items()
+        preproces_tailor_items = lambda i: (i["id"],
+             i["titles"][i["lang"]] or "",
+             i["selected"][1] or "",
+             i["descs"][i["lang"]] or "",
+             i["match"] or ".*",
+             "Error setting the value, read the following description and try again:\n\n"+i["descs"][i["lang"]])
+        tailor_items = map(preproces_tailor_items, tailor_items)
 
         s = self._reporting.config_question_wait("Setup OpenScap policy",
                                                  "Set preferred values and press OK",
@@ -71,11 +95,9 @@ class OpenSCAPPlugin(Plugin):
 
         preprocess_s = lambda v: {"id": v[0], "value": v[1]}
         s = map(preprocess_s, s)
-        self._reporting.info("Options: %s" % repr(s), origin = self,
-                             level = PLUGIN)
         
         self._policy.set_tailor_items(s)
-        
+        self._reporting.info("Tailoring Done", origin = self, level = PLUGIN)        
         self._result=ReturnSuccess
             
     def backup(self):
@@ -103,6 +125,7 @@ class OpenSCAPPlugin(Plugin):
                                 origin = Plugin,
                                 level = PLUGIN)
         except Exception, e:
+            raise
             print e
 
         if Plugin.continuing():
@@ -111,6 +134,11 @@ class OpenSCAPPlugin(Plugin):
             return 1
 
     def diagnose(self):
+        for x in self._policy.get_selected_rules():
+            self._reporting.info("Selecting rule "+x.item, origin = self, level = PLUGIN)
+
+        self._reporting.info("Starting OpenSCAP evaluation", origin = self, level = PLUGIN)
+        self._policy.model.benchmark.export("lala.xml")
         self._policy.evaluate()
         self._result=ReturnSuccess
         
