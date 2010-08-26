@@ -185,6 +185,7 @@ packet.
 %{__install} -p frontend/*.py  $RPM_BUILD_ROOT/usr/share/firstaidkit/frontend/
 %{__install} -p frontend/*.glade  $RPM_BUILD_ROOT/usr/share/firstaidkit/frontend/
 %{__install} -p frontend/*.gladep  $RPM_BUILD_ROOT/usr/share/firstaidkit/frontend/
+%{__install} -p frontend/*.xml $RPM_BUILD_ROOT/usr/share/firstaidkit/frontend/
 %{__install} -d $RPM_BUILD_ROOT/usr/share/icons
 %{__install} -p images/FAK-bandaid.png $RPM_BUILD_ROOT/usr/share/icons/firstaidkit.png
 desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applications %{SOURCE3}
@@ -233,6 +234,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %defattr(-,root,root,-)
 /usr/share/firstaidkit/frontend/*.py*
 /usr/share/firstaidkit/frontend/*.glade
+/usr/share/firstaidkit/frontend/*.xml
 /usr/share/firstaidkit/frontend/*.gladep
 /usr/share/icons/*.png
 %{_datadir}/applications/*.desktop

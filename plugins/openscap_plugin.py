@@ -139,6 +139,7 @@ class OpenSCAPPlugin(Plugin):
         else:
             return 1
 
+
     def diagnose(self):
         for x in self._policy.get_selected_rules():
             self._reporting.info("Selecting rule "+x.item, origin = self, level = PLUGIN)
