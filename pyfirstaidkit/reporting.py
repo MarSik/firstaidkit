@@ -20,6 +20,7 @@ import logging
 import thread
 import weakref
 import re
+import time
 
 from errors import *
 
@@ -87,7 +88,7 @@ class ConfigQuestion(Question):
         self.title = title
         self.description = description
         self.items = map(lambda x: (x[0], x[1], x[2], x[3],
-                                    re.compile("^"+x[4]+"$"), x[5]), items)
+                                    re.compile("^("+x[4]+")$"), x[5]), items)
 
 class ChoiceQuestion(Question):
     """A question that offers multiple options.
