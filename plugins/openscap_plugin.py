@@ -47,6 +47,10 @@ class OpenSCAPPlugin(Plugin):
         self._policy = None
         
         self._xccdf_policy_model.register_output_callback(self.oscap_callback, self)
+        # XXX Workaround..
+        for s in self._objs["sessions"]:
+            self._xccdf_policy_model.register_engine_oval(s)
+            
         # Select the last available policy
         self._policy = self._xccdf_policy_model.policies[-1]
             
@@ -118,8 +122,10 @@ class OpenSCAPPlugin(Plugin):
                 Issue.set(reporting  = Plugin._reporting, origin = Plugin, level = PLUGIN)
                 Plugin._issues[Id] = Issue
                 
-                Issue.set(checked = (result in (openscap.OSCAP.OVAL_RESULT_FALSE, openscap.OSCAP.OVAL_RESULT_TRUE)),
-                                happened = (result == openscap.OSCAP.OVAL_RESULT_FALSE),
+                Issue.set(checked = (result in
+                                     (openscap.OSCAP.XCCDF_RESULT_FAIL,
+                                      openscap.OSCAP.XCCDF_RESULT_PASS)),
+                                happened = (result == openscap.OSCAP.XCCDF_RESULT_FAIL),
                                 fixed = False,
                                 reporting  = Plugin._reporting,
                                 origin = Plugin,
