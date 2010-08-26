@@ -152,7 +152,6 @@ class OpenSCAPPlugin(Plugin):
             self._reporting.info("Selecting rule "+x.item, origin = self, level = PLUGIN)
 
         self._reporting.info("Starting OpenSCAP evaluation", origin = self, level = PLUGIN)
-        self._policy.model.benchmark.export("lala.xml")
         self._policy.evaluate()
         self._result=ReturnSuccess
         
