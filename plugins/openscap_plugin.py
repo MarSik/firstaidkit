@@ -111,6 +111,13 @@ class OpenSCAPPlugin(Plugin):
         self._result=ReturnSuccess
 
     def oscap_callback(self, Msg, Plugin):
+        if Msg.user2num == openscap.OSCAP.XCCDF_RESULT_NOT_SELECTED:
+            if Plugin.continuing():
+                return 0
+            else:
+                return 1
+           
+        
         try:
             Id = Msg.user1str
             Issue = Plugin._issues.get(Id, None)
