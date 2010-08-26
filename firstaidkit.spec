@@ -4,8 +4,8 @@
 %define debug_package %{nil}
 
 Name:           firstaidkit
-Version:        0.2.11
-Release:        2%{?dist}
+Version:        0.2.12
+Release:        1%{?dist}
 Summary:        System Rescue Tool
 
 Group:          Applications/System
@@ -156,8 +156,6 @@ packet.
 
 %prep
 %setup -q
-./test
-
 
 %build
 %{__python} setup.py build
@@ -168,9 +166,12 @@ packet.
 %{__rm} -rf $RPM_BUILD_ROOT
 %{__python} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
 
+#languages
+%find_lang %{name}
+
 #docs
 %{__install} -d $RPM_BUILD_ROOT%{_mandir}/man1
-%{__install} -d $RPM_BUILD_ROOT%{_datadir}/doc/%name-%version
+%{__install} -d $RPM_BUILD_ROOT%{_datadir}/doc/%{name}-%{version}
 %{__install} -p doc/firstaidkit-plugin.1 doc/firstaidkit.1 $RPM_BUILD_ROOT%{_mandir}/man1
 %{__install} -p COPYING $RPM_BUILD_ROOT%{_datadir}/doc/%name-%version/COPYING
 
@@ -274,6 +275,9 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Thu Aug 26 2010 Martin Sivak <msivak@redhat.com> - 0.2.12-1
+- Add OpenSCAP plugin
+
 * Mon May 22 2010 Martin Sivak <msivak@redhat.com> - 0.2.11-2
 - Add menu icon
   Resolves: rhbz#587903
