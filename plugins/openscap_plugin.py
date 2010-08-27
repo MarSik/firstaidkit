@@ -64,19 +64,20 @@ class OpenSCAPPlugin(Plugin):
         all_rules = self._policy.get_rules()
         preprocess_rules = lambda x: (x.item,
                                       self._policy.model.benchmark.get_item(x.item).title[0].text,
-                                      x.selected and 1 or 0,
+                                      x.selected and True,
                                       self._policy.model.benchmark.get_item(x.item).description[0].text,
-                                      "0|1",
-                                      "Use 0 or 1 to disable or enable rule"
+                                      "",
+                                      "Use checkbox disable or enable rule"
                                       )
         all_rules = map(preprocess_rules, all_rules)
         s = self._reporting.config_question_wait("Setup OpenScap rules",
                                                  "Enable or disable rules and press OK",
-                                                 all_rules, origin = self,
+                                                 all_rules, mode = 1,
+                                                 origin = self,
                                                  level = PLUGIN)
         enabled_rules = []
         for r in s:
-            if r[1] == "1":
+            if r[1]:
                 enabled_rules.append(r[0])
         self._reporting.info("Enabled rules: %s" % repr(enabled_rules), origin = self,
                              level = PLUGIN)

@@ -82,11 +82,12 @@ class ConfigQuestion(Question):
     Each item is a tuple (id, title, value,
                           tooltip, regexp_validator, validator_error_msg)"""
     
-    def __init__(self, title, description, items):
+    def __init__(self, title, description, items, mode = 0):
         super(ConfigQuestion, self).__init__(title)
         assert len(items) > 0
         self.title = title
         self.description = description
+        self.mode = mode
         self.items = map(lambda x: (x[0], x[1], x[2], x[3],
                                     re.compile("^("+x[4]+")$"), x[5]), items)
 
@@ -345,8 +346,8 @@ class Reports(object):
         return self.__blocking_question(self.filename_question, args, kwargs)
 
     def config_question(self, reply_mb, title, description, items, origin, level = PLUGIN,
-                          importance = logging.ERROR):
-        q = ConfigQuestion(title, description, items)
+                          importance = logging.ERROR, mode = 0):
+        q = ConfigQuestion(title, description, items, mode = mode)
         self.put(q, origin, level, CONFIG_QUESTION, importance = importance,
                  reply = reply_mb)
         return q

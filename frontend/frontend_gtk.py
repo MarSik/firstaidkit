@@ -317,31 +317,52 @@ class CallbacksFlagList(object):
         return True
 
 class ListDialog(object):
-    def __init__(self, title, description, items, dir=""):
+    def __init__(self, title, description, items, dir="", mode = 0):
         gtkb = gtk.Builder()
         gtkb.add_from_file(os.path.join(dir, "gtk-list.xml"))
         self._dialog = gtkb.get_object("listdialog")
         self._dialog.set_title(title)
-        self._store = gtk.ListStore(gobject.TYPE_STRING,
+
+        if mode == 0:
+            self._store = gtk.ListStore(gobject.TYPE_STRING,
                                     gobject.TYPE_STRING,
                                     gobject.TYPE_STRING,
                                     gobject.TYPE_STRING,
                                     gobject.TYPE_PYOBJECT,
                                     gobject.TYPE_STRING)
+        elif mode == 1:
+            self._store = gtk.ListStore(gobject.TYPE_STRING,
+                                    gobject.TYPE_STRING,
+                                    gobject.TYPE_BOOLEAN,
+                                    gobject.TYPE_STRING,
+                                    gobject.TYPE_PYOBJECT,
+                                    gobject.TYPE_STRING)
+
         self._label = gtkb.get_object("label")
         self._label.set_text(description)
         self._view = gtkb.get_object("view")
         self._view.set_model(self._store)
 
         rend_text = gtk.CellRendererText()
-        rend_text_edit = gtk.CellRendererText()
-        rend_text_edit.set_property("editable", True)
-        rend_text_edit.connect('edited', self.edited_cb, self._store)
+
+        if mode == 0:
+            rend_text_edit = gtk.CellRendererText()
+            rend_text_edit.set_property("editable", True)
+            rend_text_edit.connect('edited', self.edited_cb, self._store)
+        elif mode == 1:
+            rend_text_check = gtk.CellRendererToggle()
+            rend_text_check.connect('toggled', self.toggled_cb, self._store)
+            rend_text_check.set_property('activatable', True)
 
         col_0 = gtk.TreeViewColumn('Key', rend_text, text = 1)
         col_0.set_resizable(True)
         col_0.set_expand(False)
-        col_1 = gtk.TreeViewColumn('Value', rend_text_edit, text = 2)
+
+        if mode == 0:
+            col_1 = gtk.TreeViewColumn('Value', rend_text_edit, text = 2)
+        elif mode == 1:
+            col_1 = gtk.TreeViewColumn('Value', rend_text_check)
+            col_1.add_attribute(rend_text_check, "active", 2)
         col_1.set_resizable(True)
         col_1.set_expand(True)
         self._view.append_column(col_0)
@@ -368,6 +389,9 @@ class ListDialog(object):
             err.set_property("text", store[path][5])
             err.run()
             err.destroy()
+
+    def toggled_cb(self, cell, path, store):
+        store[path][2] = not store[path][2]
 
     def destroy(self):
         self._dialog.destroy()
@@ -797,7 +821,8 @@ class MainWindow(object):
             dlg = ListDialog(title = question.title,
                              description = question.description,
                              items = question.items,
-                             dir = os.path.dirname(self._glade.relative_file("."))
+                             dir = os.path.dirname(self._glade.relative_file(".")),
+                             mode = question.mode
                              )
 
             res = dlg.run()
