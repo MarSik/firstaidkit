@@ -323,20 +323,64 @@ class ListDialog(object):
         self._dialog = gtkb.get_object("listdialog")
         self._dialog.set_title(title)
 
+        # text
         if mode == 0:
             self._store = gtk.ListStore(gobject.TYPE_STRING,
                                     gobject.TYPE_STRING,
                                     gobject.TYPE_STRING,
                                     gobject.TYPE_STRING,
                                     gobject.TYPE_PYOBJECT,
-                                    gobject.TYPE_STRING)
+                                    gobject.TYPE_STRING,
+                                    gobject.TYPE_NONE)
+
+            rend_text_edit = gtk.CellRendererText()
+            rend_text_edit.set_property("editable", True)
+            rend_text_edit.connect('edited', self.edited_cb, self._store)
+
+            
+        # checkboxes
         elif mode == 1:
             self._store = gtk.ListStore(gobject.TYPE_STRING,
                                     gobject.TYPE_STRING,
                                     gobject.TYPE_BOOLEAN,
                                     gobject.TYPE_STRING,
                                     gobject.TYPE_PYOBJECT,
-                                    gobject.TYPE_STRING)
+                                    gobject.TYPE_STRING,
+                                    gobject.TYPE_NONE)
+
+            rend_text_check = gtk.CellRendererToggle()
+            rend_text_check.connect('toggled', self.toggled_cb, self._store)
+            rend_text_check.set_property('activatable', True)
+
+        # combo
+        elif mode == 2:
+            self._store = gtk.ListStore(gobject.TYPE_STRING,
+                                    gobject.TYPE_STRING,
+                                    gobject.TYPE_STRING,
+                                    gobject.TYPE_STRING,
+                                    gobject.TYPE_PYOBJECT,
+                                    gobject.TYPE_STRING,
+                                    gtk.ListStore)
+            def _fill(x):
+                model = gtk.ListStore(gobject.TYPE_STRING)
+                for v in x[6]:
+                    model.append((v,))
+                return x[:6]+(model,)
+
+            # convert x[6] to list store for combo box
+            items = map(_fill, items)
+
+            rend_text_combo = gtk.CellRendererCombo()
+            rend_text_combo.set_property("editable", True)
+            rend_text_combo.set_property("text-column", 0)
+            rend_text_combo.connect('edited', self.edited_cb, self._store)
+            rend_text_combo.connect('changed', self.changed_cb, self._store)
+            rend_text_combo.set_property('has-entry', True)
+
+
+        # fill the data store
+        map(self._store.append, items)
+
 
         self._label = gtkb.get_object("label")
         self._label.set_text(description)
@@ -345,30 +389,25 @@ class ListDialog(object):
 
         rend_text = gtk.CellRendererText()
 
-        if mode == 0:
-            rend_text_edit = gtk.CellRendererText()
-            rend_text_edit.set_property("editable", True)
-            rend_text_edit.connect('edited', self.edited_cb, self._store)
-        elif mode == 1:
-            rend_text_check = gtk.CellRendererToggle()
-            rend_text_check.connect('toggled', self.toggled_cb, self._store)
-            rend_text_check.set_property('activatable', True)
-
+        # title column
         col_0 = gtk.TreeViewColumn('Key', rend_text, text = 1)
         col_0.set_resizable(True)
         col_0.set_expand(False)
 
+        # value column
         if mode == 0:
             col_1 = gtk.TreeViewColumn('Value', rend_text_edit, text = 2)
         elif mode == 1:
             col_1 = gtk.TreeViewColumn('Value', rend_text_check)
             col_1.add_attribute(rend_text_check, "active", 2)
+        elif mode == 2:
+            col_1 = gtk.TreeViewColumn('Value', rend_text_combo, text = 2)
+            col_1.add_attribute(rend_text_combo, "model", 6)
+            
         col_1.set_resizable(True)
         col_1.set_expand(True)
         self._view.append_column(col_0)
         self._view.append_column(col_1)
-
-        map(self._store.append, items)
 
         gtkb.connect_signals(self)
 
@@ -392,6 +431,9 @@ class ListDialog(object):
 
     def toggled_cb(self, cell, path, store):
         store[path][2] = not store[path][2]
+
+    def changed_cb(self, combo, path, new, store):
+        store[path][2] = store[path][6][new]
 
     def destroy(self):
         self._dialog.destroy()
@@ -832,7 +874,11 @@ class MainWindow(object):
             elif res==gtk.RESPONSE_CANCEL:
                 question.send_answer(message, [], origin = self)
             else:
-                raise Exception("Unknown value %s")
+                raise Exception("Unknown value %s" % (res,))
+
+        except Exception, e:
+            print e
+            raise
 
         finally:
             # schedule dialog destroy

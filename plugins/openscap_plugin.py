@@ -86,16 +86,19 @@ class OpenSCAPPlugin(Plugin):
 
         tailor_items = self._policy.get_tailor_items()
         preproces_tailor_items = lambda i: (i["id"],
-             i["titles"][i["lang"]] or "",
-             i["selected"][1] or "",
-             i["descs"][i["lang"]] or "",
-             i["match"] or ".*",
-             "Error setting the value, read the following description and try again:\n\n"+i["descs"][i["lang"]])
+                                            i["titles"][i["lang"]] or "",
+                                            i["selected"][1] or "",
+                                            i["descs"][i["lang"]] or "",
+                                            i["match"] or ".*",
+                                            "Error setting the value, read the following description and try again:\n\n"+i["descs"][i["lang"]],
+                                            [i["selected"][1] or "", "test"]
+                                            )
         tailor_items = map(preproces_tailor_items, tailor_items)
 
         s = self._reporting.config_question_wait("Setup OpenScap policy",
                                                  "Set preferred values and press OK",
-                                                 tailor_items, origin = self,
+                                                 tailor_items, mode = 2,
+                                                 origin = self,
                                                  level = PLUGIN)
 
         preprocess_s = lambda v: {"id": v[0], "value": v[1]}

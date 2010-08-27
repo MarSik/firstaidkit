@@ -88,8 +88,17 @@ class ConfigQuestion(Question):
         self.title = title
         self.description = description
         self.mode = mode
-        self.items = map(lambda x: (x[0], x[1], x[2], x[3],
-                                    re.compile("^("+x[4]+")$"), x[5]), items)
+
+        def _fillrow(x):
+            if mode == 2:
+                model = x[6]
+            else:
+                model = None
+                
+            return (x[0], x[1], x[2], x[3],
+                    re.compile("^("+x[4]+")$"), x[5], model)
+        
+        self.items = map(_fillrow, items)
 
 class ChoiceQuestion(Question):
     """A question that offers multiple options.
