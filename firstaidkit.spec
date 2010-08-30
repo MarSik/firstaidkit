@@ -4,7 +4,7 @@
 %define debug_package %{nil}
 
 Name:           firstaidkit
-Version:        0.2.12
+Version:        0.2.13
 Release:        1%{?dist}
 Summary:        System Rescue Tool
 
@@ -277,6 +277,9 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Mon Aug 30 2010 Martin Sivak <msivak@redhat.com> - 0.2.13-1
+- Improve Config question and integrate it into OpenSCAP
+
 * Thu Aug 26 2010 Martin Sivak <msivak@redhat.com> - 0.2.12-1
 - Add OpenSCAP plugin
 
