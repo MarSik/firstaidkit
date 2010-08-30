@@ -48,6 +48,7 @@ def createDefaultConfig(config):
     config.backup.fullpath = ""
     config.revert.all = "False"
     config.revert.dir = ""
+    config.system.debug = "False"
 
     # Setup a sane default root directory.
     if os.path.isdir("/mnt/sysimage"):
