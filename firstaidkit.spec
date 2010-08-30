@@ -5,7 +5,7 @@
 
 Name:           firstaidkit
 Version:        0.2.13
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        System Rescue Tool
 
 Group:          Applications/System
@@ -99,7 +99,7 @@ password.
 Group:          Applications/System
 Summary:        OpenSCAP plugin for FirstAidKit
 Requires:       %{name} = %{version}-%{release}
-Requires:       openscap >= 0.5.12-1
+Requires:       openscap >= 0.6.1-1
 BuildArch:      noarch
 
 %description plugin-openscap
@@ -277,11 +277,17 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Mon Aug 30 2010 Martin Sivak <msivak@redhat.com> - 0.2.13-2
+- Require newer version of openscap library
+
 * Mon Aug 30 2010 Martin Sivak <msivak@redhat.com> - 0.2.13-1
 - Improve Config question and integrate it into OpenSCAP
 
 * Thu Aug 26 2010 Martin Sivak <msivak@redhat.com> - 0.2.12-1
 - Add OpenSCAP plugin
+
+* Wed Jul 21 2010 David Malcolm <dmalcolm@redhat.com> - 0.2.11-3
+- Rebuilt for https://fedoraproject.org/wiki/Features/Python_2.7/MassRebuild
 
 * Mon May 22 2010 Martin Sivak <msivak@redhat.com> - 0.2.11-2
 - Add menu icon
