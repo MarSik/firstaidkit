@@ -65,13 +65,12 @@
             <property name="visible">True</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton" id="ok_button">
-                <property name="label" translatable="yes">Save and continue</property>
+              <object class="GtkButton" id="button1">
+                <property name="label">gtk-go-back</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="clicked" handler="cb_ok"/>
-                <signal name="activate" handler="cb_ok"/>
+                <property name="use_stock">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -80,8 +79,33 @@
               </packing>
             </child>
             <child>
+              <object class="GtkButton" id="button2">
+                <property name="label">gtk-stop</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkVSeparator" id="vseparator1">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkButton" id="cancel_button">
-                <property name="label" translatable="yes">Use defaults and continue</property>
+                <property name="label" translatable="yes">Use defaults</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -91,7 +115,22 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="position">1</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="ok_button">
+                <property name="label" translatable="yes">OK</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <signal name="clicked" handler="cb_ok"/>
+                <signal name="activate" handler="cb_ok"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">4</property>
               </packing>
             </child>
           </object>
@@ -104,8 +143,10 @@
       </object>
     </child>
     <action-widgets>
-      <action-widget response="0">ok_button</action-widget>
+      <action-widget response="2">button1</action-widget>
+      <action-widget response="1">button2</action-widget>
       <action-widget response="0">cancel_button</action-widget>
+      <action-widget response="0">ok_button</action-widget>
     </action-widgets>
   </object>
 </interface>

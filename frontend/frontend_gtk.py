@@ -25,6 +25,7 @@ import gobject #we need gobject.idle_add
 import copy
 import logging
 from pyfirstaidkit import reporting
+from pyfirstaidkit.returns import *
 import pprint
 import os.path
 import thread
@@ -317,11 +318,13 @@ class CallbacksFlagList(object):
         return True
 
 class ListDialog(object):
-    def __init__(self, title, description, items, dir="", mode = 0):
+    def __init__(self, title, description, items, dir="", options = {}):
         gtkb = gtk.Builder()
         gtkb.add_from_file(os.path.join(dir, "gtk-list.xml"))
         self._dialog = gtkb.get_object("listdialog")
         self._dialog.set_title(title)
+
+        mode = options.get("mode", 0)
 
         # text
         if mode == 0:
@@ -339,7 +342,7 @@ class ListDialog(object):
 
             
         # checkboxes
-        elif mode == 1:
+        elif mode == 1 or mode == 3:
             self._store = gtk.ListStore(gobject.TYPE_STRING,
                                     gobject.TYPE_STRING,
                                     gobject.TYPE_BOOLEAN,
@@ -349,6 +352,7 @@ class ListDialog(object):
                                     gobject.TYPE_NONE)
 
             rend_text_check = gtk.CellRendererToggle()
+            rend_text_check.set_radio(mode == 3)
             rend_text_check.connect('toggled', self.toggled_cb, self._store)
             rend_text_check.set_property('activatable', True)
 
@@ -397,7 +401,7 @@ class ListDialog(object):
         # value column
         if mode == 0:
             col_1 = gtk.TreeViewColumn('Value', rend_text_edit, text = 2)
-        elif mode == 1:
+        elif mode == 1 or mode == 3:
             col_1 = gtk.TreeViewColumn('Value', rend_text_check)
             col_1.add_attribute(rend_text_check, "active", 2)
         elif mode == 2:
@@ -430,7 +434,14 @@ class ListDialog(object):
             err.destroy()
 
     def toggled_cb(self, cell, path, store):
-        store[path][2] = not store[path][2]
+        new = not store[path][2]
+        if cell.get_radio():
+            i = store.get_iter_first()
+            while i:
+                store[i][2] = False
+                i = store.iter_next(i)
+            
+        store[path][2] = new
 
     def changed_cb(self, combo, path, new, store):
         store[path][2] = store[path][6][new]
@@ -788,7 +799,7 @@ class MainWindow(object):
             vbox = glade.get_widget("choice_question_vbox")
             radio_map = {}
             group = None
-            for (value, name) in question.options:
+            for (value, name) in question.choices:
                 r = gtk.RadioButton(group, name, False)
                 radio_map[r] = value
                 r.show()
@@ -864,7 +875,7 @@ class MainWindow(object):
                              description = question.description,
                              items = question.items,
                              dir = os.path.dirname(self._glade.relative_file(".")),
-                             mode = question.mode
+                             options = question.options
                              )
 
             res = dlg.run()
@@ -873,6 +884,12 @@ class MainWindow(object):
                 question.send_answer(message, dlg.items(), origin = self)
             elif res==gtk.RESPONSE_CANCEL:
                 question.send_answer(message, [], origin = self)
+            elif res==gtk.RESPONSE_DELETE_EVENT:
+                question.send_answer(message, [], origin = self)
+            elif res==2:
+                question.send_answer(message, ReturnBack, origin = self)
+            elif res==1:
+                question.send_answer(message, ReturnAbort, origin = self)
             else:
                 raise Exception("Unknown value %s" % (res,))
 

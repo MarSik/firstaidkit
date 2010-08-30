@@ -66,8 +66,9 @@ class Question(object):
 
     Object identity is used to match questions and replies."""
 
-    def __init__(self, prompt):
+    def __init__(self, prompt, options = {}):
         self.prompt = prompt
+        self.options = options
 
     def send_answer(self, question_message, answer, origin = None):
         assert question_message["message"] is self
@@ -82,15 +83,15 @@ class ConfigQuestion(Question):
     Each item is a tuple (id, title, value,
                           tooltip, regexp_validator, validator_error_msg)"""
     
-    def __init__(self, title, description, items, mode = 0):
-        super(ConfigQuestion, self).__init__(title)
+    def __init__(self, title, description, items, options = {}):
+        super(ConfigQuestion, self).__init__(title, options)
         assert len(items) > 0
         self.title = title
         self.description = description
-        self.mode = mode
+        self.mode = options.get("mode", 1)
 
         def _fillrow(x):
-            if mode == 2:
+            if self.mode == 2:
                 model = x[6]
             else:
                 model = None
@@ -105,10 +106,10 @@ class ChoiceQuestion(Question):
 
     Each option is a tuple of (return value, description)."""
 
-    def __init__(self, prompt, options):
-        super(ChoiceQuestion, self).__init__(prompt)
-        assert len(options) > 0
-        self.options = options
+    def __init__(self, prompt, choices, options = {}):
+        super(ChoiceQuestion, self).__init__(prompt, options)
+        assert len(choices) > 0
+        self.choices = choices
 
 class TextQuestion(Question):
     """A question that asks for a string."""
@@ -121,8 +122,8 @@ class FilenameQuestion(TextQuestion):
 class PasswordQuestion(Question):
     """A question that asks for a password."""
 
-    def __init__(self, prompt, confirm):
-        super(PasswordQuestion, self).__init__(prompt)
+    def __init__(self, prompt, confirm, options = {}):
+        super(PasswordQuestion, self).__init__(prompt, options)
         self.confirm = confirm
 
 class Reports(object):
@@ -314,9 +315,9 @@ class Reports(object):
             mb.closeMailbox()
         return answer
 
-    def choice_question(self, reply_mb, prompt, options, origin, level = PLUGIN,
-                        importance = logging.ERROR):
-        q = ChoiceQuestion(prompt, options)
+    def choice_question(self, reply_mb, prompt, choices, origin, level = PLUGIN,
+                        importance = logging.ERROR, options = {}):
+        q = ChoiceQuestion(prompt, choices, options)
         self.put(q, origin, level, CHOICE_QUESTION, importance = importance,
                  reply = reply_mb)
         return q
@@ -325,8 +326,8 @@ class Reports(object):
         return self.__blocking_question(self.choice_question, args, kwargs)
 
     def text_question(self, reply_mb, prompt, origin, level = PLUGIN,
-                      importance = logging.ERROR):
-        q = TextQuestion(prompt)
+                      importance = logging.ERROR, options = {}):
+        q = TextQuestion(prompt, options)
         self.put(q, origin, level, TEXT_QUESTION, importance = importance,
                  reply = reply_mb)
         return q
@@ -335,8 +336,8 @@ class Reports(object):
         return self.__blocking_question(self.text_question, args, kwargs)
 
     def password_question(self, reply_mb, prompt, origin, level = PLUGIN,
-                          importance = logging.ERROR, confirm = False):
-        q = PasswordQuestion(prompt, confirm)
+                          importance = logging.ERROR, confirm = False, options = {}):
+        q = PasswordQuestion(prompt, confirm, options)
         self.put(q, origin, level, PASSWORD_QUESTION, importance = importance,
                  reply = reply_mb)
         return q
@@ -345,8 +346,8 @@ class Reports(object):
         return self.__blocking_question(self.password_question, args, kwargs)
 
     def filename_question(self, reply_mb, prompt, origin, level = PLUGIN,
-                          importance = logging.ERROR):
-        q = FilenameQuestion(prompt)
+                          importance = logging.ERROR, options = {}):
+        q = FilenameQuestion(prompt, options)
         self.put(q, origin, level, FILENAME_QUESTION, importance = importance,
                  reply = reply_mb)
         return q
@@ -354,9 +355,10 @@ class Reports(object):
     def filename_question_wait(self, *args, **kwargs):
         return self.__blocking_question(self.filename_question, args, kwargs)
 
-    def config_question(self, reply_mb, title, description, items, origin, level = PLUGIN,
-                          importance = logging.ERROR, mode = 0):
-        q = ConfigQuestion(title, description, items, mode = mode)
+    def config_question(self, reply_mb, title, description,
+                        items, origin, level = PLUGIN,
+                        importance = logging.ERROR, options = {}):
+        q = ConfigQuestion(title, description, items, options = options)
         self.put(q, origin, level, CONFIG_QUESTION, importance = importance,
                  reply = reply_mb)
         return q
