@@ -40,8 +40,11 @@ class Flow(dict):
         dict.__init__(self, rules, *args, **kwargs)
 
     @staticmethod
-    def init(parent):
-        flows = deepcopy(parent.flows)
+    def init(parent = None):
+        if parent:
+            flows = deepcopy(parent.flows)
+        else:
+            flows = dict()
         return flows
 
 class Plugin(object):
