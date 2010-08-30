@@ -65,7 +65,7 @@
             <property name="visible">True</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton" id="button1">
+              <object class="GtkButton" id="back-button">
                 <property name="label">gtk-go-back</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -79,12 +79,11 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="button2">
-                <property name="label">gtk-stop</property>
+              <object class="GtkButton" id="abort-button">
+                <property name="label">Abort</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -143,8 +142,8 @@
       </object>
     </child>
     <action-widgets>
-      <action-widget response="2">button1</action-widget>
-      <action-widget response="1">button2</action-widget>
+      <action-widget response="2">back-button</action-widget>
+      <action-widget response="1">abort-button</action-widget>
       <action-widget response="0">cancel_button</action-widget>
       <action-widget response="0">ok_button</action-widget>
     </action-widgets>

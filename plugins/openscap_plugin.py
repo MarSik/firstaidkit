@@ -75,7 +75,7 @@ class OpenSCAPPlugin(Plugin):
         s = self._reporting.config_question_wait("Choose OpenScap profile",
                                                  "Select desired profile and press OK",
                                                  all_policies,
-                                                 options = {"mode": 3},
+                                                 options = {"mode": 3, "back": False},
                                                  origin = self,
                                                  level = PLUGIN)
         if s in (ReturnBack, ReturnAbort):

@@ -415,12 +415,18 @@ class ListDialog(object):
 
         gtkb.connect_signals(self)
 
+        self._dialog.show_all()
+        if not options.get("back", True):
+            gtkb.get_object("back-button").hide()
+
+        if not options.get("abort", True):
+            gtkb.get_object("abort-button").hide()
+
     def items(self):
         F = lambda row: (row[0], row[2])
         return map(F, self._store)
 
     def run(self):
-        self._dialog.show_all()
         return self._dialog.run()
 
     def edited_cb(self, cell, path, new_data, store):
