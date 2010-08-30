@@ -28,11 +28,19 @@ class OpenSCAPPlugin(Plugin):
     version = "0.0.1"
     author = "Martin Sivak <msivak@redhat.com>"
 
-    flows = Flow.init(Plugin)
-    del flows["fix"]
-    flows["oscap_scan"] = flows["diagnose"]
-    del flows["diagnose"]
-    flows["oscap_scan"].description = "Performs a security and configuration audit of running system"
+    flows = Flow.init()
+    flows["oscap_scan"] = Flow({
+        Plugin.initial: {Return: "prepare"},
+        "prepare": {ReturnSuccess: "policy", ReturnFailure: "clean"},
+        "policy": {ReturnSuccess: "rules", ReturnFailure: "clean",
+                   ReturnAbort: "clean"},
+        "rules": {ReturnSuccess: "tailoring", ReturnFailure: "clean",
+                  ReturnBack: "policy", ReturnAbort: "clean"},
+        "tailoring": {ReturnSuccess: "diagnose", ReturnFailure: "clean",
+                      ReturnBack: "rules", ReturnAbort: "clean"},
+        "diagnose": {ReturnSuccess: "clean", ReturnFailure: "clean"},
+        "clean": {ReturnSuccess: Plugin.final}
+        }, description = "Performs a security and configuration audit of running system")
     flows["oscap_scan"].title = "Security Audit"
 
     def __init__(self, *args, **kwargs):
@@ -51,16 +59,42 @@ class OpenSCAPPlugin(Plugin):
         for s in self._objs["sessions"]:
             self._xccdf_policy_model.register_engine_oval(s)
             
+        self._reporting.info("OpenSCAP initialized", origin = self, level = PLUGIN)
+        self._result=ReturnSuccess
+
+    def policy(self):
         # Select the last available policy
-        self._policy = self._xccdf_policy_model.policies[-1]
+        all_policies = map(lambda p: (
+            p.id,
+            p.profile and len(p.profile.title) and p.profile.title[0].text or "Default profile",
+            p.id == None and True or False,
+            p.profile and p.profile.description or "",
+            "", ""
+            ), self._xccdf_policy_model.policies)
+
+        s = self._reporting.config_question_wait("Choose OpenScap profile",
+                                                 "Select desired profile and press OK",
+                                                 all_policies,
+                                                 options = {"mode": 3},
+                                                 origin = self,
+                                                 level = PLUGIN)
+        if s in (ReturnBack, ReturnAbort):
+            self._result = s
+            return
+        
+        for idx, (id, val) in enumerate(s):
+            if val:
+                self._policy = self._xccdf_policy_model.policies[idx]
+                self._reporting.info("OpenSCAP policy %s selected" % (id,), origin = self, level = PLUGIN)
             
         if self._policy is None:
             self._result=ReturnFailure
-            self._reporting.error("OpenSCAP failed to initialize", origin = self, level = PLUGIN)
-            return
+            self._reporting.error("OpenSCAP policy failed to initialize", origin = self, level = PLUGIN)
         else:
-            self._reporting.info("OpenSCAP initialized", origin = self, level = PLUGIN)
+            self._reporting.info("OpenSCAP policy initialized", origin = self, level = PLUGIN)
+            self._result=ReturnSuccess
 
+    def rules(self):
         all_rules = self._policy.get_rules()
         preprocess_rules = lambda x: (x.item,
                                       self._policy.model.benchmark.get_item(x.item).title[0].text,
@@ -72,18 +106,26 @@ class OpenSCAPPlugin(Plugin):
         all_rules = map(preprocess_rules, all_rules)
         s = self._reporting.config_question_wait("Setup OpenScap rules",
                                                  "Enable or disable rules and press OK",
-                                                 all_rules, mode = 1,
+                                                 all_rules,
+                                                 options = {"mode": 1},
                                                  origin = self,
                                                  level = PLUGIN)
+        if s in (ReturnBack, ReturnAbort):
+            self._result = s
+            return
+        
         enabled_rules = []
         for r in s:
             if r[1]:
                 enabled_rules.append(r[0])
+
+        self._policy.set_rules(enabled_rules)
         self._reporting.info("Enabled rules: %s" % repr(enabled_rules), origin = self,
                              level = PLUGIN)
         
-        self._policy.set_rules(enabled_rules)
+        self._result=ReturnSuccess
 
+    def tailoring(self):
         tailor_items = self._policy.get_tailor_items()
         preproces_tailor_items = lambda i: (i["id"],
                                             i["titles"][i["lang"]] or "",
@@ -97,23 +139,22 @@ class OpenSCAPPlugin(Plugin):
 
         s = self._reporting.config_question_wait("Setup OpenScap policy",
                                                  "Set preferred values and press OK",
-                                                 tailor_items, mode = 2,
+                                                 tailor_items,
+                                                 options = {"mode": 2},
                                                  origin = self,
                                                  level = PLUGIN)
 
+        if s in (ReturnBack, ReturnAbort):
+            self._result = s
+            return
+        
         preprocess_s = lambda v: {"id": v[0], "value": v[1]}
         s = map(preprocess_s, s)
         
         self._policy.set_tailor_items(s)
-        self._reporting.info("Tailoring Done", origin = self, level = PLUGIN)        
+        self._reporting.info("Tailoring Done", origin = self, level = PLUGIN)  
         self._result=ReturnSuccess
             
-    def backup(self):
-        self._result=ReturnSuccess
-
-    def restore(self):
-        self._result=ReturnSuccess
-
     def oscap_callback(self, Msg, Plugin):
         if Msg.user2num == openscap.OSCAP.XCCDF_RESULT_NOT_SELECTED:
             if Plugin.continuing():
@@ -159,11 +200,8 @@ class OpenSCAPPlugin(Plugin):
         self._policy.evaluate()
         self._result=ReturnSuccess
         
-    def fix(self):
-        self._result=ReturnFailure
-        
     def clean(self):
-        #openscap.xccdf.destroy(self._objs)
+        openscap.xccdf.destroy(self._objs)
         self._reporting.info("OpenSCAP deinitialized", origin = self, level = PLUGIN)
         self._result=ReturnSuccess
 
