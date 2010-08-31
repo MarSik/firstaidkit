@@ -4,8 +4,8 @@
 %define debug_package %{nil}
 
 Name:           firstaidkit
-Version:        0.2.13
-Release:        2%{?dist}
+Version:        0.2.14
+Release:        1%{?dist}
 Summary:        System Rescue Tool
 
 Group:          Applications/System
@@ -277,6 +277,11 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Tue Aug 31 2010 Martin Sivak <msivak@redhat.com> - 0.2.14-1
+- Fixes in GUI
+- Fix race condition in response passing
+- Show possible values for openscap variables
+
 * Mon Aug 30 2010 Martin Sivak <msivak@redhat.com> - 0.2.13-2
 - Require newer version of openscap library
 
