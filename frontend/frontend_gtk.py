@@ -450,7 +450,7 @@ class ListDialog(object):
         store[path][2] = new
 
     def changed_cb(self, combo, path, new, store):
-        store[path][2] = store[path][6][new]
+        store[path][2] = store[path][6][new][0]
 
     def destroy(self):
         self._dialog.destroy()
