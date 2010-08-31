@@ -231,7 +231,6 @@ class Reports(object):
             self._mailboxes.remove(mb)
         finally:
             self._queue_lock.release()
-        mb._parent = None
 
     def closeMailbox(self):
         """Close mailbox when not needed anymore"""
