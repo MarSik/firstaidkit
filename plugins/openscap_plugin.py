@@ -133,7 +133,7 @@ class OpenSCAPPlugin(Plugin):
                                             i["descs"][i["lang"]] or "",
                                             i["match"] or ".*",
                                             "Error setting the value, read the following description and try again:\n\n"+i["descs"][i["lang"]],
-                                            [i["selected"][1] or "", "test"]
+                                            set(i["options"].values())
                                             )
         tailor_items = map(preproces_tailor_items, tailor_items)
 
