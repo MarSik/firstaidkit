@@ -63,7 +63,12 @@ class OpenSCAPPlugin(Plugin):
         self._result=ReturnSuccess
 
     def policy(self):
-        # Select the last available policy
+        # Select the only available policy
+        if len(self._xccdf_policy_model.policies)==1:
+            self._result=ReturnSuccess
+            self._policy = self._xccdf_policy_model.policies[0]
+            return
+        
         all_policies = map(lambda p: (
             p.id,
             p.profile and len(p.profile.title) and p.profile.title[0].text or "Default profile",
@@ -95,7 +100,11 @@ class OpenSCAPPlugin(Plugin):
             self._result=ReturnSuccess
 
     def rules(self):
-        all_rules = self._policy.get_rules()
+        all_rules = self._policy.get_selects()
+        if len(all_rules) == 0:
+            self._result=ReturnSuccess
+            return
+        
         preprocess_rules = lambda x: (x.item,
                                       self._policy.model.benchmark.get_item(x.item).title[0].text,
                                       x.selected and True,
@@ -127,6 +136,10 @@ class OpenSCAPPlugin(Plugin):
 
     def tailoring(self):
         tailor_items = self._policy.get_tailor_items()
+        if len(tailor_items) == 0:
+            self._result=ReturnSuccess
+            return
+        
         preproces_tailor_items = lambda i: (i["id"],
                                             i["titles"][i["lang"]] or "",
                                             i["selected"][1] or "",

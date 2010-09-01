@@ -4,7 +4,7 @@
 %define debug_package %{nil}
 
 Name:           firstaidkit
-Version:        0.2.14
+Version:        0.2.15
 Release:        1%{?dist}
 Summary:        System Rescue Tool
 
@@ -99,7 +99,7 @@ password.
 Group:          Applications/System
 Summary:        OpenSCAP plugin for FirstAidKit
 Requires:       %{name} = %{version}-%{release}
-Requires:       openscap >= 0.6.1-1
+Requires:       openscap >= 0.6.3
 BuildArch:      noarch
 
 %description plugin-openscap
