@@ -96,8 +96,8 @@ class FAKConfigSection(object):
     def unlock(self):
         self.__dict__["__use_lock"] = False
 
-    def attach(self, file):
-        self.__dict__["__configuration"].attach(file)
+    def attach(self, file, saveas = None):
+        self.__dict__["__configuration"].attach(file, saveas)
 
     def __getattr__(self, key):
         if not self.__dict__["__configuration"]. \
@@ -198,12 +198,20 @@ class FAKInfo(ConfigParser.SafeConfigParser, FAKConfigMixIn):
         temp = StringIO()
         ConfigParser.SafeConfigParser.write(self, temp)
         fd.writestr("results.ini", temp.getvalue())
-        for f in self._attachments:
-            fd.write(f)
+        for f,fas in self._attachments:
+            fd.write(f, fas)
         fd.close()
 
-    def attach(self, file):
-        self._attachments.append(file)
+    def attach(self, file, saveas = None):
+        if saveas is None:
+            saveas = file
+        self._attachments.append((file, saveas))
 
 Info = FAKInfo()
 Info.lock()
+
+def resetInfo():
+    global Info
+    Info = FAKInfo()
+    Info.lock()
+    

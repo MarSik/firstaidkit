@@ -26,6 +26,7 @@ import copy
 import logging
 from pyfirstaidkit import reporting
 from pyfirstaidkit.returns import *
+from pyfirstaidkit.configuration import resetInfo
 import pprint
 import os.path
 import thread
@@ -320,6 +321,7 @@ class CallbacksMainWindow(object):
         self._data.result_list_store.clear()
         del self._data.result_list_iter
         self._data.result_list_iter = dict()
+        resetInfo()
         return True
 
     def on_b_StopResults_activate(self, widget, *args):
