@@ -277,6 +277,10 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Tue Sep 07 2010 Martin Sivak <msivak@redhat.com> - 0.2.15-1
+- Saving results
+- Improvements in OpenSCAP plugin
+
 * Tue Aug 31 2010 Martin Sivak <msivak@redhat.com> - 0.2.14-1
 - Fixes in GUI
 - Fix race condition in response passing
