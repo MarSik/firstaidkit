@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+from pyfirstaidkit.configuration import Config
 from pyfirstaidkit.plugins import Plugin,Flow
 from pyfirstaidkit.reporting import PLUGIN
 from pyfirstaidkit.returns import *
@@ -55,10 +56,8 @@ class OpenSCAPPlugin(Plugin):
         self._policy = None
         
         self._xccdf_policy_model.register_output_callback(self.oscap_callback, self)
-        # XXX Workaround..
-        for s in self._objs["sessions"]:
-            self._xccdf_policy_model.register_engine_oval(s)
-            
+        self._xccdf_policy_model.register_start_callback(self.oscap_callback_start, self)
+        
         self._reporting.info("OpenSCAP initialized", origin = self, level = PLUGIN)
         self._result=ReturnSuccess
 
@@ -67,6 +66,11 @@ class OpenSCAPPlugin(Plugin):
         if len(self._xccdf_policy_model.policies)==1:
             self._result=ReturnSuccess
             self._policy = self._xccdf_policy_model.policies[0]
+            return
+
+        if not Config.operation.interactive:
+            self._result=ReturnSuccess
+            self._policy = self._xccdf_policy_model.policies[-1]
             return
         
         all_policies = map(lambda p: (
@@ -100,6 +104,10 @@ class OpenSCAPPlugin(Plugin):
             self._result=ReturnSuccess
 
     def rules(self):
+        if not Config.operation.interactive:
+            self._result=ReturnSuccess
+            return
+
         all_rules = self._policy.get_selects()
         if len(all_rules) == 0:
             self._result=ReturnSuccess
@@ -135,6 +143,10 @@ class OpenSCAPPlugin(Plugin):
         self._result=ReturnSuccess
 
     def tailoring(self):
+        if not Config.operation.interactive:
+            self._result=ReturnSuccess
+            return
+
         tailor_items = self._policy.get_tailor_items()
         if len(tailor_items) == 0:
             self._result=ReturnSuccess
@@ -174,20 +186,13 @@ class OpenSCAPPlugin(Plugin):
                 return 0
             else:
                 return 1
-           
-        
-        try:
+            
+        try:       
             Id = Msg.user1str
+            result = Msg.user2num
+            self._info[Id] = result
             Issue = Plugin._issues.get(Id, None)
-            if Issue is None:
-                title = Msg.user3str
-                description = Msg.string
-                result = Msg.user2num
-                Issue = SimpleIssue(Id, title)
-                Issue.set(reporting  = Plugin._reporting, origin = Plugin, level = PLUGIN)
-                Plugin._issues[Id] = Issue
-                
-                Issue.set(checked = (result in
+            Issue.set(checked = (result in
                                      (openscap.OSCAP.XCCDF_RESULT_FAIL,
                                       openscap.OSCAP.XCCDF_RESULT_PASS)),
                                 happened = (result == openscap.OSCAP.XCCDF_RESULT_FAIL),
@@ -196,7 +201,34 @@ class OpenSCAPPlugin(Plugin):
                                 origin = Plugin,
                                 level = PLUGIN)
         except Exception, e:
-            raise
+            print e
+
+        if Plugin.continuing():
+            return 0
+        else:
+            return 1        
+        
+        
+    def oscap_callback_start(self, Msg, Plugin):
+        if Msg.user2num == openscap.OSCAP.XCCDF_RESULT_NOT_SELECTED:
+            if Plugin.continuing():
+                return 0
+            else:
+                return 1
+           
+        
+        try:
+            Id = Msg.user1str
+            self._info[Id] = -1
+            Issue = Plugin._issues.get(Id, None)
+            if Issue is None:
+                title = Msg.user3str
+                description = Msg.string
+                Issue = SimpleIssue(Id, title)
+                Issue.set(reporting  = Plugin._reporting, origin = Plugin, level = PLUGIN)
+                Plugin._issues[Id] = Issue
+               
+        except Exception, e:
             print e
 
         if Plugin.continuing():
