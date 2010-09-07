@@ -20,6 +20,7 @@ import os
 import sys
 from cStringIO import StringIO
 from shlex import shlex
+import zipfile
 
 if os.environ.has_key("FIRST_AID_KIT_CONF"):
     cfgfile = os.environ["FIRST_AID_KIT_CONF"].split(":")
@@ -94,6 +95,9 @@ class FAKConfigSection(object):
 
     def unlock(self):
         self.__dict__["__use_lock"] = False
+
+    def attach(self, file):
+        self.__dict__["__configuration"].attach(file)
 
     def __getattr__(self, key):
         if not self.__dict__["__configuration"]. \
@@ -179,13 +183,27 @@ def getConfigBits(name, cfg = Config):
     return c
 
 class FAKInfo(ConfigParser.SafeConfigParser, FAKConfigMixIn):
+    def __init__(self, *args, **kwargs):
+        ConfigParser.SafeConfigParser.__init__(self, *args, **kwargs)
+        FAKConfigMixIn.__init__(self)
+        self._attachments = []
+    
     def write(self, fd=sys.stdout):
         fd.write("--- Info section ---\n")
         ConfigParser.SafeConfigParser.write(self, fd)
         fd.write("--------------------\n")
 
-    pass
+    def dump(self, filename):
+        fd = zipfile.ZipFile(filename, "w", zipfile.ZIP_DEFLATED)
+        temp = StringIO()
+        ConfigParser.SafeConfigParser.write(self, temp)
+        fd.writestr("results.ini", temp.getvalue())
+        for f in self._attachments:
+            fd.write(f)
+        fd.close()
+
+    def attach(self, file):
+        self._attachments.append(file)
 
 Info = FAKInfo()
 Info.lock()
-

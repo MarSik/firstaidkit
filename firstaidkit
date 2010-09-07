@@ -19,7 +19,7 @@
 import sys, getopt, getpass, os, pprint, logging, re, readline, hashlib
 from threading import Thread
 from pyfirstaidkit import Tasker
-from pyfirstaidkit import Config
+from pyfirstaidkit import Config, Info
 from pyfirstaidkit import reporting
 from pyfirstaidkit import initLogger
 from pyfirstaidkit.errors import InvalidPluginNameException
@@ -158,10 +158,10 @@ class Output(Thread):
         raise AssertionError("Unsupported question type %s" % message["action"])
 
 class GuiOutput(Thread):
-    def __init__(self, cfg, tasker, dir, importance = logging.INFO,
+    def __init__(self, cfg, info, tasker, dir, importance = logging.INFO,
             *args, **kwargs):
         Thread.__init__(self, *args, **kwargs)
-        self.w = MainWindow(cfg, tasker, importance = importance, dir=dir)
+        self.w = MainWindow(cfg, info, tasker, importance = importance, dir=dir)
 
     def run(self):
         self.w.run()
@@ -369,13 +369,13 @@ if __name__=="__main__":
         outputThread = Output(singlerun.reporting(),
                               interactive = Config.operation.gui!="gtk")
         if Config.operation.gui=="gtk":
-            outputThreadGui = GuiOutput(Config, singlerun,
+            outputThreadGui = GuiOutput(Config, Info, singlerun,
                     dir = os.path.dirname(frontend_gtk.__file__))
     else:
         outputThread = Output(singlerun.reporting(), importance = 0,
                               interactive = Config.operation.gui!="gtk")
         if Config.operation.gui=="gtk":
-            outputThreadGui = GuiOutput(Config, singlerun, importance = 0,
+            outputThreadGui = GuiOutput(Config, Info, singlerun, importance = 0,
                     dir = os.path.dirname(frontend_gtk.__file__))
 
     if Config.operation.gui=="gtk":

@@ -283,7 +283,7 @@ class Plugin(object):
                         message = func+" raised "+str(e))
                 self._reporting.stop(level = TASK, origin = self,
                         message = func)
-                if self._interpret._config.system.debug:
+                if Config.system.debug:
                     raise
 
         return (self._state, self._result)

@@ -40,11 +40,12 @@ def _o(func, *args, **kwargs):
 
 
 class CallbacksMainWindow(object):
-    def __init__(self, dialog, cfg, tasker, glade, data):
+    def __init__(self, dialog, cfg, info, tasker, glade, data):
         self._dialog = dialog
         self._tasker = tasker
         self._glade = glade
         self._cfg = cfg
+        self._info = info
         self._data = data
         self._running_lock = thread.allocate_lock()
 
@@ -52,21 +53,23 @@ class CallbacksMainWindow(object):
         if not self._running_lock.acquire(0):
             return
 
-        def _o2(pages, stopbutton):
+        def _o2(pages, pagesstate, enablebuttons, disablebuttons):
             """Always return False -> remove from the idle queue after first
             execution"""
             
-            for i in range(pages.get_n_pages()):
-                pages.get_nth_page(i).set_sensitive(True)
-            stopbutton.set_sensitive(False)
+            for i in range(pages.get_n_pages())[:-1]:
+                pages.get_nth_page(i).set_sensitive(pagesstate)
+            map(lambda b: b.set_sensitive(False), disablebuttons)
+            map(lambda b: b.set_sensitive(True), enablebuttons)
             
             return False
 
-        def worker(*args):
+        def worker(pages, runningbuttons, stoppedbuttons):
+            gobject.idle_add(_o2, pages, False, runningbuttons, stoppedbuttons)
             self._cfg.lock()
             self._tasker.run()
             self._cfg.unlock()
-            gobject.idle_add(_o2, *args)
+            gobject.idle_add(_o2, pages, True, stoppedbuttons, runningbuttons)
             self._running_lock.release()
 
         self._data.pages.set_current_page(-1)
@@ -75,8 +78,10 @@ class CallbacksMainWindow(object):
         self.on_b_ResetResults_activate(None)
 
         stopbutton = self._glade.get_widget("b_StopResults")
-        stopbutton.set_sensitive(True)
-        thread.start_new_thread(worker, (self._data.pages, stopbutton))
+        saveresmenu = self._glade.get_widget("save_results_menu")
+        saveresbutton = self._glade.get_widget("save_results_button")
+        resetresbutton = self._glade.get_widget("b_ResetResults")
+        thread.start_new_thread(worker, (self._data.pages, [stopbutton], [resetresbutton, saveresmenu, saveresbutton]))
 
     #menu callbacks
     def on_mainmenu_open_activate(self, widget, *args):
@@ -84,6 +89,11 @@ class CallbacksMainWindow(object):
         d = gtk.FileChooserDialog(title="Load the configuration file",
                 parent=self._dialog, action=gtk.FILE_CHOOSER_ACTION_OPEN,
                 buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+        fil = gtk.FileFilter()
+        fil.set_name("FirstAidKit ini files (*.ini)")
+        fil.add_pattern("*.ini")
+        d.add_filter(fil)
+
         print(d.run())
         d.destroy()
         return True
@@ -94,6 +104,12 @@ class CallbacksMainWindow(object):
                 parent=self._dialog, action=gtk.FILE_CHOOSER_ACTION_SAVE,
                 buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT, gtk.STOCK_OK,
                     gtk.RESPONSE_ACCEPT))
+        d.set_filename("firstaidkit.ini")
+        fil = gtk.FileFilter()
+        fil.add_pattern("*.ini")
+        fil.set_name("FirstAidKit ini files (*.ini)")
+        d.add_filter(fil)
+
         ret=d.run()
 
         if ret==gtk.RESPONSE_ACCEPT:
@@ -102,7 +118,29 @@ class CallbacksMainWindow(object):
                 fd = open(filename, "w")
                 self._cfg.write(fd)
             except IOError, e:
-                pass
+                print e
+
+        d.destroy()
+        return True
+
+    def on_mainmenu_save_results_activate(self, widget, *args):
+        d = gtk.FileChooserDialog(title="Save the results file",
+                parent=self._dialog, action=gtk.FILE_CHOOSER_ACTION_SAVE,
+                buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT, gtk.STOCK_OK,
+                    gtk.RESPONSE_ACCEPT))
+        d.set_filename("results.zip")
+        fil = gtk.FileFilter()
+        fil.add_pattern("*.zip")
+        fil.set_name("FirstAidKit result archives (*.zip)")
+        d.add_filter(fil)
+        ret=d.run()
+
+        if ret==gtk.RESPONSE_ACCEPT:
+            try:
+                filename = d.get_filename()
+                self._info.dump(filename)
+            except IOError, e:
+                print e
 
         d.destroy()
         return True
@@ -468,13 +506,13 @@ class MainWindow(object):
     _cancel_answer = object()
     _no_answer = object()
 
-    def __init__(self, cfg, tasker, importance = logging.INFO, dir=""):
+    def __init__(self, cfg, info, tasker, importance = logging.INFO, dir=""):
         self._importance = importance
         self._cfg = cfg
         self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"),
                 "MainWindow")
         self._window = self._glade.get_widget("MainWindow")
-        self._cb = CallbacksMainWindow(self._window, cfg, tasker, self._glade,
+        self._cb = CallbacksMainWindow(self._window, cfg, info, tasker, self._glade,
                 self)
         self._glade.signal_autoconnect(self._cb)
         self._window.connect("destroy", self._cb.on_destroy)
