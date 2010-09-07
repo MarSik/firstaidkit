@@ -39,7 +39,8 @@ class OpenSCAPPlugin(Plugin):
                   ReturnBack: "policy", ReturnAbort: "clean"},
         "tailoring": {ReturnSuccess: "diagnose", ReturnFailure: "clean",
                       ReturnBack: "rules", ReturnAbort: "clean"},
-        "diagnose": {ReturnSuccess: "clean", ReturnFailure: "clean"},
+        "diagnose": {ReturnSuccess: "results", ReturnFailure: "clean"},
+        "results": {ReturnSuccess: "clean", ReturnFailure: "clean"},
         "clean": {ReturnSuccess: Plugin.final}
         }, description = "Performs a security and configuration audit of running system")
     flows["oscap_scan"].title = "Security Audit"
@@ -190,7 +191,7 @@ class OpenSCAPPlugin(Plugin):
         try:       
             Id = Msg.user1str
             result = Msg.user2num
-            self._info[Id] = result
+            setattr(self._info, Id, unicode(result))
             Issue = Plugin._issues.get(Id, None)
             Issue.set(checked = (result in
                                      (openscap.OSCAP.XCCDF_RESULT_FAIL,
@@ -219,7 +220,7 @@ class OpenSCAPPlugin(Plugin):
         
         try:
             Id = Msg.user1str
-            self._info[Id] = -1
+            setattr(self._info, Id, unicode(-1))
             Issue = Plugin._issues.get(Id, None)
             if Issue is None:
                 title = Msg.user3str
@@ -242,11 +243,16 @@ class OpenSCAPPlugin(Plugin):
             self._reporting.info("Selecting rule "+x.item, origin = self, level = PLUGIN)
 
         self._reporting.info("Starting OpenSCAP evaluation", origin = self, level = PLUGIN)
-        self._policy.evaluate()
+        self._oscap_result = self._policy.evaluate()
+        self._result=ReturnSuccess
+
+    def results(self):
+        self._policy.export(self._oscap_result, self._objs, "OpenSCAP results", "/tmp/oscap_results.xml")
+        self._info.attach("/tmp/oscap_results.xml", "oscap_results.xml")
         self._result=ReturnSuccess
         
     def clean(self):
-        openscap.xccdf.destroy(self._objs)
+        #openscap.xccdf.destroy(self._objs)
         self._reporting.info("OpenSCAP deinitialized", origin = self, level = PLUGIN)
         self._result=ReturnSuccess
 
