@@ -69,7 +69,7 @@ class OpenSCAPPlugin(Plugin):
             self._policy = self._xccdf_policy_model.policies[0]
             return
 
-        if not Config.operation.interactive:
+        if not Config.operation.interactive == "True":
             self._result=ReturnSuccess
             self._policy = self._xccdf_policy_model.policies[-1]
             return
@@ -105,7 +105,7 @@ class OpenSCAPPlugin(Plugin):
             self._result=ReturnSuccess
 
     def rules(self):
-        if not Config.operation.interactive:
+        if not Config.operation.interactive == "True":
             self._result=ReturnSuccess
             return
 
@@ -144,7 +144,7 @@ class OpenSCAPPlugin(Plugin):
         self._result=ReturnSuccess
 
     def tailoring(self):
-        if not Config.operation.interactive:
+        if not Config.operation.interactive == "True":
             self._result=ReturnSuccess
             return
 
@@ -193,14 +193,21 @@ class OpenSCAPPlugin(Plugin):
             result = Msg.user2num
             setattr(self._info, Id, unicode(result))
             Issue = Plugin._issues.get(Id, None)
-            Issue.set(checked = (result in
-                                     (openscap.OSCAP.XCCDF_RESULT_FAIL,
-                                      openscap.OSCAP.XCCDF_RESULT_PASS)),
-                                happened = (result == openscap.OSCAP.XCCDF_RESULT_FAIL),
-                                fixed = False,
-                                reporting  = Plugin._reporting,
-                                origin = Plugin,
-                                level = PLUGIN)
+            Issue.set(skipped = (result in
+                                 (openscap.OSCAP.XCCDF_RESULT_NOT_CHECKED,
+                                  openscap.OSCAP.XCCDF_RESULT_NOT_SELECTED,
+                                  openscap.OSCAP.XCCDF_RESULT_NOT_APPLICABLE)),
+                      checked = (result in
+                              (openscap.OSCAP.XCCDF_RESULT_FAIL,
+                               openscap.OSCAP.XCCDF_RESULT_PASS)),
+                      error = (result in
+                              (openscap.OSCAP.XCCDF_RESULT_ERROR,
+                               openscap.OSCAP.XCCDF_RESULT_UNKNOWN)),
+                      happened = (result == openscap.OSCAP.XCCDF_RESULT_FAIL),
+                      fixed = False,
+                      reporting  = Plugin._reporting,
+                      origin = Plugin,
+                      level = PLUGIN)
         except Exception, e:
             print e
 

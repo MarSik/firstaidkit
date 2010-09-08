@@ -327,6 +327,7 @@ class CallbacksMainWindow(object):
     def on_b_StopResults_activate(self, widget, *args):
         print("on_b_StopResults_activate")
         self._tasker.interrupt()
+        widget.set_sensitive(False)
         return True
 
 class CallbacksFlagList(object):
@@ -654,22 +655,23 @@ class MainWindow(object):
 
             state = tree_model.get_value(iter, 3)
 
+            if use_state_fg and state!=2 and state!=0:
+                cell_renderer.set_property("foreground-set", True)
+                cell_renderer.set_property("foreground-gdk",
+                        gtk.gdk.Color(red=50000, green=50000, blue=50000))
+            else:
+                cell_renderer.set_property("foreground-set", False)
+
             if colors[state] and use_state_bg:
                 cell_renderer.set_property("cell-background-set", True)
                 cell_renderer.set_property("cell-background-gdk", colors[state])
                 if state==4:
                     cell_renderer.set_property("foreground-set", True)
                     cell_renderer.set_property("foreground-gdk",
-                        gtk.gdk.Color(red=50000, green=50000, blue=50000))
+                        gtk.gdk.Color(red=65000, green=50000, blue=50000))
             else:
                 cell_renderer.set_property("cell-background-set", False)
 
-            if use_state_fg and state!=2:
-                cell_renderer.set_property("foreground-set", True)
-                cell_renderer.set_property("foreground-gdk",
-                        gtk.gdk.Color(red=40000, green=40000, blue=40000))
-            else:
-                cell_renderer.set_property("foreground-set", False)
 
             cell_renderer.set_property("text",
                     tree_model.get_value(iter, col))
@@ -706,8 +708,10 @@ class MainWindow(object):
     def update(self, mailbox, message):
 
         def issue_state(self):
-            if self._exception:
-                return ("Exception", 4)
+            if self._exception or self._error:
+                return ("Error", 4)
+            elif self._skipped:
+                return ("No result", 0)
             elif self._fixed:
                 return ("Fixed", 3)
             elif self._happened and self._checked:
@@ -803,6 +807,9 @@ class MainWindow(object):
 
         elif message["action"]==reporting.ISSUE:
                 i = message["message"]
+                ctx = self.status_text.get_context_id(message["origin"].name)
+                gobject.idle_add(_o, self.status_text.push, ctx,
+                    "%s: %s" % (str(i), i.description))
                 t,ids = issue_state(i)
                 if not self.result_list_iter.has_key(i):
                     self.result_list_iter[i] = self.result_list_store.append(

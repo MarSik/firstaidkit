@@ -31,8 +31,11 @@ class SimpleIssue(object):
         self._happened = False
         self._fixed = False
         self._exception = None
+        self._error = False
+        self._skipped = False
 
     def set(self, happened = None, fixed = None, checked = None,
+            skipped = None, error = None, 
             reporting = None, **kwreportingargs):
         """Set the state of this issue and send a report
 
@@ -43,6 +46,10 @@ class SimpleIssue(object):
             self._fixed = fixed
         if checked:
             self._checked = checked
+        if error:
+            self._error = error
+        if skipped:
+            self._skipped = skipped
         if reporting:
             reporting.issue(issue = self, **kwreportingargs)
 
@@ -54,7 +61,7 @@ Return values:
     False - NO, it is OK
     None - I don't know, there was an error"""
         #if the issue was fixed or not checked, the check si needed
-        if not self._checked or self._fixed:
+        if not self._checked or self._error or self._skipped or self._fixed:
             return None
         else:
             return self._happened
@@ -67,15 +74,25 @@ Return values:
     False - NO, it is still broken
     None - I don't know"""
         #if the issue was not checked, the check si needed
-        if not self._checked:
+        if not self._checked or self._error or self._skipped:
             return None
         else:
             #issue didn't happened or is fixed -> True
             return not self._happened or self._fixed
 
+    def skipped(self):
+        return self._skipped
+
+    def error(self):
+        return self._error
+
     def __str__(self):
         s = []
-        if self._fixed:
+        if self._error:
+            s.append("Error evaluating")
+        elif self._skipped:
+            s.append("Skipped checking of")
+        elif self._fixed:
             s.append("Fixed")
         elif self._happened and self._checked:
             s.append("Detected")
@@ -86,7 +103,8 @@ Return values:
 
         s.append(self.name)
 
-        if self._happened and self._checked:
+        if not self._error and not self._skipped and \
+           self._happened and self._checked:
             s.append("--")
             s.append(self.description)
 
