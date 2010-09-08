@@ -5,7 +5,7 @@
 
 Name:           firstaidkit
 Version:        0.2.15
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        System Rescue Tool
 
 Group:          Applications/System
@@ -99,7 +99,7 @@ password.
 Group:          Applications/System
 Summary:        OpenSCAP plugin for FirstAidKit
 Requires:       %{name} = %{version}-%{release}
-Requires:       openscap >= 0.6.3
+Requires:       openscap-python >= 0.6.3
 BuildArch:      noarch
 
 %description plugin-openscap
@@ -199,6 +199,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %{__install} -d $RPM_BUILD_ROOT%{libdir}/firstaidkit/plugins
 
 %{__cp} -f plugins/passwd.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
+%{__cp} -f plugins/freespace.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
 %{__cp} -f plugins/openscap_plugin.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
 %{__cp} -f plugins/xserver.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
 %{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
@@ -215,6 +216,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %dir %{_libdir}/firstaidkit/plugins
 %dir /usr/share/firstaidkit
 %dir /usr/share/firstaidkit/plugins
+/usr/share/firstaidkit/plugins/freespace.py*
 
 %files engine
 %defattr(-,root,root,-)
@@ -277,6 +279,10 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Wed Sep 08 2010 Martin Sivak <msivak@redhat.com> - 0.2.15-2
+- Fix dependency on OpenSCAP
+- Add freespace plugin
+
 * Tue Sep 07 2010 Martin Sivak <msivak@redhat.com> - 0.2.15-1
 - Saving results
 - Improvements in OpenSCAP plugin
