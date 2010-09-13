@@ -20,13 +20,14 @@ from pyfirstaidkit.plugins import Plugin,Flow
 from pyfirstaidkit.reporting import PLUGIN
 from pyfirstaidkit.returns import *
 from pyfirstaidkit.issue import SimpleIssue
+import os.path
 import openscap_api as openscap
 import time
 
 class OpenSCAPPlugin(Plugin):
     """Performs security audit according to the SCAP policy"""
     name = "OpenSCAP audit"
-    version = "0.0.1"
+    version = "0.1.0"
     author = "Martin Sivak <msivak@redhat.com>"
 
     flows = Flow.init()
@@ -196,13 +197,13 @@ class OpenSCAPPlugin(Plugin):
             Issue.set(skipped = (result in
                                  (openscap.OSCAP.XCCDF_RESULT_NOT_CHECKED,
                                   openscap.OSCAP.XCCDF_RESULT_NOT_SELECTED,
-                                  openscap.OSCAP.XCCDF_RESULT_NOT_APPLICABLE)),
+                                  openscap.OSCAP.XCCDF_RESULT_NOT_APPLICABLE,
+                                  openscap.OSCAP.XCCDF_RESULT_UNKNOWN)),
                       checked = (result in
                               (openscap.OSCAP.XCCDF_RESULT_FAIL,
                                openscap.OSCAP.XCCDF_RESULT_PASS)),
                       error = (result in
-                              (openscap.OSCAP.XCCDF_RESULT_ERROR,
-                               openscap.OSCAP.XCCDF_RESULT_UNKNOWN)),
+                              (openscap.OSCAP.XCCDF_RESULT_ERROR,)),
                       happened = (result == openscap.OSCAP.XCCDF_RESULT_FAIL),
                       fixed = False,
                       reporting  = Plugin._reporting,
@@ -254,8 +255,9 @@ class OpenSCAPPlugin(Plugin):
         self._result=ReturnSuccess
 
     def results(self):
-        self._policy.export(self._oscap_result, self._objs, "OpenSCAP results", "/tmp/oscap_results.xml")
-        self._info.attach("/tmp/oscap_results.xml", "oscap_results.xml")
+        files = self._policy.export(self._oscap_result, self._objs, "OpenSCAP results", "/tmp/oscap_results.xml", "/tmp/oscap_res_")
+        for f in files:
+            self._info.attach(f, os.path.basename(f))
         self._result=ReturnSuccess
         
     def clean(self):
