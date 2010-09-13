@@ -189,6 +189,9 @@ class FAKInfo(ConfigParser.SafeConfigParser, FAKConfigMixIn):
         self._attachments = []
     
     def write(self, fd=sys.stdout):
+        fd.write("--- Result files ---\n")
+        for f,fas in self._attachments:
+            fd.write("%s: %s\n" % (fas, f))
         fd.write("--- Info section ---\n")
         ConfigParser.SafeConfigParser.write(self, fd)
         fd.write("--------------------\n")
