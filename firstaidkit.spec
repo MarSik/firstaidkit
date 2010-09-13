@@ -4,8 +4,8 @@
 %define debug_package %{nil}
 
 Name:           firstaidkit
-Version:        0.2.15
-Release:        2%{?dist}
+Version:        0.2.16
+Release:        1%{?dist}
 Summary:        System Rescue Tool
 
 Group:          Applications/System
@@ -279,6 +279,10 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Mon Sep 13 2010 Martin Sivak <msivak@redhat.com> - 0.2.16-1
+- Add more result files from OpenSCAP
+- Support skipped and error states of issues
+
 * Wed Sep 08 2010 Martin Sivak <msivak@redhat.com> - 0.2.15-2
 - Fix dependency on OpenSCAP
 - Add freespace plugin
