@@ -4,7 +4,7 @@
 %define debug_package %{nil}
 
 Name:           firstaidkit
-Version:        0.2.16
+Version:        0.2.17
 Release:        1%{?dist}
 Summary:        System Rescue Tool
 
@@ -279,6 +279,9 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Tue Sep 14 2010 Martin Sivak <msivak@redhat.com> - 0.2.17-1
+- Fix Info object resetting
+
 * Mon Sep 13 2010 Martin Sivak <msivak@redhat.com> - 0.2.16-1
 - Add more result files from OpenSCAP
 - Support skipped and error states of issues
