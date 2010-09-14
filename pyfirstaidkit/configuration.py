@@ -187,7 +187,7 @@ class FAKInfo(ConfigParser.SafeConfigParser, FAKConfigMixIn):
         ConfigParser.SafeConfigParser.__init__(self, *args, **kwargs)
         FAKConfigMixIn.__init__(self)
         self._attachments = []
-    
+
     def write(self, fd=sys.stdout):
         fd.write("--- Result files ---\n")
         for f,fas in self._attachments:
@@ -210,11 +210,20 @@ class FAKInfo(ConfigParser.SafeConfigParser, FAKConfigMixIn):
             saveas = file
         self._attachments.append((file, saveas))
 
-Info = FAKInfo()
+class InfoProxy(object):
+    __slots__ = ["_obj"]
+    
+    def __init__(self, obj):
+        self._obj = obj
+
+    def __getattr__(self, name):
+        return getattr(self._obj, name)
+
+Info = InfoProxy(FAKInfo())
 Info.lock()
 
 def resetInfo():
     global Info
-    Info = FAKInfo()
+    Info._obj = FAKInfo()
     Info.lock()
     
