@@ -53,7 +53,13 @@ class OpenSCAPPlugin(Plugin):
         self._issues = {}
     
     def prepare(self):
-        self._objs = openscap.xccdf.init(self._xccdf)
+        try:
+            self._objs = openscap.xccdf.init(self._xccdf)
+        except ImportError, e:
+            self._reporting.error(str(e), origin = self, level = PLUGIN)
+            self._result=ReturnFailure
+            return
+        
         self._xccdf_policy_model = self._objs["policy_model"]
         self._policy = None
         

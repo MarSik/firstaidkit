@@ -4,7 +4,7 @@
 %define debug_package %{nil}
 
 Name:           firstaidkit
-Version:        0.2.17
+Version:        0.2.18
 Release:        1%{?dist}
 Summary:        System Rescue Tool
 
@@ -99,7 +99,8 @@ password.
 Group:          Applications/System
 Summary:        OpenSCAP plugin for FirstAidKit
 Requires:       %{name} = %{version}-%{release}
-Requires:       openscap-python >= 0.6.3
+Requires:       openscap-python >= 0.6.5
+Requires:       openscap-content >= 0.6.5
 BuildArch:      noarch
 
 %description plugin-openscap
@@ -279,6 +280,10 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Wed Nov 24 2010 Martin Sivak <msivak@redhat.com> - 0.2.18-1
+- Enhance OpenSCAP error detection
+- Require SCAP content 
+
 * Tue Sep 14 2010 Martin Sivak <msivak@redhat.com> - 0.2.17-1
 - Fix Info object resetting
 
