@@ -179,10 +179,7 @@ packet.
 %{__install} -p frontend/*.py  $RPM_BUILD_ROOT/usr/share/firstaidkit/frontend/
 %{__install} -p frontend/*.glade  $RPM_BUILD_ROOT/usr/share/firstaidkit/frontend/
 %{__install} -p frontend/*.gladep  $RPM_BUILD_ROOT/usr/share/firstaidkit/frontend/
-<<<<<<< HEAD
 %{__install} -p frontend/*.xml $RPM_BUILD_ROOT/usr/share/firstaidkit/frontend/
-=======
->>>>>>> Add icon to menu
 %{__install} -d $RPM_BUILD_ROOT/usr/share/icons
 %{__install} -p images/FAK-bandaid.png $RPM_BUILD_ROOT/usr/share/icons/firstaidkit.png
 desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applications %{SOURCE3}
@@ -337,6 +334,10 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 - Add missing files to configuration and docs
 - Use full sized buttons in text-mode firstaidkit-qs
   Resolves: rhbz#576110
+
+* Fri Jan 07 2011 Martin Sivak <msivak@redhat.com> - 0.2.10.1-1
+- Add manpage for the config file
+  Resolves: rhbz#584677
 
 * Mon May 22 2010 Martin Sivak <msivak@redhat.com> - 0.2.10-4
 - Add menu icon
