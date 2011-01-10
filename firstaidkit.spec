@@ -268,6 +268,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+<<<<<<< HEAD
 * Wed Aug 03 2011 Martin Sivak <msivak@redhat.com> - 0.3.2-1
 - Removed GRUB plugin, it was a broken hack anyways
 
@@ -334,6 +335,10 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 - Add missing files to configuration and docs
 - Use full sized buttons in text-mode firstaidkit-qs
   Resolves: rhbz#576110
+
+* Mon Jan 10 2011 Martin Sivak <msivak@redhat.com> - 0.2.10.1-2
+- Fix the manpage for the config file
+  Resolves: rhbz#584677
 
 * Fri Jan 07 2011 Martin Sivak <msivak@redhat.com> - 0.2.10.1-1
 - Add manpage for the config file
