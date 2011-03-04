@@ -29,6 +29,7 @@ from threading import Thread
 from issue import SimpleIssue
 import subprocess
 import cPickle as pickle
+import ConfigParser
 
 class RemoteTask(Thread):
     def __init__(self, reporting, name, address, configData):
@@ -42,22 +43,22 @@ class RemoteTask(Thread):
         
     def run(self):
         running = True
-        self.reporting.issue(issue = state, level = reporting.FIRSTAIDKIT, origin = self)
-        self.conn = subprocess.Popen(["ssh", address, "-c", "firstaidkit-shell"],
+        self.reporting.issue(issue = self.state, level = FIRSTAIDKIT, origin = self)
+        self.conn = subprocess.Popen(["ssh", self.address, "-c", "firstaidkit-shell"],
                                 stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
                                 close_fds = True)
 
-        welcomeLine = self.conn.stdout.line.readline()
+        welcomeLine = self.conn.stdout.readline()
         # start wasn't successful
         if not welcomeLine.startswith("[firstaidkit-shell] Ready"):
-            self.state.set(checked = True, happened = True, reporting = self.reporting)
+            self.state.set(checked = True, happened = True, reporting = self.reporting, origin = self)
             (report_file, stderr) = self.conn.communicate()
             return
         
         self.cfg.write(self.conn.stdin)
         self.conn.stdin.write("\n[commit]\n")
 
-        welcomeLine = self.conn.stdout.line.readline()
+        welcomeLine = self.conn.stdout.readline()
         # config wasn't successful
         if not welcomeLine.startswith("[firstaidkit-shell] Starting"):
             self.state.set(checked = True, happened = True, reporting = self.reporting)
@@ -185,7 +186,7 @@ class Tasker(object):
             #prepare remote tasks
             remoteThreads = []
             if self._config.has_section("remote"):
-                targets = self._config.options("items")
+                targets = self._config.items("remote")
                 for (name, spec) in targets:
                     address, cfg = spec.split(None, 1)
                     remoteThreads.append(RemoteTask(self._reporting, name, address, cfg))
