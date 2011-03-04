@@ -257,7 +257,7 @@ class Reports(object):
 
     #There will be helper methods inspired by logging module
     def end(self, origin, level = PLUGIN):
-        return self.put(None, origin, level, None, END, importance = 1000)
+        return self.put(None, origin, level, END, importance = 1000)
 
     def error(self, message, origin, inreplyto = None, level = PLUGIN, action = INFO):
         Logger.error(origin.name+": "+message)
