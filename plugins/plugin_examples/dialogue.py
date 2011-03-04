@@ -22,6 +22,7 @@ from pyfirstaidkit.plugins import Plugin,Flow
 from pyfirstaidkit.reporting import PLUGIN
 from pyfirstaidkit.returns import *
 from pyfirstaidkit.issue import SimpleIssue
+from pyfirstaidkit.configuration import Config
 
 class DialoguePlugin(Plugin):
     """This plugin demonstrates asking the user for information."""
@@ -33,11 +34,15 @@ class DialoguePlugin(Plugin):
         Plugin.__init__(self, *args, **kwargs)
         self._issue = SimpleIssue(self.name, self.description)
 
+    @classmethod
+    def getDeps(cls):
+        return set(["interactive"]).union(Plugin.getDeps())
+
     def prepare(self):
         self._issue.set(reporting = self._reporting, origin = self,
                         level = PLUGIN)
         self._result=ReturnSuccess
-
+            
     def backup(self):
         self._result=ReturnSuccess
 
