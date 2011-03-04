@@ -189,8 +189,7 @@ class Reports(object):
         if destination is not None:
             return destination.put(message = message, origin = origin, level = level, action = action, importance = importance, reply = reply, title = title, inreplyto = inreplyto)
 
-        origin_msg = object()
-        origin_msg.name = name
+        origin_msg = Origin(origin.name)
         
         data = {"level": level, "origin": origin_msg, "action": action,
                 "importance": importance, "message": message,
