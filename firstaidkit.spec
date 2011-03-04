@@ -284,6 +284,9 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Fri Mar 04 2011 Martin Sivak <msivak@redhat.com> - 0.2.20-1
+- Add prototype of distributed testing feature
+
 * Fri Jan 07 2011 Martin Sivak <msivak@redhat.com> - 0.2.19-1
 - Add manpage for the config file
   Resolves: rhbz#584677
