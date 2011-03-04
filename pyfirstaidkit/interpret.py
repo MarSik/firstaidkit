@@ -169,7 +169,7 @@ class Tasker(object):
 
             if self._config.operation.mode == "plugin":
                 pluginlist = self._config.operation._list("plugin")
-            elif self._config.operation == "monitor":
+            elif self._config.operation.mode == "monitor":
                 pluginlist = []
             else:
                 pluginlist = set(pluginSystem.list())
@@ -282,7 +282,7 @@ class Tasker(object):
             self._reporting.stop(level = TASKER, origin = self)
             return False
 
-        if self._config.operation.printinfo == "True" and self._config.operation.gui != "remote":
+        if self._config.operation.printinfo == "True":
             Info.write()
 
         self._reporting.stop(level = TASKER, origin = self)
