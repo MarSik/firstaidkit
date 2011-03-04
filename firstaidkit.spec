@@ -4,7 +4,7 @@
 %define debug_package %{nil}
 
 Name:           firstaidkit
-Version:        0.2.19
+Version:        0.2.20
 Release:        1%{?dist}
 Summary:        System Rescue Tool
 
