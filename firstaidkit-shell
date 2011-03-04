@@ -24,6 +24,7 @@ from pyfirstaidkit import reporting
 from pyfirstaidkit import initLogger
 from pyfirstaidkit.errors import InvalidPluginNameException
 from pyfirstaidkit.utils import BackupException
+from cStringIO import StringIO
 
 class Output(object):
     _no_answer = object()
