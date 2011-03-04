@@ -188,10 +188,19 @@ class Reports(object):
 
         if destination is not None:
             return destination.put(message = message, origin = origin, level = level, action = action, importance = importance, reply = reply, title = title, inreplyto = inreplyto)
+
+        origin_msg = object()
+        origin_msg.name = name
         
-        data = {"level": level, "origin": origin, "action": action,
+        data = {"level": level, "origin": origin_msg, "action": action,
                 "importance": importance, "message": message,
                 "reply": reply, "inreplyto": inreplyto, "title": title}
+
+        self.put_raw(data)
+
+    def put_raw(self, data, destination = None):
+        if destination is not None:
+            return destination.put_raw(data)
 
         try:
             self._queue.put(data, block = False)

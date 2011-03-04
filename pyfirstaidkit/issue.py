@@ -20,9 +20,11 @@
 # 02139, USA.
 
 class SimpleIssue(object):
-    def __init__(self, name, description):
+    def __init__(self, name, description, remote_name = None, remote_address = None):
         self.name = name
         self.description = description
+        self.remote = remote_name
+        self.remote_address = remote_Address
         self.reset()
 
     def reset(self):

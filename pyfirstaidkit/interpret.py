@@ -24,9 +24,61 @@ import copy
 from errors import *
 from utils import FileBackupStore
 from dependency import Dependencies
-from configuration import Info
+from configuration import Info, getConfigBits
+from threading import Thread
+from issue import SimpleIssue
+import subprocess
+import cPickle as pickle
 
-class Tasker:
+class RemoteTask(Thread):
+    def __init__(self, reporting, name, address, configData):
+        Thread.__init__(self)
+        self.state = SimpleIssue(name, address, remote_name = name, remote_address = address)
+        self.conn = None
+        self.cfg = getConfigBits(configData)
+        self.reporting = reporting
+        self.name = name
+        self.address = address
+        
+    def run(self):
+        running = True
+        self.reporting.issue(issue = state, level = reporting.FIRSTAIDKIT, origin = self)
+        self.conn = subprocess.Popen(["ssh", address, "-c", "firstaidkit-shell"],
+                                stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
+                                close_fds = True)
+
+        welcomeLine = self.conn.stdout.line.readline()
+        # start wasn't successful
+        if not welcomeLine.startswith("[firstaidkit-shell] Ready"):
+            self.state.set(checked = True, happened = True, reporting = self.reporting)
+            (report_file, stderr) = self.conn.communicate()
+            return
+        
+        self.cfg.write(self.conn.stdin)
+        self.conn.stdin.write("\n[commit]\n")
+
+        welcomeLine = self.conn.stdout.line.readline()
+        # config wasn't successful
+        if not welcomeLine.startswith("[firstaidkit-shell] Starting"):
+            self.state.set(checked = True, happened = True, reporting = self.reporting)
+            (report_file, stderr) = self.conn.communicate()
+            return
+        else:
+            self.state.set(checked = True, happened = False, reporting = self.reporting)
+
+        while running:
+            msg = pickle.load(self.conn.stdout)
+            if msg["level"]==reporting.FIRSTAIDKIT and msg["action"]==reporting.STOP:
+                running = False
+            msg["remote_name"] = self.name
+            msg["remote_address"] = self.address
+            self.reporting.put_raw(msg)
+            
+        report_file = self.conn.stdout.read()
+        stderr = self.conn.stderr.read()
+        self.conn.wait()
+
+class Tasker(object):
     """The main interpret of tasks described in Config object"""
 
     name = "Task interpreter"
@@ -103,16 +155,22 @@ class Tasker:
                     origin = self, importance = logging.WARNING)
             self._provide.unprovide("root")
 
-        #initialize the startup set of flags
+        # Initialize the interactivity
+        if self._config.operation.interactive == "True":
+            self._provide.provide("interactive")
+
+        # Initialize the startup set of flags
         for flag in self._config.operation._list("flags"):
             self._provide.provide(flag)
 
         # For the auto, auto-flow, plugin, flow cases.
         if self._config.operation.mode in ("auto", "auto-flow", "plugin",
-                "flow"):
+                "flow", "monitor"):
 
             if self._config.operation.mode == "plugin":
                 pluginlist = self._config.operation._list("plugin")
+            elif self._config.operation == "monitor":
+                pluginlist = []
             else:
                 pluginlist = set(pluginSystem.list())
 
@@ -123,6 +181,18 @@ class Tasker:
                 pluginlist = self._config.operation._list("plugin")
             else:
                 flows = len(pluginlist)*[None]
+
+            #prepare remote tasks
+            remoteThreads = []
+            if self._config.has_section("remote"):
+                targets = self._config.options("items")
+                for (name, spec) in targets:
+                    address, cfg = spec.split(None, 1)
+                    remoteThreads.append(RemoteTask(self._reporting, name, address, cfg))
+
+            #start remote tasks
+            for th in remoteThreads:
+                th.start()
 
             #iterate through plugins until there is no plugin left or no
             #action performed during whole iteration
@@ -165,6 +235,10 @@ class Tasker:
                                          "unsatisfied dependencies"% (plugin,), level = TASKER, \
                                          origin = self, importance = logging.WARNING)
 
+            #wait until the remotes finish
+            for th in remoteThreads:
+                th.join()
+                
         # For the flags case
         elif self._config.operation.mode == "flags":
             self._reporting.table(self._provide.known(), level = TASKER,

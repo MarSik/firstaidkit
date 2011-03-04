@@ -27,6 +27,7 @@ import cPickle as pickle
 import copy
 import tempfile
 import datetime
+import logging
 
 class BackupException(Exception):
     pass
@@ -271,7 +272,7 @@ class FileBackupStore(BackupStoreInterface):
         self._backups = {}
 
         self.__class__._singleton = weakref.proxy(self)
-        print("Backup system initialized")
+        # print("Backup system initialized")
 
     def getBackup(self, id, persistent = False):
         if not self._backups.has_key(id):
@@ -299,10 +300,11 @@ class FileBackupStore(BackupStoreInterface):
         if backupEmpty:
             os.rmdir(self._path)
         else:
-            print("I'm keeping persistent backup spaces intact in %s" % (self._path,))
+            # print("I'm keeping persistent backup spaces intact in %s" % (self._path,))
+            pass
 
 
-        print("Backup closed")
+        # print("Backup closed")
 
     @classmethod
     def get(cls, path):
