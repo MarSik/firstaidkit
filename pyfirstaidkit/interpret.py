@@ -135,7 +135,7 @@ class Tasker(object):
 
     def end(self):
         """Signalize end of operations to all necessary places"""
-        self._reporting.end(level = FIRSTAIDKIT)
+        self._reporting.end(origin = self, level = FIRSTAIDKIT)
 
     def run(self):
         self._reporting.start(level = TASKER, origin = self)

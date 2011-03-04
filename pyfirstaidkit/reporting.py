@@ -256,8 +256,8 @@ class Reports(object):
             self._parent.notifyAll(data, sender)
 
     #There will be helper methods inspired by logging module
-    def end(self, level = PLUGIN):
-        return self.put(None, level, None, END, importance = 1000)
+    def end(self, origin, level = PLUGIN):
+        return self.put(None, origin, level, None, END, importance = 1000)
 
     def error(self, message, origin, inreplyto = None, level = PLUGIN, action = INFO):
         Logger.error(origin.name+": "+message)
