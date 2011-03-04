@@ -24,7 +24,7 @@ class SimpleIssue(object):
         self.name = name
         self.description = description
         self.remote = remote_name
-        self.remote_address = remote_Address
+        self.remote_address = remote_address
         self.reset()
 
     def reset(self):
