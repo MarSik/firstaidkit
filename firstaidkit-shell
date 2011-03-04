@@ -96,7 +96,10 @@ if __name__=="__main__":
 
     # read config from master
     submitted_config = StringIO()
-    for line in sys.stdin:
+    while True:
+        line = sys.stdin.readline()
+        if line=="":
+            break
         if line=="[commit]\n":
             break
         else:
