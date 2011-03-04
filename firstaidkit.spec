@@ -230,6 +230,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %{_bindir}/firstaidkit
 %{_bindir}/firstaidkit-qs
 %{_bindir}/firstaidkitrevert
+%{_bindir}/firstaidkit-shell
 %config(noreplace) %{_sysconfdir}/firstaidkit/firstaidkit.conf
 %attr(0644,root,root) %{_mandir}/man1/firstaidkit.1.gz
 %attr(0644,root,root) %{_mandir}/man5/firstaidkit.conf.5.gz
