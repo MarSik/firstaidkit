@@ -90,6 +90,7 @@ if __name__=="__main__":
 
     Config.operation.gui = "remote"
     Config.operation.interactive = "False"
+    Config.operation.printinfo == "False"
 
     # send welcome line
     sys.stdout.write("[firstaidkit-shell] Ready\n")

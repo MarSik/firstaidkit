@@ -282,7 +282,7 @@ class Tasker(object):
             self._reporting.stop(level = TASKER, origin = self)
             return False
 
-        if self._config.operation.printinfo:
+        if self._config.operation.printinfo == "True" and self._config.operation.gui != "remote":
             Info.write()
 
         self._reporting.stop(level = TASKER, origin = self)
