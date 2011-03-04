@@ -5,7 +5,7 @@
 
 Name:           firstaidkit
 Version:        0.2.20
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        System Rescue Tool
 
 Group:          Applications/System
@@ -284,12 +284,14 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Fri Mar 04 2011 Martin Sivak <msivak@redhat.com> - 0.2.20-2
+- Add firstaidkit-shell
+
 * Fri Mar 04 2011 Martin Sivak <msivak@redhat.com> - 0.2.20-1
 - Add prototype of distributed testing feature
 
-* Fri Jan 07 2011 Martin Sivak <msivak@redhat.com> - 0.2.19-1
-- Add manpage for the config file
-  Resolves: rhbz#584677
+* Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.2.18-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
 * Wed Nov 24 2010 Martin Sivak <msivak@redhat.com> - 0.2.18-1
 - Enhance OpenSCAP error detection

@@ -65,7 +65,7 @@ setup(name='firstaidkit',
       url='http://fedorahosted.org/firstaidkit',
       license='GPLv2+',
       packages = ['pyfirstaidkit', 'pyfirstaidkit/utils'],
-      scripts = ['firstaidkit', 'firstaidkitrevert', 'firstaidkit-qs'],
+      scripts = ['firstaidkit', 'firstaidkit-shell', 'firstaidkitrevert', 'firstaidkit-qs'],
       data_files = [('', '')],
       cmdclass = cmdclass,
       )
