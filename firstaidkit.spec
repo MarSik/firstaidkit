@@ -57,6 +57,7 @@ Group:          Applications/System
 Summary:        All firstaidkit plugins, and the gui
 Requires:       %{name} = %{version}-%{release}
 Requires:       %{name}-plugin-passwd
+Requires:       %{name}-plugin-freespace
 Requires:       %{name}-plugin-xserver
 Requires:       %{name}-plugin-openscap
 %ifnarch s390 s390x ppc64 ppc sparc
@@ -84,6 +85,14 @@ BuildArch:      noarch
 %description gui
 This package contains the Gtk based FirstAidKit GUI
 
+%package plugin-freespace
+Group:          Applications/System
+Summary:        FirstAidKit plugin to check free space
+Requires:       %{name} = %{version}-%{release}
+BuildArch:      noarch
+
+%description plugin-freespace
+This FirstAidKit plugin checkes for sufficient free space on target drives.
 
 %package plugin-passwd
 Group:          Applications/System
@@ -219,7 +228,6 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %dir %{_libdir}/firstaidkit/plugins
 %dir /usr/share/firstaidkit
 %dir /usr/share/firstaidkit/plugins
-/usr/share/firstaidkit/plugins/freespace.py*
 
 %files engine
 %defattr(-,root,root,-)
@@ -255,6 +263,9 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %files plugin-all
 %defattr(-,root,root,-)
 
+%files plugin-freespace
+/usr/share/firstaidkit/plugins/freespace.py*
+
 %files plugin-passwd
 %defattr(-,root,root,-)
 /usr/share/firstaidkit/plugins/passwd.py*
@@ -284,6 +295,9 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Tue Mar 08 2011 Martin Sivak <msivak@redhat.com> - 0.2.20-3
+- move freespace plugin to it's own package
+
 * Fri Mar 04 2011 Martin Sivak <msivak@redhat.com> - 0.2.20-2
 - Add firstaidkit-shell
 
