@@ -94,6 +94,7 @@ if __name__=="__main__":
 
     # send welcome line
     sys.stdout.write("[firstaidkit-shell] Ready\n")
+    sys.stdout.flush()
 
     # read config from master
     submitted_config = StringIO()
@@ -103,6 +104,9 @@ if __name__=="__main__":
             break
         if line=="[commit]\n":
             break
+        if line=="[abort]\n":
+            sys.stdout.write("[firstaidkit-shell] Aborting\n")
+            sys.exit(1)
         else:
             submitted_config.write(line)
     submitted_config.seek(0)
@@ -144,12 +148,14 @@ if __name__=="__main__":
     Config.lock()
 
     sys.stdout.write("[firstaidkit-shell] Starting\n")
+    sys.stdout.flush()
 
     try:
         singlerun.run()
+        singlerun.end()
+        sys.stdout.flush()
         (fd, fpath) = tempfile.mkstemp()
         Info.dump(fpath)
-        singlerun.end()
         sys.stdout.write(file(fpath).read())
         os.unlink(fpath)
         sys.stdout.close()

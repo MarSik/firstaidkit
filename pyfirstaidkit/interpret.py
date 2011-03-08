@@ -18,7 +18,7 @@
 import os
 import sys
 from plugins import PluginSystem
-from reporting import Reports, TASKER, PLUGINSYSTEM, FIRSTAIDKIT
+from reporting import Reports, TASKER, PLUGINSYSTEM, FIRSTAIDKIT, END
 import logging
 import copy
 from errors import *
@@ -34,7 +34,7 @@ import ConfigParser
 class RemoteTask(Thread):
     def __init__(self, reporting, name, address, configData):
         Thread.__init__(self)
-        self.state = SimpleIssue(name, address, remote_name = name, remote_address = address)
+        self.state = SimpleIssue("Remote run on %s" % name, address, remote_name = name, remote_address = address)
         self.conn = None
         self.cfg = getConfigBits(configData)
         self.reporting = reporting
@@ -44,15 +44,15 @@ class RemoteTask(Thread):
     def run(self):
         running = True
         self.reporting.issue(issue = self.state, level = FIRSTAIDKIT, origin = self)
-        self.conn = subprocess.Popen(["ssh", self.address, "-c", "firstaidkit-shell"],
+        self.conn = subprocess.Popen(["ssh", self.address, "firstaidkit-shell"],
                                 stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-                                close_fds = True)
+                                bufsize = 1, close_fds = True)
 
         welcomeLine = self.conn.stdout.readline()
         # start wasn't successful
         if not welcomeLine.startswith("[firstaidkit-shell] Ready"):
             self.state.set(checked = True, happened = True, reporting = self.reporting, origin = self)
-            (report_file, stderr) = self.conn.communicate()
+            (report_file, stderr) = self.conn.communicate("[abort]\n")
             return
         
         self.cfg.write(self.conn.stdin)
@@ -61,15 +61,19 @@ class RemoteTask(Thread):
         welcomeLine = self.conn.stdout.readline()
         # config wasn't successful
         if not welcomeLine.startswith("[firstaidkit-shell] Starting"):
-            self.state.set(checked = True, happened = True, reporting = self.reporting)
-            (report_file, stderr) = self.conn.communicate()
+            self.state.set(checked = True, happened = True, reporting = self.reporting, origin = self)
+            (report_file, stderr) = self.conn.communicate("[abort]\n")
             return
         else:
-            self.state.set(checked = True, happened = False, reporting = self.reporting)
-
+            self.state.set(checked = True, happened = False, reporting = self.reporting, origin = self)
+            
         while running:
-            msg = pickle.load(self.conn.stdout)
-            if msg["level"]==reporting.FIRSTAIDKIT and msg["action"]==reporting.STOP:
+            try:
+                msg = pickle.load(self.conn.stdout)
+            except pickle.UnpicklingError, e:
+                print e
+                continue
+            if msg["level"]==FIRSTAIDKIT and msg["action"]==END:
                 running = False
             msg["remote_name"] = self.name
             msg["remote_address"] = self.address
