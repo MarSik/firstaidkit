@@ -510,6 +510,9 @@ class MainWindow(object):
     _no_answer = object()
 
     def __init__(self, cfg, info, tasker, importance = logging.INFO, dir=""):
+        # initialize threads
+        gtk.gdk.threads_init()
+        
         self._importance = importance
         self._cfg = cfg
         self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"),
@@ -638,7 +641,7 @@ class MainWindow(object):
 
         # results
         self.result_list_store = gtk.ListStore(gobject.TYPE_STRING,
-                gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_INT)
+                gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_INT, gobject.TYPE_STRING)
         self.result_list = self._glade.get_widget("tree_Results")
         self.result_list.set_model(self.result_list_store)
         self.result_list_iter = {}
@@ -699,11 +702,20 @@ class MainWindow(object):
         self.result_list_col_3.add_attribute(self.result_rend_text, 'text', 3)
         self.result_list_col_3.set_property("visible", False)
 
+        self.result_list_col_remote = gtk.TreeViewColumn('Node')
+        self.result_list_col_remote.pack_start(self.result_rend_text, True)
+        self.result_list_col_remote.add_attribute(self.result_rend_text, 'text', 4)
+        self.result_list_col_remote.set_property("visible", False)
+
+        self.result_list.append_column(self.result_list_col_remote)
         self.result_list.append_column(self.result_list_col_0)
         self.result_list.append_column(self.result_list_col_1)
         self.result_list.append_column(self.result_list_col_2)
         self.result_list.append_column(self.result_list_col_3)
-        self.result_list.set_search_column(0)
+        self.result_list.set_search_column(1)
+
+    def remote(self, enable = True):
+        self.result_list_col_remote.set_property("visible", enable)
 
     def update(self, mailbox, message):
 
@@ -813,7 +825,7 @@ class MainWindow(object):
                 t,ids = issue_state(i)
                 if not self.result_list_iter.has_key(i):
                     self.result_list_iter[i] = self.result_list_store.append(
-                            [i.name, t, i.description, ids])
+                            [i.name, t, i.description, ids, i.remote_name])
                 else:
                     for idx,val in enumerate([i.name, t, i.description, ids]):
                         gobject.idle_add(_o, self.result_list_store.set,
@@ -824,10 +836,9 @@ class MainWindow(object):
             print(message)
 
     def run(self):
-        gtk.gdk.threads_init()
-        gtk.gdk.threads_enter()
+#        gtk.gdk.threads_enter()
         gtk.main()
-        gtk.gdk.threads_leave()
+#        gtk.gdk.threads_leave()
 
     def _get_dialog(self, Id):
         dir = os.path.dirname(self._glade.relative_file("."))
