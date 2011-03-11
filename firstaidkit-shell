@@ -40,8 +40,6 @@ class Output(object):
                                    reporting.PASSWORD_QUESTION):
             return
         else:
-            message["origin"] = message["origin"]
-            message["remote"] = True
             pickle.dump(message, sys.stdout)
 
 class Flags:

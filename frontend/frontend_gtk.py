@@ -682,20 +682,29 @@ class MainWindow(object):
 
         self.result_rend_text = gtk.CellRendererText()
 
+        def sort_column(col, colid):
+            self.result_list_store.set_sort_column_id(colid, gtk.SORT_ASCENDING)
+
         self.result_list_col_0 = gtk.TreeViewColumn('Name')
         self.result_list_col_0.pack_start(self.result_rend_text, True)
         self.result_list_col_0.set_cell_data_func(self.result_rend_text,
                 result_rend_text_func, (False, False, 0))
+        self.result_list_col_0.set_property('clickable', True)
+        self.result_list_col_0.connect('clicked', sort_column, 0)
 
         self.result_list_col_1 = gtk.TreeViewColumn('Status')
         self.result_list_col_1.pack_start(self.result_rend_text, True)
         self.result_list_col_1.set_cell_data_func(self.result_rend_text,
                 result_rend_text_func, (False, True, 1))
+        self.result_list_col_1.set_property('clickable', True)
+        self.result_list_col_1.connect('clicked', sort_column, 1)
+
 
         self.result_list_col_2 = gtk.TreeViewColumn('Description')
         self.result_list_col_2.pack_start(self.result_rend_text, True)
         self.result_list_col_2.set_cell_data_func(self.result_rend_text,
                 result_rend_text_func, (True, False, 2))
+        self.result_list_col_2.set_property('clickable', True)
 
         self.result_list_col_3 = gtk.TreeViewColumn('Status ID')
         self.result_list_col_3.pack_start(self.result_rend_text, True)
@@ -706,7 +715,9 @@ class MainWindow(object):
         self.result_list_col_remote.pack_start(self.result_rend_text, True)
         self.result_list_col_remote.add_attribute(self.result_rend_text, 'text', 4)
         self.result_list_col_remote.set_property("visible", False)
-
+        self.result_list_col_remote.set_property('clickable', True)
+        self.result_list_col_remote.connect('clicked', sort_column, 4)
+        
         self.result_list.append_column(self.result_list_col_remote)
         self.result_list.append_column(self.result_list_col_0)
         self.result_list.append_column(self.result_list_col_1)
@@ -741,7 +752,7 @@ class MainWindow(object):
 
         """Read the reporting system message and schedule a call to update
         stuff in the gui using gobject.idle_add(_o, func, params...)"""
-        if message["action"]==reporting.END:
+        if message["action"]==reporting.END and not message["remote"]:
             gobject.idle_add(_o, self._window.destroy)
 
         elif message["action"]==reporting.CHOICE_QUESTION:
@@ -819,26 +830,28 @@ class MainWindow(object):
 
         elif message["action"]==reporting.ISSUE:
                 i = message["message"]
+                iid = i.id
                 ctx = self.status_text.get_context_id(message["origin"].name)
                 gobject.idle_add(_o, self.status_text.push, ctx,
-                    "%s: %s" % (str(i), i.description))
+                    "[%s] %s: %s" % (message["remote_name"], str(i), i.description))
                 t,ids = issue_state(i)
-                if not self.result_list_iter.has_key(i):
-                    self.result_list_iter[i] = self.result_list_store.append(
+                if not self.result_list_iter.has_key(iid):
+                    self.result_list_iter[iid] = self.result_list_store.append(
                             [i.name, t, i.description, ids, i.remote_name])
                 else:
-                    for idx,val in enumerate([i.name, t, i.description, ids]):
+                    for idx,val in enumerate([i.name, t, i.description, ids, i.remote_name]):
                         gobject.idle_add(_o, self.result_list_store.set,
-                                self.result_list_iter[i], idx, val)
+                                self.result_list_iter[iid], idx, val)
 
         else:
             print("FIXME: Unknown message action %d!!" % (message["action"],))
             print(message)
 
     def run(self):
-#        gtk.gdk.threads_enter()
+        gtk.gdk.threads_init()
+        gtk.gdk.threads_enter()
         gtk.main()
-#        gtk.gdk.threads_leave()
+        gtk.gdk.threads_leave()
 
     def _get_dialog(self, Id):
         dir = os.path.dirname(self._glade.relative_file("."))

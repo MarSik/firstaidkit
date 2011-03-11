@@ -69,15 +69,18 @@ class Output(Thread):
 
         elif message["action"]==reporting.START:
             if self._importance<=message["importance"]:
-                print("START: %s (%s)" % (message["origin"].name,
+                print("[%s] START: %s (%s)" % (message["remote_name"], message["origin"].name,
                         message["message"]))
-            self.levelstack.append(message["origin"].name)
+            if not message["remote"]:
+                self.levelstack.append(message["origin"].name)
 
         elif message["action"]==reporting.STOP:
             if self._importance<=message["importance"]:
-                print("STOP: %s (%s)" % (message["origin"].name,
+                print("[%s] STOP: %s (%s)" % (message["remote_name"], message["origin"].name,
                         message["message"]))
-            if self.levelstack[-1]!=message["origin"].name:
+            if message["remote"]:
+                pass
+            elif self.levelstack[-1]!=message["origin"].name:
                 print("WARNING: START/STOP ordering mismatch in stack: " \
                         +" / ".join(self.levelstack))
             else:
@@ -85,37 +88,37 @@ class Output(Thread):
 
         elif message["action"]==reporting.PROGRESS:
             if self._importance<=message["importance"]:
-                print("PROGRESS: %d of %d (%s)" % (message["message"][0],
+                print("[%s] PROGRESS: %d of %d (%s)" % (message["remote_name"], message["message"][0],
                         message["message"][1], message["origin"].name))
 
         elif message["action"]==reporting.INFO:
             if self._importance<=message["importance"]:
-                print("INFO: %s (%s)" % (message["message"],
+                print("[%s] INFO: %s (%s)" % (message["remote_name"], message["message"],
                         message["origin"].name))
 
         elif message["action"]==reporting.ALERT:
             if self._importance<=message["importance"]:
-                print("ALERT: %s (%s)" % (message["message"],
+                print("[%s] ALERT: %s (%s)" % (message["remote_name"], message["message"],
                         message["origin"].name))
 
         elif message["action"]==reporting.EXCEPTION:
-            print("EXCEPTION: %s (%s)" % (message["message"],
+            print("[%s] EXCEPTION: %s (%s)" % (message["remote_name"], message["message"],
                     message["origin"].name))
 
         elif message["action"]==reporting.TABLE:
             if self._importance<=message["importance"]:
-                print("TABLE %s FROM %s" % (message["title"],
+                print("[%s] TABLE %s FROM %s" % (message["remote_name"], message["title"],
                         message["origin"].name,))
                 pprint.pprint(message["message"])
 
         elif message["action"]==reporting.TREE:
             if self._importance<=message["importance"]:
-                print("TREE %s FROM %s" % (message["title"],
+                print("[%s] TREE %s FROM %s" % (message["remote_name"], message["title"],
                         message["origin"].name,))
                 pprint.pprint(message["message"])
 
         elif message["action"]==reporting.ISSUE:
-            print("ISSUE FROM %s" % (message["origin"].name,))
+            print("[%s] ISSUE FROM %s" % (message["remote_name"], message["origin"].name,))
             pprint.pprint(str(message["message"]))
         else:
             print("FIXME: Unknown message action %d!!" % (message["action"],))
@@ -167,6 +170,7 @@ class GuiOutput(Thread):
         self.dir = directory
         self.importance = importance
         self.remote = Config.has_section("remote") and len(Config.items("remote"))
+
 
     def run(self):
         self.w = MainWindow(self.cfg, self.info, self.tasker, self.importance, self.dir)

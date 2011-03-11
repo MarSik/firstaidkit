@@ -18,7 +18,7 @@
 import os
 import sys
 from plugins import PluginSystem
-from reporting import Reports, TASKER, PLUGINSYSTEM, FIRSTAIDKIT, END
+from reporting import Reports, TASKER, PLUGINSYSTEM, FIRSTAIDKIT, END, ISSUE
 import logging
 import copy
 from errors import *
@@ -34,7 +34,7 @@ import ConfigParser
 class RemoteTask(Thread):
     def __init__(self, reporting, name, address, configData):
         Thread.__init__(self)
-        self.state = SimpleIssue("Remote run on %s" % name, address, remote_name = name, remote_address = address)
+        self.state = SimpleIssue("Remote run on %s" % name, address)
         self.conn = None
         self.cfg = getConfigBits(configData)
         self.reporting = reporting
@@ -72,11 +72,21 @@ class RemoteTask(Thread):
                 msg = pickle.load(self.conn.stdout)
             except pickle.UnpicklingError, e:
                 print e
-                continue
+                raise
             if msg["level"]==FIRSTAIDKIT and msg["action"]==END:
                 running = False
-            msg["remote_name"] = self.name
-            msg["remote_address"] = self.address
+
+            # set issue origin if it comes from this machine
+            if not msg["remote"] and msg["action"] == ISSUE:
+                msg["message"].remote_name = self.name
+                msg["message"].remote_address = self.address
+
+            # set message origin and remote state so nobody changes the origin again
+            if not msg["remote"]:
+                msg["remote"] = True
+                msg["remote_name"] = self.name
+                msg["remote_address"] = self.address
+                
             self.reporting.put_raw(msg)
             
         report_file = self.conn.stdout.read()

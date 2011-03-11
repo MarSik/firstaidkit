@@ -193,7 +193,7 @@ class Reports(object):
         
         data = {"level": level, "origin": origin_msg, "action": action,
                 "importance": importance, "message": message,
-                "reply": reply, "inreplyto": inreplyto, "title": title}
+                "reply": reply, "inreplyto": inreplyto, "title": title, "remote": False, "remote_name": "LOCAL", "remote_address": ""}
 
         self.put_raw(data)
 

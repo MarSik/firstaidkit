@@ -1,3 +1,4 @@
+
 # File name: issue.py
 # Date:      2008/03/14
 # Author:    Martin Sivak <msivak at redhat dot com>
@@ -19,12 +20,15 @@
 # the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA
 # 02139, USA.
 
+import uuid
+
 class SimpleIssue(object):
     def __init__(self, name, description, remote_name = None, remote_address = None):
         self.name = name
         self.description = description
-        self.remote = remote_name
+        self.remote_name = remote_name
         self.remote_address = remote_address
+        self.id = uuid.uuid1()
         self.reset()
 
     def reset(self):
