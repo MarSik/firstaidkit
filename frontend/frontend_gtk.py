@@ -31,6 +31,7 @@ import pprint
 import os.path
 import thread
 import hashlib
+import re
 
 def _o(func, *args, **kwargs):
     """Always return False -> remove from the idle queue after first
@@ -330,6 +331,50 @@ class CallbacksMainWindow(object):
         widget.set_sensitive(False)
         return True
 
+    def on_mainmenu_remote_activate(self, widget, *args):
+        l = ListDialog("Remote nodes", "This table lists all remote nodes to start First Aid Kit session on",
+                       [],
+                       options = {
+                           "mode": ListDialog.MODE_TEXT,
+                           "key": "Short name",
+                           "key-regexp": re.compile("^[a-zA-Z0-9_.-]+$"),
+                           "value": "SSH address string",
+                           "add": True,
+                           "remove": True,
+                           "editable-key": True,
+                           "abort": False,
+                           "default-regexp": "^[A-Za-z0-9._:@-]+( [/A-Za-z0-9 ._-]+)?$",
+                           "default-error": "Entry has to have the form of [user@]address[:port] [/cfg/file]"
+                           },
+                       dir = os.path.dirname(__file__))
+
+        if self._cfg.has_section("remote"):
+            for (k, v) in self._cfg.items("remote"):
+                l.add(k, v)
+        
+        res = None
+        while res==None or res==gtk.RESPONSE_NONE:
+            res = l.run()
+
+        if res==gtk.RESPONSE_ACCEPT:
+            #set the flow mode
+            self._cfg.operation.mode = "monitor"
+
+            #clear remote section
+            if self._cfg.has_section("remote"):
+                self._cfg.remove_section("remote")
+            self._cfg.add_section("remote")
+            
+            for (k,v) in l.items():
+                if " " not in v:
+                    v = v+" /tmp/fak_default_remote.cfg"
+                self._cfg.set("remote", k, v)
+
+        #self.execute()
+            
+        l.destroy()
+        return True
+
 class CallbacksFlagList(object):
     def __init__(self, dialog, cfg, flags):
         self._dialog = dialog
@@ -359,23 +404,29 @@ class CallbacksFlagList(object):
         return True
 
 class ListDialog(object):
+    MODE_TEXT = 0
+    MODE_CHECKBOX = 1
+    MODE_COMBO = 2
+    MODE_RADIO = 3
+    
     def __init__(self, title, description, items, dir="", options = {}):
         gtkb = gtk.Builder()
         gtkb.add_from_file(os.path.join(dir, "gtk-list.xml"))
         self._dialog = gtkb.get_object("listdialog")
         self._dialog.set_title(title)
+        self._options = options
 
         mode = options.get("mode", 0)
 
         # text
-        if mode == 0:
-            self._store = gtk.ListStore(gobject.TYPE_STRING,
-                                    gobject.TYPE_STRING,
-                                    gobject.TYPE_STRING,
-                                    gobject.TYPE_STRING,
-                                    gobject.TYPE_PYOBJECT,
-                                    gobject.TYPE_STRING,
-                                    gobject.TYPE_NONE)
+        if mode == self.MODE_TEXT:
+            self._store = gtk.ListStore(gobject.TYPE_STRING, # key
+                                    gobject.TYPE_STRING, # textual representation of value
+                                    gobject.TYPE_STRING, # raw value
+                                    gobject.TYPE_STRING, # tooltip text
+                                    gobject.TYPE_PYOBJECT, # regexp object
+                                    gobject.TYPE_STRING, # error message
+                                    gobject.TYPE_PYOBJECT) # reserved for combo entries
 
             rend_text_edit = gtk.CellRendererText()
             rend_text_edit.set_property("editable", True)
@@ -383,29 +434,29 @@ class ListDialog(object):
 
             
         # checkboxes
-        elif mode == 1 or mode == 3:
+        elif mode == self.MODE_CHECKBOX or mode == self.MODE_RADIO:
             self._store = gtk.ListStore(gobject.TYPE_STRING,
                                     gobject.TYPE_STRING,
                                     gobject.TYPE_BOOLEAN,
                                     gobject.TYPE_STRING,
                                     gobject.TYPE_PYOBJECT,
                                     gobject.TYPE_STRING,
-                                    gobject.TYPE_NONE)
+                                    gobject.TYPE_PYOBJECT)
 
             rend_text_check = gtk.CellRendererToggle()
-            rend_text_check.set_radio(mode == 3)
+            rend_text_check.set_radio(mode == self.MODE_RADIO)
             rend_text_check.connect('toggled', self.toggled_cb, self._store)
             rend_text_check.set_property('activatable', True)
 
         # combo
-        elif mode == 2:
+        elif mode == self.MODE_COMBO:
             self._store = gtk.ListStore(gobject.TYPE_STRING,
                                     gobject.TYPE_STRING,
                                     gobject.TYPE_STRING,
                                     gobject.TYPE_STRING,
                                     gobject.TYPE_PYOBJECT,
                                     gobject.TYPE_STRING,
-                                    gtk.ListStore)
+                                    gtk.ListStore) 
             def _fill(x):
                 model = gtk.ListStore(gobject.TYPE_STRING)
                 for v in x[6]:
@@ -426,27 +477,34 @@ class ListDialog(object):
         # fill the data store
         map(self._store.append, items)
 
-
         self._label = gtkb.get_object("label")
         self._label.set_text(description)
         self._view = gtkb.get_object("view")
         self._view.set_model(self._store)
 
-        rend_text = gtk.CellRendererText()
 
         # title column
-        col_0 = gtk.TreeViewColumn('Key', rend_text, text = 1)
+        key_title = options.get("key", "Key")
+        if options.get("editable-key", False):
+            rend_text_key = gtk.CellRendererText()
+            rend_text_key.set_property("editable", True)
+            rend_text_key.connect('edited', self.edited_key_cb, self._store)
+        else:
+            rend_text_key = gtk.CellRendererText()
+            
+        col_0 = gtk.TreeViewColumn(key_title, rend_text_key, text = 0)
         col_0.set_resizable(True)
         col_0.set_expand(False)
 
         # value column
-        if mode == 0:
-            col_1 = gtk.TreeViewColumn('Value', rend_text_edit, text = 2)
-        elif mode == 1 or mode == 3:
-            col_1 = gtk.TreeViewColumn('Value', rend_text_check)
+        value_title = options.get("value", "Value")
+        if mode == self.MODE_TEXT:
+            col_1 = gtk.TreeViewColumn(value_title, rend_text_edit, text = 2)
+        elif mode == self.MODE_CHECKBOX or mode == self.MODE_RADIO:
+            col_1 = gtk.TreeViewColumn(value_title, rend_text_check)
             col_1.add_attribute(rend_text_check, "active", 2)
-        elif mode == 2:
-            col_1 = gtk.TreeViewColumn('Value', rend_text_combo, text = 2)
+        elif mode == self.MODE_COMBO:
+            col_1 = gtk.TreeViewColumn(value_title, rend_text_combo, text = 2)
             col_1.add_attribute(rend_text_combo, "model", 6)
             
         col_1.set_resizable(True)
@@ -457,11 +515,19 @@ class ListDialog(object):
         gtkb.connect_signals(self)
 
         self._dialog.show_all()
+
         if not options.get("back", True):
             gtkb.get_object("back-button").hide()
 
         if not options.get("abort", True):
             gtkb.get_object("abort-button").hide()
+
+        if mode!=self.MODE_TEXT or not options.get("add", False):
+            gtkb.get_object("add-button").hide()
+
+        if mode!=self.MODE_TEXT or not options.get("remove", False):
+            gtkb.get_object("remove-button").hide()
+
 
     def items(self):
         F = lambda row: (row[0], row[2])
@@ -469,6 +535,11 @@ class ListDialog(object):
 
     def run(self):
         return self._dialog.run()
+
+    def edited_key_cb(self, cell, path, new_data, store):
+        krex = self._options.get("key-regexp", None)
+        if krex is None or krex.match(new_data):
+            store[path][0] = new_data
 
     def edited_cb(self, cell, path, new_data, store):
         res = store[path][4].match(new_data)
