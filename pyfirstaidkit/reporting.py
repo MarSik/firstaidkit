@@ -75,7 +75,7 @@ class Question(object):
         question_message["reply"].put \
             (answer, origin, FIRSTAIDKIT, ANSWER,
              importance = question_message["importance"], inreplyto = self)
-        question_message["reply"].end(level = FIRSTAIDKIT)
+        question_message["reply"].end(level = FIRSTAIDKIT, origin = origin)
 
 class ConfigQuestion(Question):
     """A question that allows list of configurable variables

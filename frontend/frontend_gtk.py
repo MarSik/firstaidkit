@@ -505,7 +505,32 @@ class ListDialog(object):
     def cb_close(self, data):
         self._dialog.response(gtk.RESPONSE_CANCEL)
 
+    def add(self, key = None, value = None):
+        i = self._store.append()
+        txre = self._options.get("default-regexp", ".*")
+        if key:
+            self._store.set(i, 0, key)
+        if value:
+            self._store.set(i, 1, value)
+            self._store.set(i, 2, value)
+        self._store.set(i, 3, txre)
+        self._store.set(i, 4, re.compile(txre))
+        self._store.set(i, 5, self._options.get("default-error", "Bad input"))
+        return i
+        
+    def cb_add(self, data):
+        i = self.add()
+        self._view.scroll_to_cell(self._store.get_path(i))
+        self._view.set_cursor(self._store.get_path(i))
+        self._dialog.response(gtk.RESPONSE_NONE)
+
+    def cb_remove(self, data):
+        sel = self._view.get_selection()
+        sel.selected_foreach(lambda model, path, iter: model.remove(iter))
+        self._dialog.response(gtk.RESPONSE_NONE)
+
 class MainWindow(object):
+    name = "Main FirstAidKit Window"
     _cancel_answer = object()
     _no_answer = object()
 
