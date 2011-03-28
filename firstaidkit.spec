@@ -4,8 +4,8 @@
 %define debug_package %{nil}
 
 Name:           firstaidkit
-Version:        0.2.20
-Release:        2%{?dist}
+Version:        0.3.0
+Release:        1%{?dist}
 Summary:        System Rescue Tool
 
 Group:          Applications/System
@@ -295,6 +295,9 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Tue Mar 08 2011 Martin Sivak <msivak@redhat.com> - 0.3.0-1
+- Remote mode introducted
+
 * Tue Mar 08 2011 Martin Sivak <msivak@redhat.com> - 0.2.20-3
 - move freespace plugin to it's own package
 
