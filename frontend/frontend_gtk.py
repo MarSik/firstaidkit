@@ -26,7 +26,7 @@ import copy
 import logging
 from pyfirstaidkit import reporting
 from pyfirstaidkit.returns import *
-from pyfirstaidkit.configuration import resetInfo
+from pyfirstaidkit.configuration import resetInfo, FAKConfig
 import pprint
 import os.path
 import thread
@@ -176,24 +176,23 @@ class CallbacksMainWindow(object):
         return True
         
     #advanced mode callbacks
-    def on_b_StartAdvanced_activate(self, widget, *args):
-        print("on_b_StartAdvanced_activate")
-
+    def populate_advanced(self, cfg):
+        # get flags
         flags = set(self._cfg.operation._list("flags"))
-
+        
         #set the auto-flow
-        self._cfg.operation.mode = "auto-flow"
+        cfg.operation.mode = "auto-flow"
 
         idx = self._data.flow_list.get_active_iter()
         if idx is None:
             return True
-        self._cfg.operation.flow = self._data.flow_list_store.get_value(idx,0)
+        cfg.operation.flow = self._data.flow_list_store.get_value(idx,0)
 
         #check verbose
         if self._glade.get_widget("check_Advanced_Verbose").get_active():
-            self._cfg.operation.verbose = "True"
+            cfg.operation.verbose = "True"
         else:
-            self._cfg.operation.verbose = "False"
+            cfg.operation.verbose = "False"
 
         #check experimental
         if self._glade.get_widget("check_Advanced_Experimental").get_active():
@@ -206,24 +205,31 @@ class CallbacksMainWindow(object):
 
         #check interactive
         if self._glade.get_widget("check_Advanced_Interactive").get_active():
-            self._cfg.operation.interactive = "True"
+            cfg.operation.interactive = "True"
         else:
-            self._cfg.operation.interactive = "False"
+            cfg.operation.interactive = "False"
 
         #check dependency
         if self._glade.get_widget("check_Advanced_NoDependency").get_active():
-            self._cfg.operation.dependencies = "False"
+            cfg.operation.dependencies = "False"
         else:
-            self._cfg.operation.dependencies = "True"
+            cfg.operation.dependencies = "True"
 
-        self._cfg.operation.flags = " ".join(
-                map(lambda x: x.encode("string-escape"), flags))
+        cfg.operation.flags = " ".join(
+            map(lambda x: x.encode("string-escape"), flags))
 
         #reset params
-        if self._cfg.has_section("plugin-args"):
-            self._cfg.remove_section("plugin-args")
-        self._cfg.add_section("plugin-args")
+        if cfg.has_section("plugin-args"):
+            cfg.remove_section("plugin-args")
+        cfg.add_section("plugin-args")
 
+        return cfg
+
+
+    def on_b_StartAdvanced_activate(self, widget, *args):
+        print("on_b_StartAdvanced_activate")
+
+        self.populate_advanced(self._cfg)
         self.execute()
         return True
 
@@ -370,7 +376,19 @@ class CallbacksMainWindow(object):
                     v = v+" /tmp/fak_default_remote.cfg"
                 self._cfg.set("remote", k, v)
 
-        #self.execute()
+            # prepare the config for the remote instances
+            c = FAKConfig()
+            self.populate_advanced(c)
+
+            # write the config
+            try:
+                fd = open("/tmp/fak_default_remote.cfg", "w")
+                c.write(fd)
+            except IOError:
+                return            
+
+            # start the tests
+            self.execute()
             
         l.destroy()
         return True
@@ -611,6 +629,7 @@ class MainWindow(object):
         
         self._importance = importance
         self._cfg = cfg
+        self._remote = False
         self._glade = gtk.glade.XML(os.path.join(dir, "firstaidkit.glade"),
                 "MainWindow")
         self._window = self._glade.get_widget("MainWindow")
@@ -823,6 +842,7 @@ class MainWindow(object):
 
     def remote(self, enable = True):
         self.result_list_col_remote.set_property("visible", enable)
+        self._remote = enable
 
     def update(self, mailbox, message):
 
@@ -840,6 +860,8 @@ class MainWindow(object):
             else:
                 return ("Waiting for check", 0)
 
+        if message["remote"] and not self._remote:
+            self.remote()
 
         if self._cfg.operation.verbose == "True":
             self._importance = logging.DEBUG

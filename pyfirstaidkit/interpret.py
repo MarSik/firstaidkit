@@ -44,7 +44,7 @@ class RemoteTask(Thread):
     def run(self):
         running = True
         self.reporting.issue(issue = self.state, level = FIRSTAIDKIT, origin = self)
-        self.conn = subprocess.Popen(["ssh", self.address, "firstaidkit-shell"],
+        self.conn = subprocess.Popen(["ssh", "-q", "-T", self.address, "firstaidkit-shell"],
                                 stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
                                 bufsize = 1, close_fds = True)
 
@@ -52,7 +52,10 @@ class RemoteTask(Thread):
         # start wasn't successful
         if not welcomeLine.startswith("[firstaidkit-shell] Ready"):
             self.state.set(checked = True, happened = True, reporting = self.reporting, origin = self)
-            (report_file, stderr) = self.conn.communicate("[abort]\n")
+            if welcomeLine.startswith("The autenticity "): # ssh waiting for the fingerprint
+                (report_file, stderr) = self.conn.communicate("no\n")
+            else:
+                (report_file, stderr) = self.conn.communicate()
             return
         
         self.cfg.write(self.conn.stdin)
@@ -91,6 +94,7 @@ class RemoteTask(Thread):
             
         report_file = self.conn.stdout.read()
         stderr = self.conn.stderr.read()
+        Info.attachRaw(report_file, "remote_report_%s.zip" % self.name)
         self.conn.wait()
 
 class Tasker(object):

@@ -187,6 +187,7 @@ class FAKInfo(ConfigParser.SafeConfigParser, FAKConfigMixIn):
         ConfigParser.SafeConfigParser.__init__(self, *args, **kwargs)
         FAKConfigMixIn.__init__(self)
         self._attachments = []
+        self._raw_attachments = []
 
     def write(self, fd=sys.stdout):
         fd.write("--- Result files ---\n")
@@ -203,12 +204,18 @@ class FAKInfo(ConfigParser.SafeConfigParser, FAKConfigMixIn):
         fd.writestr("results.ini", temp.getvalue())
         for f,fas in self._attachments:
             fd.write(f, fas)
+        for c,fas in self._raw_attachments:
+            fd.writestr(fas, c)
         fd.close()
 
     def attach(self, file, saveas = None):
         if saveas is None:
             saveas = file
         self._attachments.append((file, saveas))
+
+    def attachRaw(self, content, saveas):
+        self._raw_attachments.append((content, saveas))
+
 
 class InfoProxy(object):
     __slots__ = ["_obj"]
