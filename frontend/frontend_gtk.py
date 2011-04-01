@@ -337,7 +337,24 @@ class CallbacksMainWindow(object):
         widget.set_sensitive(False)
         return True
 
-    def on_mainmenu_remote_activate(self, widget, *args):
+    def on_start_remote_clicked(self, widget, *args):
+        # prepare the config for the remote instances
+        c = FAKConfig()
+        self.populate_advanced(c)
+        
+        # write the config
+        try:
+            fd = open("/tmp/fak_default_remote.cfg", "w")
+            c.write(fd)
+        except IOError:
+            return            
+
+        # start the tests
+        self._cfg.operation.mode = "monitor"
+        self.execute()
+        return True
+
+    def on_edit_nodes_clicked(self, widget, *args):
         l = ListDialog("Remote nodes", "This table lists all remote nodes to start First Aid Kit session on",
                        [],
                        options = {
@@ -363,9 +380,6 @@ class CallbacksMainWindow(object):
             res = l.run()
 
         if res==gtk.RESPONSE_ACCEPT:
-            #set the flow mode
-            self._cfg.operation.mode = "monitor"
-
             #clear remote section
             if self._cfg.has_section("remote"):
                 self._cfg.remove_section("remote")
@@ -376,21 +390,12 @@ class CallbacksMainWindow(object):
                     v = v+" /tmp/fak_default_remote.cfg"
                 self._cfg.set("remote", k, v)
 
-            # prepare the config for the remote instances
-            c = FAKConfig()
-            self.populate_advanced(c)
-
-            # write the config
-            try:
-                fd = open("/tmp/fak_default_remote.cfg", "w")
-                c.write(fd)
-            except IOError:
-                return            
-
-            # start the tests
-            self.execute()
-            
         l.destroy()
+        return True
+
+
+    def on_mainmenu_remote_activate(self, widget, *args):
+        self._data.remote(True)
         return True
 
 class CallbacksFlagList(object):
@@ -841,6 +846,8 @@ class MainWindow(object):
         self.result_list.set_search_column(1)
 
     def remote(self, enable = True):
+        remote_w = self._glade.get_widget("remote_box")
+        remote_w.set_property("visible", enable)
         self.result_list_col_remote.set_property("visible", enable)
         self._remote = enable
 
