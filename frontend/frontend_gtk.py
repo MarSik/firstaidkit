@@ -384,13 +384,18 @@ class CallbacksMainWindow(object):
             if self._cfg.has_section("remote"):
                 self._cfg.remove_section("remote")
             self._cfg.add_section("remote")
-            
+
             for (k,v) in l.items():
+                if not k or not v:
+                    continue
+                
                 if " " not in v:
                     v = v+" /tmp/fak_default_remote.cfg"
                 self._cfg.set("remote", k, v)
 
-        l.destroy()
+            self._data.update_remote()
+
+        l.destroy()        
         return True
 
 
@@ -850,6 +855,15 @@ class MainWindow(object):
         remote_w.set_property("visible", enable)
         self.result_list_col_remote.set_property("visible", enable)
         self._remote = enable
+        if enable:
+            self.update_remote()
+
+    def update_remote(self):
+        num = 0
+        if self._cfg.has_section("remote"):
+            num = len(self._cfg.items("remote"))
+        remote_count = self._glade.get_widget("node_count")
+        remote_count.set_markup("You have configured <b>%d nodes</b>. Press this button to edit the list." % num)
 
     def update(self, mailbox, message):
 

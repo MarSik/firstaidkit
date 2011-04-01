@@ -463,7 +463,7 @@
 		      <property name="spacing">0</property>
 
 		      <child>
-			<widget class="GtkLabel" id="label24">
+			<widget class="GtkLabel" id="node_count">
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">You have configured &lt;b&gt;X nodes&lt;/b&gt;. Press this button to edit the list.</property>
 			  <property name="use_underline">False</property>
