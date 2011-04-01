@@ -256,13 +256,15 @@ class FileBackupStore(BackupStoreInterface):
 
         if fullpath:
             if os.path.isdir(fullpath):
-                raise BackupException("Backupdir %s already exists. Erase "
-                        "dir or change backup dir." % self._path)
+                #raise BackupException("Backupdir %s already exists. Erase "
+                #        "dir or change backup dir." % fullpath)
+                #We have to be silent and use new backup dir
+                fullpath = ""
             else:
                 self._path = fullpath
                 os.makedirs(fullpath)
 
-        else:
+        if not fullpath:
             if not os.path.isdir(rootpath):
                 os.makedirs(rootpath)
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%m%S")
