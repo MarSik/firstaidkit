@@ -96,7 +96,16 @@ class CallbacksMainWindow(object):
         fil.add_pattern("*.ini")
         d.add_filter(fil)
 
-        print(d.run())
+        ret = d.run()
+
+        if ret==gtk.RESPONSE_ACCEPT:
+            try:
+                filename = d.get_filename()
+                self._cfg.read(filename)
+                self._data.refresh()
+            except IOError, e:
+                print e
+
         d.destroy()
         return True
 
@@ -864,6 +873,14 @@ class MainWindow(object):
             num = len(self._cfg.items("remote"))
         remote_count = self._glade.get_widget("node_count")
         remote_count.set_markup("You have configured <b>%d nodes</b>. Press this button to edit the list." % num)
+
+    def refresh(self):
+        if self._cfg.has_section("remote"):
+            num = len(self._cfg.items("remote"))
+        else:
+            num = 0
+            
+        self.remote(num > 0)
 
     def update(self, mailbox, message):
 
