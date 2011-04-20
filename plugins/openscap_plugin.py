@@ -261,7 +261,10 @@ class OpenSCAPPlugin(Plugin):
         self._result=ReturnSuccess
 
     def results(self):
-        files = self._policy.export(self._oscap_result, self._objs, "OpenSCAP results", "/tmp/oscap_results.xml", "/tmp/oscap_res_")
+        print self._objs
+        files = self._policy.export(self._oscap_result, "OpenSCAP results",
+                                    "/tmp/oscap_results.xml", "/tmp/oscap_res_",
+                                    self._objs["xccdf_path"], self._objs["sessions"])
         for f in files:
             self._info.attach(f, os.path.basename(f))
         self._result=ReturnSuccess

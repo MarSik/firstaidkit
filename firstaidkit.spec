@@ -4,7 +4,7 @@
 %define debug_package %{nil}
 
 Name:           firstaidkit
-Version:        0.3.0
+Version:        0.3.1
 Release:        1%{?dist}
 Summary:        System Rescue Tool
 
@@ -108,8 +108,8 @@ password.
 Group:          Applications/System
 Summary:        OpenSCAP plugin for FirstAidKit
 Requires:       %{name} = %{version}-%{release}
-Requires:       openscap-python >= 0.6.5
-Requires:       openscap-content >= 0.6.5
+Requires:       openscap-python >= 0.7.2
+Requires:       openscap-content >= 0.7.2
 BuildArch:      noarch
 
 %description plugin-openscap
@@ -295,6 +295,10 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Wed Apr 20 2011 Martin Sivak <msivak@redhat.com> - 0.3.1-1
+- OpenSCAP plugin adapted to the updated OpenSCAP API
+- Big improvements to remote mode GUI usability
+
 * Tue Mar 08 2011 Martin Sivak <msivak@redhat.com> - 0.3.0-1
 - Remote mode introducted
 

@@ -70,6 +70,8 @@ class BackupStoreInterface(object):
         raise NotImplemented()
 
 class FileBackupStore(BackupStoreInterface):
+    
+    
     _singleton = None
 
     class Backup(BackupStoreInterface.Backup):
@@ -258,7 +260,7 @@ class FileBackupStore(BackupStoreInterface):
             if os.path.isdir(fullpath):
                 #raise BackupException("Backupdir %s already exists. Erase "
                 #        "dir or change backup dir." % fullpath)
-                #We have to be silent and use new backup dir
+                #We have to be silent and use new backup 
                 fullpath = ""
             else:
                 self._path = fullpath
