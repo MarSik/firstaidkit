@@ -4,7 +4,7 @@
 %define debug_package %{nil}
 
 Name:           firstaidkit
-Version:        0.3.1
+Version:        0.3.2
 Release:        1%{?dist}
 Summary:        System Rescue Tool
 
@@ -60,9 +60,6 @@ Requires:       %{name}-plugin-passwd
 Requires:       %{name}-plugin-freespace
 Requires:       %{name}-plugin-xserver
 Requires:       %{name}-plugin-openscap
-%ifnarch s390 s390x ppc64 ppc sparc
-Requires:       %{name}-plugin-grub
-%endif
 Requires:       %{name}-gui
 Requires:       %{name}-plugin-mdadm-conf
 Requires:       %{name}-plugin-key-recovery
@@ -126,21 +123,6 @@ BuildArch:      noarch
 This FirstAidKit plugin automates the recovery of the xserver
 configuration file xorg.conf.
 
-
-%ifnarch s390 s390x ppc64 ppc sparc
-%package plugin-grub
-Group:          Applications/System
-Summary:        FirstAidKit plugin to diagnose or repair the GRUB instalation
-Requires:       %{name} = %{version}-%{release}
-Requires:       dbus-python
-Requires:       grub
-Requires:       pyparted
-
-%description plugin-grub
-This FirstAidKit plugin automates the recovery from the GRUB bootloader problems.
-%endif
-
-
 %package plugin-mdadm-conf
 Group:          Applications/System
 Summary:        Firstaidkit plugin to diagnose software raid configuration file
@@ -202,20 +184,18 @@ packet.
 %{__install} -p images/FAK-bandaid.png $RPM_BUILD_ROOT/usr/share/icons/firstaidkit.png
 desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applications %{SOURCE3}
 
+#plugins arch independent and dependent
+%{__install} -d $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins
+%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins
+
 #examples
 %{__install} -d $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/examples
 %{__mv} -f plugins/plugin_examples $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/examples
-
-#plugins arch independent and dependent
-%{__install} -d $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins
-%{__install} -d $RPM_BUILD_ROOT%{libdir}/firstaidkit/plugins
 
 %{__cp} -f plugins/passwd.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
 %{__cp} -f plugins/freespace.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
 %{__cp} -f plugins/openscap_plugin.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
 %{__cp} -f plugins/xserver.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
-%{__install} -d $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
-%{__cp} -f plugins/grub/*.py $RPM_BUILD_ROOT%{_libdir}/firstaidkit/plugins/grub
 %{__cp} -f plugins/mdadm_conf.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
 %{__cp} -f plugins/key_recovery.py $RPM_BUILD_ROOT/usr/share/firstaidkit/plugins/
 
@@ -278,13 +258,6 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %defattr(-,root,root,-)
 /usr/share/firstaidkit/plugins/xserver.py*
 
-%ifnarch s390 s390x ppc64 ppc sparc
-%files plugin-grub
-%defattr(-,root,root,-)
-%{_libdir}/firstaidkit/plugins/grub/*
-%dir %{_libdir}/firstaidkit/plugins/grub
-%endif
-
 %files plugin-mdadm-conf
 %defattr(-,root,root,-)
 /usr/share/firstaidkit/plugins/mdadm_conf.py*
@@ -295,6 +268,9 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Wed Aug 03 2011 Martin Sivak <msivak@redhat.com> - 0.3.2-1
+- Removed GRUB plugin, it was a broken hack anyways
+
 * Wed Apr 20 2011 Martin Sivak <msivak@redhat.com> - 0.3.1-1
 - OpenSCAP plugin adapted to the updated OpenSCAP API
 - Big improvements to remote mode GUI usability

@@ -58,7 +58,7 @@ cmdclass = {
 }
 
 setup(name='firstaidkit',
-      version='0.3.1',
+      version='0.3.2',
       description='System Rescue Tool',
       author='Martin Sivak / Joel Andres Granados',
       author_email='msivak@redhat.com / jgranado@redhat.com',
