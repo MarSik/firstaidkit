@@ -326,22 +326,10 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 * Wed Jul 21 2010 David Malcolm <dmalcolm@redhat.com> - 0.2.11-3
 - Rebuilt for https://fedoraproject.org/wiki/Features/Python_2.7/MassRebuild
 
-* Mon May 22 2010 Martin Sivak <msivak@redhat.com> - 0.2.11-2
-- Add menu icon
-  Resolves: rhbz#587903
-
-* Tue Mar 30 2010 Martin Sivak <msivak@redhat.com> - 0.2.11-1
+* Tue May 30 2010 Martin Sivak <msivak@redhat.com> - 0.2.11-1
 - Add missing files to configuration and docs
 - Use full sized buttons in text-mode firstaidkit-qs
   Resolves: rhbz#576110
-
-* Mon Jan 10 2011 Martin Sivak <msivak@redhat.com> - 0.2.10.1-2
-- Fix the manpage for the config file
-  Resolves: rhbz#584677
-
-* Fri Jan 07 2011 Martin Sivak <msivak@redhat.com> - 0.2.10.1-1
-- Add manpage for the config file
-  Resolves: rhbz#584677
 
 * Mon May 22 2010 Martin Sivak <msivak@redhat.com> - 0.2.10-4
 - Add menu icon
