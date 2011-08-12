@@ -268,7 +268,6 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
-<<<<<<< HEAD
 * Wed Aug 03 2011 Martin Sivak <msivak@redhat.com> - 0.3.2-1
 - Removed GRUB plugin, it was a broken hack anyways
 
