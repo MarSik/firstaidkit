@@ -6,7 +6,7 @@
 Name:           firstaidkit
 Version:        0.3.2
 Release:        1%{?dist}
-Summary:        System Rescue Tool
+Summary:        System analysis and rescue tool
 
 Group:          Applications/System
 License:        GPLv2+
@@ -365,7 +365,7 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 * Thu Jan 21 2010 Martin Sivak <msivak@redhat.com> - 0.2.8-6
 - use ifnarch for ackages section too
-  Related: rhbz#557202
+l  Related: rhbz#557202
 
 * Thu Jan 21 2010 Martin Sivak <msivak@redhat.com> - 0.2.8-5
 - ExcludeArch is global directive, use ifnarch instead
