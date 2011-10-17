@@ -5,7 +5,7 @@
 
 Name:           firstaidkit
 Version:        0.3.2
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        System analysis and rescue tool
 
 Group:          Applications/System
@@ -28,6 +28,7 @@ BuildRequires:  python-setuptools-devel
 BuildRequires:  python-tools
 Requires:       newt
 Requires:       %{name}-engine
+Obsoletes:      %{name}-plugin-grub < %{version}
 
 %description
 A tool that automates simple and common system recovery tasks.
@@ -268,6 +269,10 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 
 
 %changelog
+* Fri Oct 14 2011 Martin Sivak <msivak@redhat.com> - 0.3.2-2
+- Added Obsolete clause as Yum cannot handle updates with removal
+  Resolves: rhbz#738563
+
 * Wed Aug 03 2011 Martin Sivak <msivak@redhat.com> - 0.3.2-1
 - Removed GRUB plugin, it was a broken hack anyways
 
