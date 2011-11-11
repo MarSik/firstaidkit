@@ -4,8 +4,8 @@
 %define debug_package %{nil}
 
 Name:           firstaidkit
-Version:        0.3.2
-Release:        2%{?dist}
+Version:        0.3.3
+Release:        1%{?dist}
 Summary:        System analysis and rescue tool
 
 Group:          Applications/System
@@ -65,7 +65,7 @@ Requires:       %{name}-gui
 Requires:       %{name}-plugin-mdadm-conf
 Requires:       %{name}-plugin-key-recovery
 #Requires:       %{name}-plugin-undelete-partitions
-#Requires:       %{name}-plugin-rpm
+Requires:       %{name}-plugin-blueprint
 
 
 %description plugin-all
@@ -91,6 +91,17 @@ BuildArch:      noarch
 
 %description plugin-freespace
 This FirstAidKit plugin checkes for sufficient free space on target drives.
+
+
+%package plugin-blueprint
+Group:          Applications/System
+Summary:        FirstAidKit plugin which creates kickstart representation of existing system 
+Requires:       %{name} = %{version}-%{release}
+BuildArch:      noarch
+
+%description plugin-blueprint
+This FirstAidKit plugin gathers information about packages, Yum repositories, storage subsystems, etc configuration and processes it to kickstart form. The generated kickstart can then be used to install machine with configuration that resembles the original one (without user data!).
+
 
 %package plugin-passwd
 Group:          Applications/System
@@ -267,8 +278,16 @@ desktop-file-install --vendor="fedora" --dir=${RPM_BUILD_ROOT}%{_datadir}/applic
 %defattr(-,root,root,-)
 /usr/share/firstaidkit/plugins/key_recovery.py*
 
+%files plugin-blueprint
+%defattr(-,root,root,-)
+/usr/share/firstaidkit/plugins/blueprint
 
 %changelog
+* Fri Nov 11 2011 Martin Sivak <msivak@redhat.com> - 0.3.3-1
+- Added support for structured plugins and blueprint plugin of this type.
+- Blueprint plugin then contains packages and repos subplugins to gather information
+  about installed packages and Yum repos
+
 * Fri Oct 14 2011 Martin Sivak <msivak@redhat.com> - 0.3.2-2
 - Added Obsolete clause as Yum cannot handle updates with removal
   Resolves: rhbz#738563

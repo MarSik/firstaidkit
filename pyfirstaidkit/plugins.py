@@ -534,16 +534,27 @@ class PluginSystem(object):
                     moduleinfo = imp.find_module(m, [path])
                     module = imp.load_module(".".join([FirstAidKit.__name__,m]),
                             *moduleinfo)
-                    #notify the dependency system about all used dependencies
-                    self._deps.introduce(module.get_plugin().getDeps())
-                    #notify the dependency system about all used
-                    #reverse-dependencies
-                    self._deps.introduce(module.get_plugin().getConflicts())
-                    self._plugins[m] = module
-                    self._reporting.debug("Module %s successfully imported "
-                            "with basedir %s" %
-                            (m, os.path.dirname(module.__file__)),
-                            level = PLUGINSYSTEM, origin = self)
+
+                    # check if the module actually contains a plugin or just submodules
+                    pl = module.get_plugin()
+                    try:
+                        iter(pl)
+                        pl = [(m+"."+subname, subpl) for subname,subpl in pl]
+                    except TypeError:
+                        pl = [(m, module)]
+
+                    for name, module in pl:
+                        #notify the dependency system about all used dependencies
+                        self._deps.introduce(module.get_plugin().getDeps())
+                        
+                        #notify the dependency system about all used
+                        #reverse-dependencies
+                        self._deps.introduce(module.get_plugin().getConflicts())
+                        self._plugins[name] = module
+                        self._reporting.debug("Module %s successfully imported "
+                                              "with basedir %s" %
+                                              (m, os.path.dirname(module.__file__)),
+                                              level = PLUGINSYSTEM, origin = self)
                 except Exception, e:
                     self._reporting.error(message = "Module %s was NOT "
                             "imported, because of %s" %
