@@ -63,7 +63,8 @@ def createDefaultConfig(config):
     # Frontend modules are in specified directories
     config.system.frontend = ("'/usr/lib64/firstaidkit/frontend' "
             "'/usr/lib/firstaidkit/frontend' "
-            "'/usr/share/firstaidkit/frontend' ")
+            "'/usr/share/firstaidkit/frontend' "
+	    "'./frontend' ")
 
     #
     # There will be 4 default places where FAK will look for plugins,
@@ -72,11 +73,11 @@ def createDefaultConfig(config):
     #
     config.add_section("paths")
     for dir in ["firstaidkit/plugins", "firstaidkit/plugins/examples"]:
-        for root in [ "usr/lib64", "usr/lib", "usr/share"]:
-            if os.path.exists( "/%s/%s" % (root,dir)):
+        for root in ["/usr/lib64", "/usr/lib", "/usr/share", ".."]:
+            if os.path.exists( "%s/%s" % (root,dir)):
 
                 config.set( "paths",  "%s/%s"%(dir[19:], root[4:]),
-                        "/%s/%s" %(root, dir) )
+                        "%s/%s" %(root, dir) )
 
 
 class LockedError(Exception):
